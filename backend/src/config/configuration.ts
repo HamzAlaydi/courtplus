@@ -55,6 +55,11 @@ export default async function getConfig() {
       branchProductId: env.STRIPE_BRANCH_PRODUCT_ID,
       branchPriceId: env.STRIPE_BRANCH_PRICE_ID,
     },
+    mail: {
+      driver: env.MAIL_DRIVER || 'ses',
+      smtpUser: env.SMTP_USER,
+      smtpPass: env.SMTP_PASS,
+    },
     app: {
       name: env.APP_NAME,
       logo: env.APP_LOGO_URL,

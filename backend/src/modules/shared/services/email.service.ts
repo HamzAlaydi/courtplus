@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/components';
-import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
+import { MailService } from './mail.service';
 import { AccountVerificationEmail } from 'src/emails/account-verification';
 import { ForgotPasswordEmail } from 'src/emails/forgot-password';
 import { BookingCreatedEmail } from 'src/emails/staff-booking-created';
@@ -41,17 +41,12 @@ export enum EmailTemplate {
 
 @Injectable()
 export class EmailService {
-  private readonly ses: SESv2Client;
   private readonly templateComponents: Record<EmailTemplate, any>;
 
-  constructor(readonly configService: ConfigService) {
-    this.ses = new SESv2Client({
-      region: configService.get('aws.region'),
-      credentials: {
-        accessKeyId: configService.get('aws.accessKeyId'),
-        secretAccessKey: configService.get('aws.secretAccessKey'),
-      },
-    });
+  constructor(
+    readonly configService: ConfigService,
+    private readonly mailService: MailService,
+  ) {
     this.templateComponents = {
       [EmailTemplate.ForgotPassword]: ForgotPasswordEmail,
       [EmailTemplate.AccountVerification]: AccountVerificationEmail,
@@ -94,33 +89,10 @@ export class EmailService {
     const Component = this.templateComponents[template];
     const html = await render(Component(data));
 
-    const command = new SendEmailCommand({
-      FromEmailAddress: this.configService.get('aws.sesFromEmail'),
-      Destination: {
-        ToAddresses: to,
-      },
-      Content: {
-        Simple: {
-          Subject: {
-            Charset: 'UTF-8',
-            Data: subject || this.getSubject(template, language),
-          },
-          Body: {
-            Html: {
-              Charset: 'UTF-8',
-              Data: html,
-            },
-          },
-          Headers: [
-            {
-              Name: 'X-Entity-Ref-ID',
-              Value: Date.now().toString(),
-            },
-          ],
-        },
-      },
+    return this.mailService.sendMail({
+      to,
+      subject: subject || this.getSubject(template, language),
+      html,
     });
-
-    return this.ses.send(command);
   }
 }
