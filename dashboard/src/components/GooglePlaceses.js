@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import GooglePlacesAutocomplete from "react-google-autocomplete";
+import React, { useState, useEffect } from "react";
+import { AutoComplete } from "antd";
+
+const NOMINATIM_URL =
+  "https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=";
 
 const GooglePlacesInput = ({
   apiKey,
@@ -9,7 +12,8 @@ const GooglePlacesInput = ({
 }) => {
   const [, setPlaceId] = useState(initialPlaceId || "");
   const [inputValue, setInputValue] = useState(initialName || "");
-  const autocompleteRef = useRef(null);
+  const [options, setOptions] = useState([]);
+  const [places, setPlaces] = useState([]);
 
   // ✅ Update input when initial values change
   useEffect(() => {
@@ -17,34 +21,63 @@ const GooglePlacesInput = ({
     if (initialPlaceId) setPlaceId(initialPlaceId);
   }, [initialName, initialPlaceId]);
 
+  // ✅ Debounced Nominatim search (OpenStreetMap, no API key needed)
+  useEffect(() => {
+    const query = inputValue.trim();
+    if (query.length < 3) {
+      setOptions([]);
+      setPlaces([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(NOMINATIM_URL + encodeURIComponent(query));
+        const data = await res.json();
+        setPlaces(data);
+        setOptions(
+          data.map((place) => ({
+            key: String(place.place_id),
+            value: place.display_name,
+            label: place.display_name,
+          }))
+        );
+      } catch {
+        setOptions([]);
+        setPlaces([]);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const handleSelect = (value) => {
+    const place = places.find((p) => p.display_name === value);
+    if (!place) return;
+
+    const name = place.name || place.display_name || "Unknown";
+    const address = place.display_name || "No address available";
+
+    setInputValue(name); // ✅ Set input field name
+    setPlaceId(String(place.place_id)); // ✅ Store place ID
+    onPlaceSelect({
+      name,
+      address,
+      placeId: String(place.place_id),
+      lat: parseFloat(place.lat),
+      lng: parseFloat(place.lon),
+    });
+  };
+
   return (
-    <GooglePlacesAutocomplete
-      apiKey="AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E"
-      ref={autocompleteRef}
+    <AutoComplete
       value={inputValue}
-      onChange={(e) => setInputValue(e.target.value)} // ✅ Allow manual input
-      onPlaceSelected={(place) => {
-        if (place && place.place_id) {
-          setInputValue(place.name || "Unknown"); // ✅ Set input field name
-          setPlaceId(place.place_id); // ✅ Store place ID
-          onPlaceSelect({
-            name: place.name || "Unknown",
-            address: place.formatted_address || "No address available",
-            placeId: place.place_id,
-          });
-        }
-      }}
-      options={{
-        types: ["establishment"],
-        fields: ["place_id", "name", "formatted_address"],
-      }}
-      style={{
-        width: "100%",
-        padding: "10px",
-        fontSize: "16px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-      }}
+      options={options}
+      onChange={setInputValue} // ✅ Allow manual input
+      onSelect={handleSelect}
+      placeholder="Search place"
+      style={{ width: "100%" }}
+      filterOption={false}
     />
   );
 };

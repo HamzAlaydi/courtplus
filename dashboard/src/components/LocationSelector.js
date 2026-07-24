@@ -1,13 +1,11 @@
-import React, { useState, useRef } from "react";
-import { Row, Col, InputNumber } from "antd";
-import {
-  GoogleMap,
-  Marker,
-  Autocomplete,
-  useLoadScript,
-} from "@react-google-maps/api";
+import React, { useState, useEffect } from "react";
+import { Row, Col, InputNumber, AutoComplete } from "antd";
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
 const containerStyle = { width: "100%", height: "300px" };
+
+const NOMINATIM_URL =
+  "https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=";
 
 export default function LocationSelector({
   apiKey = "AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E",
@@ -18,7 +16,6 @@ export default function LocationSelector({
 }) {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: apiKey,
-    libraries: ["places"],
   });
 
   // Convert backend GeoJSON if needed
@@ -37,16 +34,46 @@ export default function LocationSelector({
   const [placeName, setPlaceName] = useState(initialPlaceName || "");
   const [address, setAddress] = useState(initialAddress || "");
   const [coordinates, setCoordinates] = useState(parseGeo(initialCoordinates));
+  const [searchOptions, setSearchOptions] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
 
-  const autocompleteRef = useRef(null);
+  /** Debounced Nominatim search (OpenStreetMap, no API key needed) */
+  useEffect(() => {
+    const query = placeName.trim();
+    if (query.length < 3) {
+      setSearchOptions([]);
+      setSearchResults([]);
+      return;
+    }
 
-  /** Reverse Geocoding */
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(NOMINATIM_URL + encodeURIComponent(query));
+        const data = await res.json();
+        setSearchResults(data);
+        setSearchOptions(
+          data.map((place) => ({
+            key: String(place.place_id),
+            value: place.display_name,
+            label: place.display_name,
+          }))
+        );
+      } catch {
+        setSearchOptions([]);
+        setSearchResults([]);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [placeName]);
+
+  /** Reverse Geocoding (Nominatim, no API key needed) */
   const reverseGeocode = async (lat, lng) => {
     try {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
       const res = await fetch(url);
       const data = await res.json();
-      return data.results?.[0]?.formatted_address || "";
+      return data.display_name || "";
     } catch {
       return "";
     }
@@ -67,15 +94,15 @@ export default function LocationSelector({
     });
   };
 
-  /** Autocomplete selection handler */
-  const onPlaceChanged = () => {
-    const place = autocompleteRef.current.getPlace();
-    if (!place?.geometry) return;
+  /** Autocomplete selection handler (Nominatim) */
+  const onPlaceSelected = (value) => {
+    const place = searchResults.find((p) => p.display_name === value);
+    if (!place) return;
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
+    const lat = parseFloat(place.lat);
+    const lng = parseFloat(place.lon);
 
-    updateLocation(lat, lng, place.name);
+    updateLocation(lat, lng, place.name || place.display_name);
   };
 
   // Lat/Lng manual input
@@ -92,25 +119,15 @@ export default function LocationSelector({
   return (
     <div>
       <label>Place Name</label>
-      {isLoaded && (
-        <Autocomplete
-          onLoad={(ref) => (autocompleteRef.current = ref)}
-          onPlaceChanged={onPlaceChanged}
-        >
-          <input
-            value={placeName}
-            onChange={(e) => setPlaceName(e.target.value)}
-            placeholder="Search place"
-            style={{
-              width: "100%",
-              padding: 10,
-              border: "1px solid #ccc",
-              borderRadius: 6,
-              marginBottom: 10,
-            }}
-          />
-        </Autocomplete>
-      )}
+      <AutoComplete
+        value={placeName}
+        options={searchOptions}
+        onChange={setPlaceName}
+        onSelect={onPlaceSelected}
+        placeholder="Search place"
+        style={{ width: "100%", marginBottom: 10 }}
+        filterOption={false}
+      />
 
       <Row gutter={12} style={{ marginBottom: 10 }}>
         <Col span={12}>
