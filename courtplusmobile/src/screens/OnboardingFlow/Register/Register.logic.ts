@@ -34,6 +34,7 @@ export const useRegister = () => {
       if (response?.OK && response?.available) {
         await sendCodeMutation({
           phoneNumber: `${selectedCountryCode}${data.phoneNumber}`,
+          purpose: "signup",
         });
         navigate("OTPVerification", {
           phoneNumber: `${selectedCountryCode}${data.phoneNumber}`,

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsPhoneNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsIn, IsOptional, IsPhoneNumber } from 'class-validator';
 import { INVALID_PHONE_NUMBER } from 'src/modules/shared/error-codes';
 export class SendPhoneCodeDto {
   @ApiProperty({
@@ -8,4 +8,13 @@ export class SendPhoneCodeDto {
   })
   @IsPhoneNumber(undefined, { message: INVALID_PHONE_NUMBER })
   phoneNumber: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Purpose of the verification code. "login" requires an existing account, "signup" requires the phone number to be available.',
+    enum: ['login', 'signup'],
+  })
+  @IsOptional()
+  @IsIn(['login', 'signup'])
+  purpose?: 'login' | 'signup';
 }

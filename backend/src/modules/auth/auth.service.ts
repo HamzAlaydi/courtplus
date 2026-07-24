@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
   Inject,
   forwardRef,
 } from '@nestjs/common';
@@ -42,6 +43,7 @@ import {
   ACCOUNT_NOT_RECOVERABLE,
   ACCOUNT_DELETED,
   INVALID_TOKEN,
+  USER_NOT_FOUND,
 } from 'src/modules/shared/error-codes';
 import { VerificationService } from './verification.service';
 import { sanitizeStaff } from '../staff/util';
@@ -494,7 +496,16 @@ export class AuthService {
     } satisfies UserPayload);
   }
 
-  async sendPhoneCode({ phoneNumber }: SendPhoneCodeDto, ip: string) {
+  async sendPhoneCode({ phoneNumber, purpose }: SendPhoneCodeDto, ip: string) {
+    if (purpose) {
+      const user = await this.usersService.get({ phoneNumber });
+      if (purpose === 'login' && !user) {
+        throw new NotFoundException(USER_NOT_FOUND);
+      }
+      if (purpose === 'signup' && user?.verifiedAt) {
+        throw new BadRequestException(PHONE_NUMBER_ALREADY_EXISTS);
+      }
+    }
     await this.verificationService.sendPhoneCode(phoneNumber, ip);
   }
 

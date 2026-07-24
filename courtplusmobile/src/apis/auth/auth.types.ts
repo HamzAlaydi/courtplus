@@ -16,6 +16,7 @@ export interface LoginResponse extends ApiResponse {
 
 export interface SendCodeRequest {
   phoneNumber: string;
+  purpose?: "login" | "signup";
 }
 
 export interface SocialLoginRequest {

@@ -29,7 +29,7 @@ export const useOTPVerification = () => {
   const onSendCode = async () => {
     try {
       toggleLoading(true);
-      await sendCodeMutation({ phoneNumber });
+      await sendCodeMutation({ phoneNumber, purpose: isLogin ? "login" : "signup" });
     } catch (error) {
       showSnackbar({ message: (error as Error).message });
     } finally {
@@ -54,7 +54,7 @@ export const useOTPVerification = () => {
           gender: mapGenderTitle(signUpData?.gender ?? "")?.value || "",
         });
       }
-      if (response?.OK) {
+      if (response?.accessToken) {
         setUserTokens({
           accessToken: response.accessToken,
           refreshToken: response.refreshToken,
@@ -84,7 +84,7 @@ export const useOTPVerification = () => {
   };
 
   const onLoginPress = () => {
-    dispatch(StackActions.replace("AuthenticatedStack"));
+    navigate("Login");
   };
 
   const onSignUpPress = () => {
@@ -93,7 +93,7 @@ export const useOTPVerification = () => {
 
   const footerText = isLogin ? t("auth.noAccount") : t("auth.haveAccount");
   const footerText2 = isLogin ? t("auth.signUp") : t("auth.signIn");
-  const onFooterPress = isLogin ? onLoginPress : onSignUpPress;
+  const onFooterPress = isLogin ? onSignUpPress : onLoginPress;
 
   return {
     footerText,

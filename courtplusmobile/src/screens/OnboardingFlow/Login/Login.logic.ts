@@ -25,6 +25,7 @@ export const useLogin = () => {
       toggleLoading(true);
       const response = await sendCodeMutation({
         phoneNumber: `${selectedCountryCode}${data.phoneNumber}`,
+        purpose: "login",
       });
       if (response) {
         navigate("OTPVerification", {

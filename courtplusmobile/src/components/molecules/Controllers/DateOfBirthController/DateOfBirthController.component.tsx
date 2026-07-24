@@ -35,6 +35,14 @@ const DateOfBirthController = ({
     setIsOpen(false);
   };
 
+  // Start the picker mid-range (not at the maximum date) so scrolling the
+  // month/day wheels doesn't clamp and snap back to the boundary.
+  const getInitialDate = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return date;
+  };
+
   return (
     <>
       <Controller
@@ -58,7 +66,7 @@ const DateOfBirthController = ({
           isOpen={isOpen}
           date={
             !field.value
-              ? new Date()
+              ? getInitialDate()
               : new Date(field.value.split("/").reverse().join("-"))
           }
           onConfirm={handleConfirm}
