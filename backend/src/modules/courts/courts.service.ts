@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -9,7 +10,7 @@ import {
 import { CreateCourtDto } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Court } from './entities/court.entity';
+import { Court, CourtStatus } from './entities/court.entity';
 import { FindOptionsSelect, In, IsNull, Repository } from 'typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { BranchesService } from '../branches/branches.service';
@@ -22,6 +23,8 @@ import {
   NOT_ALLOWED,
   COURT_NOT_FOUND,
   BRANCH_NOT_FOUND,
+  SUBSCRIPTION_REQUIRED,
+  INVALID_COURT_STATUS_TRANSITION,
 } from '../shared/error-codes';
 import { LocationsService } from 'src/modules/branches/locations.service';
 import { UserLocation } from 'src/decorators/location.decorator';
@@ -35,6 +38,7 @@ import { CourtEvent } from './courts.events';
 import { CourtEventPayload } from './courts.events';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { Schedule } from '../schedules/entities/schedule.entity';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 @Injectable()
 export class CourtsService {
   private readonly logger = new Logger(CourtsService.name);
@@ -51,6 +55,8 @@ export class CourtsService {
     private readonly bookmarksService: BookmarksService,
     @Inject(forwardRef(() => SlotsService))
     private readonly slotsService: SlotsService,
+    @Inject(forwardRef(() => SubscriptionsService))
+    private readonly subscriptionsService: SubscriptionsService,
   ) { }
 
   @Transactional()
@@ -78,6 +84,13 @@ export class CourtsService {
       throw new ForbiddenException(NOT_ALLOWED);
     }
 
+    const subscription = await this.subscriptionsService.getActiveSubscription(
+      currentUser.tenantId,
+    );
+    if (!subscription) {
+      throw new ForbiddenException(SUBSCRIPTION_REQUIRED);
+    }
+
     const location = coordinates
       ? await this.locationsService.addLocationWithCoordinates({
           coordinates,
@@ -90,6 +103,7 @@ export class CourtsService {
 
     const court = await this.courtRepository.save({
       ...data,
+      status: CourtStatus.PENDING_PAYMENT,
       branchId: branch.id,
       locationId: location?.id,
     });
@@ -230,11 +244,20 @@ export class CourtsService {
       queryBuilder.addSelect(['branch.id', 'branch.tenantId']);
     }
     queryBuilder.where('court.deletedAt IS NULL');
+    queryBuilder.leftJoin('branch.tenant', 'tenant');
 
     if (user.type === UserType.Staff) {
       queryBuilder.andWhere('branch.tenantId = :tenantId', {
         tenantId: user.tenantId,
       });
+    } else {
+      // Customer-facing visibility: only available courts from
+      // non-suspended branches and non-blocked tenants are returned.
+      queryBuilder.andWhere('court.status = :visibleStatus', {
+        visibleStatus: CourtStatus.AVAILABLE,
+      });
+      queryBuilder.andWhere('branch.suspendedAt IS NULL');
+      queryBuilder.andWhere('tenant.blockedAt IS NULL');
     }
 
     if (search) {
@@ -469,8 +492,6 @@ export class CourtsService {
       .createQueryBuilder('court')
       .where('court.id = :id', { id })
       .andWhere('court.deletedAt IS NULL');
-
-    if (relations.branch) {
       queryBuilder
         .leftJoinAndSelect('court.branch', 'branch')
         .leftJoinAndSelect('branch.location', 'branchLocation')

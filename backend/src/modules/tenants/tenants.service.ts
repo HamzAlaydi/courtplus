@@ -120,7 +120,9 @@ export class TenantsService {
       throw new NotFoundException(TENANT_NOT_FOUND);
     }
 
-    tenant.logoURL = tenant.logoAsset?.url;
+    tenant.logoURL = tenant.logoAsset
+      ? this.assetsService.getUrl(tenant.logoAsset.id)
+      : undefined;
 
     return tenant;
   }

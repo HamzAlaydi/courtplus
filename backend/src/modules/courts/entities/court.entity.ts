@@ -23,6 +23,10 @@ export enum CourtSurface {
 export enum CourtStatus {
   AVAILABLE = 'available',
   UNAVAILABLE = 'unavailable',
+  PENDING_PAYMENT = 'pending_payment',
+  PENDING_APPROVAL = 'pending_approval',
+  CHANGES_REQUESTED = 'changes_requested',
+  SUSPENDED = 'suspended',
 }
 
 @Entity('courts')
@@ -258,6 +262,40 @@ export class Court extends BaseEntity {
   })
   @Column({ default: 0 })
   postsCount: number;
+
+  @ApiProperty({
+    description: 'The reason provided by ops when changes were requested or the court was suspended',
+    example: 'Court images are outdated',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  rejectionReason?: string;
+
+  @ApiProperty({
+    description: 'The date when the court was submitted for ops approval',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'timestamp', nullable: true })
+  submittedAt?: Date;
+
+  @ApiProperty({
+    description: 'The date when the court was reviewed by ops',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'timestamp', nullable: true })
+  reviewedAt?: Date;
+
+  @ApiProperty({
+    description: 'The ID of the ops staff member who reviewed the court',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    nullable: true,
+    required: false,
+  })
+  @Column('uuid', { nullable: true })
+  reviewedByStaffId?: string;
 
   @ApiProperty({
     description: 'The date when the court was deleted (for soft delete)',

@@ -213,6 +213,15 @@ export class Tenant extends BaseEntity {
   @Column({ nullable: true })
   blockedAt?: Date;
 
+  @ApiProperty({
+    description: 'The reason provided by ops when the tenant was blocked/suspended',
+    example: 'Repeated policy violations',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  blockedReason?: string;
+
 
   @ApiProperty({
     description: 'The date when the tenant was deleted',

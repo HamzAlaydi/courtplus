@@ -12,6 +12,13 @@ export enum LogEntity {
   USER = 'user',
   BOOKING = 'booking',
   REVIEW = 'review',
+  COURT = 'court',
+  BRANCH = 'branch',
+  TENANT = 'tenant',
+  STAFF = 'staff',
+  SUBSCRIPTION = 'subscription',
+  OPS_ADMIN = 'ops_admin',
+  UNSUSPEND_REQUEST = 'unsuspend_request',
 }
 
 @Entity('logs')
@@ -33,4 +40,16 @@ export class Log extends BaseEntity {
 
   @Column({ type: 'enum', enumName: 'LogEntity', enum: LogEntity })
   entity: LogEntity;
+
+  @Column('uuid', { nullable: true })
+  actorStaffId?: string;
+
+  @Column({ nullable: true })
+  actorEmail?: string;
+
+  @Column({ nullable: true })
+  ip?: string;
+
+  @Column({ nullable: true })
+  userAgent?: string;
 }

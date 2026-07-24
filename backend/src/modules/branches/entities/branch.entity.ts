@@ -210,6 +210,23 @@ export class Branch extends BaseEntity {
   monthStats?: MonthStats;
 
   @ApiProperty({
+    description: 'The reason provided by ops when the branch was suspended',
+    example: 'Multiple customer complaints',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  suspendedReason?: string;
+
+  @ApiProperty({
+    description: 'The date when the branch was suspended by ops',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'timestamp', nullable: true })
+  suspendedAt?: Date;
+
+  @ApiProperty({
     description: 'The date when the branch was deleted (for soft delete)',
     nullable: true,
   })

@@ -35,6 +35,19 @@ export enum NotificationType {
   MOMENT_POSTED = 'moment_posted',
   POST_LIKE = 'post_like',
   REPORT_CREATED = 'report_created',
+  COURT_PENDING_PAYMENT = 'court_pending_payment',
+  COURT_PENDING_APPROVAL = 'court_pending_approval',
+  COURT_APPROVED = 'court_approved',
+  COURT_CHANGES_REQUESTED = 'court_changes_requested',
+  COURT_RESUBMITTED = 'court_resubmitted',
+  COURT_SUSPENDED = 'court_suspended',
+  COURT_UNSUSPENDED = 'court_unsuspended',
+  BRANCH_SUSPENDED = 'branch_suspended',
+  BRANCH_UNSUSPENDED = 'branch_unsuspended',
+  TENANT_SUSPENDED = 'tenant_suspended',
+  TENANT_UNSUSPENDED = 'tenant_unsuspended',
+  TENANT_UNSUSPEND_REQUESTED = 'tenant_unsuspend_requested',
+  SUBSCRIPTION_PAYMENT_FAILED = 'subscription_payment_failed',
 
 }
 
@@ -89,6 +102,13 @@ export interface NotificationData {
   bookingId?: string;
   reviewId?: string;
   postId?: string;
+  kind?: string;
+  reason?: string;
+  courtName?: string;
+  branchName?: string;
+  tenantId?: string;
+  tenantName?: string;
+  message?: string;
 }
 
 @Entity('notifications')
