@@ -57,6 +57,7 @@ export default function CourtForm() {
   const [video, setVideo] = useState(null); // Store uploaded video URL
   const [videoId, setVideoId] = useState(null); // Store uploaded video ID
   const [placeId, setPlaceId] = useState();
+  const [place, setPlace] = useState(); // full selection: { name, address, lat, lng }
   const [courtStatus, setCourtStatus] = useState(true); // Default value
 
   // 🔹 Fetch branches with applied filters
@@ -158,6 +159,12 @@ export default function CourtForm() {
         availabilities: formattedAvailabilities,
       },
       placeId,
+      placeName: place?.name,
+      address: place?.address,
+      coordinates:
+        place?.lat != null && place?.lng != null
+          ? { lat: place.lat, lng: place.lng }
+          : undefined,
       status: courtStatus ? "available" : "unavailable",
     };
 
@@ -372,8 +379,9 @@ export default function CourtForm() {
               <GooglePlacesInput
                 initialName={court?.location?.name}
                 initialPlaceId={court?.location?.placeId}
-                onPlaceSelect={(place) => {
-                  setPlaceId(place.placeId);
+                onPlaceSelect={(selectedPlace) => {
+                  setPlaceId(selectedPlace.placeId);
+                  setPlace(selectedPlace);
                 }}
               />
             </Form.Item>

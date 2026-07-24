@@ -59,6 +59,9 @@ export class CourtsService {
       images,
       videoAssetId,
       placeId,
+      placeName,
+      address,
+      coordinates,
       schedule: scheduleData,
       ...data
     }: CreateCourtDto,
@@ -75,9 +78,15 @@ export class CourtsService {
       throw new ForbiddenException(NOT_ALLOWED);
     }
 
-    const location = placeId
-      ? await this.locationsService.addLocation(placeId)
-      : null;
+    const location = coordinates
+      ? await this.locationsService.addLocationWithCoordinates({
+          coordinates,
+          name: placeName || address || data.name,
+          address: address || placeName || '',
+        })
+      : placeId
+        ? await this.locationsService.addLocation(placeId)
+        : null;
 
     const court = await this.courtRepository.save({
       ...data,

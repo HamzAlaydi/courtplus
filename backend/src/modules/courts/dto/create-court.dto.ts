@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { CourtStatus, CourtSurface } from '../entities/court.entity';
 import { CreateUpdateScheduleDto } from 'src/modules/schedules/dto/create-update-schedule.dto';
+import { CoordinatesDto } from 'src/modules/branches/dto/create-branch.dto';
 import { Type } from 'class-transformer';
 import { Sport } from 'src/modules/users/entities/enums';
 export class CreateCourtDto {
@@ -58,12 +59,40 @@ export class CreateCourtDto {
   videoAssetId?: string;
 
   @ApiProperty({
-    description: 'The ID of the place this court belongs to',
+    description:
+      'The ID of the place this court belongs to (free-text place search). Optional when address + coordinates are provided.',
     example: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  placeId: string;
+  @IsOptional()
+  placeId?: string;
+
+  @ApiProperty({
+    description: 'Display name of the place (used with coordinates)',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  placeName?: string;
+
+  @ApiProperty({
+    description: 'Formatted address of the place (used with coordinates)',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @ApiProperty({
+    description: 'Lat/lng of the place (used with address)',
+    required: false,
+  })
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CoordinatesDto)
+  @IsOptional()
+  coordinates?: CoordinatesDto;
 
   @ApiProperty({ description: 'The length of the court', example: 23.77 })
   @IsNumber()
