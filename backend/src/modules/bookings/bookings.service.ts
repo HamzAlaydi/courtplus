@@ -37,6 +37,7 @@ import {
   PaymentType,
 } from '../payments/entities/payment.entity';
 import { CourtsService } from '../courts/courts.service';
+import { CourtStatus } from '../courts/entities/court.entity';
 import { dayjs } from '../shared/dayjs';
 import {
   BOOKING_NOT_FOUND,
@@ -577,6 +578,17 @@ export class BookingsService {
     }
     if (user.type === UserType.Staff) {
       qb.andWhere('branch.tenantId = :tenantId', { tenantId: user.tenantId });
+    }
+
+    if (user.type === UserType.Customer && isLookingForOpenBookings) {
+      // Customer-facing visibility: hide open bookings on non-available
+      // courts, suspended branches and blocked tenants.
+      qb.leftJoin('branch.tenant', 'tenant');
+      qb.andWhere('court.status = :visibleCourtStatus', {
+        visibleCourtStatus: CourtStatus.AVAILABLE,
+      });
+      qb.andWhere('branch.suspendedAt IS NULL');
+      qb.andWhere('tenant.blockedAt IS NULL');
     }
     if (id) {
       qb.andWhere('booking.id = :id', { id });

@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Post, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import type { SessionUser } from 'src/modules/auth/@types/session';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
@@ -10,8 +10,10 @@ import {
 } from '@nestjs/swagger';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { UpdateTenantPreferencesDto } from './dto/update-tenant-preferences.dto';
+import { RequestUnsuspendDto } from './dto/request-unsuspend.dto';
 import { Tenant } from './entities/tenant.entity';
 import { TenantPreferences } from './entities/tenant-preferences.entity';
+import { UnsuspendRequest } from './entities/unsuspend-request.entity';
 import { UserTypeGuard } from 'src/modules/auth/guards/user-type.guard';
 import { AuthorizedUserType } from 'src/decorators/user-type.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -74,5 +76,28 @@ export class TenantsController {
     @Body() dto: UpdateTenantPreferencesDto,
   ): Promise<TenantPreferences> {
     return this.tenantsService.updatePreferences(user, dto);
+  }
+
+  @Post('request-unsuspend')
+  @ApiOperation({
+    summary: 'Request tenant unsuspension',
+    description:
+      'Submits a request to ops to unsuspend the tenant. Only allowed while the tenant is suspended.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'The unsuspend request has been created.',
+    type: UnsuspendRequest,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'The tenant is not suspended, or a pending unsuspend request already exists.',
+  })
+  requestUnsuspend(
+    @CurrentUser() user: SessionUser,
+    @Body() dto: RequestUnsuspendDto,
+  ): Promise<UnsuspendRequest> {
+    return this.tenantsService.requestUnsuspend(user.tenantId, dto.message);
   }
 }

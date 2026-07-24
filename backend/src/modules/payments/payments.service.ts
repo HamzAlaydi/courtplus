@@ -468,4 +468,24 @@ export class PaymentsService {
   async constructWebhookEvent(req: any, webhookSecret?: string) {
     return this.stripeService.constructStripeEvent(req, webhookSecret);
   }
+
+  async updateSubscriptionItems(
+    subscriptionId: string,
+    items: Stripe.SubscriptionUpdateParams.Item[],
+    prorationBehavior: Stripe.SubscriptionUpdateParams.ProrationBehavior,
+  ) {
+    return this.stripeService.updateSubscriptionItems(
+      subscriptionId,
+      items,
+      prorationBehavior,
+    );
+  }
+
+  async retrieveSubscription(subscriptionId: string) {
+    return this.stripeService.retrieveSubscription(subscriptionId);
+  }
+
+  async listInvoices(customerId: string, limit = 24) {
+    return this.stripeService.listInvoices(customerId, limit);
+  }
 }

@@ -43,6 +43,7 @@ import {
   BRANCH_NOT_FOUND,
   CANNOT_ASSIGN_OWNER_TO_BRANCH,
   CANNOT_ASSIGN_SELF,
+  CANNOT_MODIFY_LAST_SUPER_ADMIN,
   ROLE_REQUIRED,
   OWNER_CANNOT_DELETE_ACCOUNT,
 } from '../shared/error-codes';
@@ -372,14 +373,116 @@ export class StaffService {
     };
   }
 
+  async getSuperAdmins() {
+    return this.staffRepository.find({
+      where: { role: StaffRole.SUPER_ADMIN, deletedAt: IsNull() },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+  }
+
+  async listSuperAdmins({
+    page = 1,
+    pageSize = 10,
+  }: { page?: number; pageSize?: number } = {}) {
+    const [admins, total] = await this.staffRepository.findAndCount({
+      where: { role: StaffRole.SUPER_ADMIN, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      items: admins.map(sanitizeStaff),
+      pagination: {
+        totalCount: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  async createSuperAdmin({
+    firstName,
+    lastName,
+    email,
+    password,
+  }: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) {
+    const existingStaff = await this.getByEmail(email);
+    if (existingStaff) {
+      throw new BadRequestException(STAFF_EMAIL_ALREADY_EXISTS);
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const staffer = await this.staffRepository.save({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      role: StaffRole.SUPER_ADMIN,
+      tenantId: null,
+      verifiedAt: new Date(),
+      lastPasswordChangeAt: new Date(),
+    });
+
+    return sanitizeStaff(staffer);
+  }
+
+  private async assertNotLastSuperAdmin(staff: Staffer) {
+    if (staff.role !== StaffRole.SUPER_ADMIN) {
+      return;
+    }
+    const superAdminCount = await this.staffRepository.count({
+      where: { role: StaffRole.SUPER_ADMIN, deletedAt: IsNull() },
+    });
+    if (superAdminCount <= 1) {
+      throw new BadRequestException(CANNOT_MODIFY_LAST_SUPER_ADMIN);
+    }
+  }
+
+  async deactivateSuperAdmin(id: string) {
+    const staff = await this.getById(id);
+    if (!staff || staff.role !== StaffRole.SUPER_ADMIN) {
+      throw new NotFoundException(STAFF_NOT_FOUND);
+    }
+
+    await this.assertNotLastSuperAdmin(staff);
+
+    await this.staffRepository.update(id, { deletedAt: new Date() });
+  }
+
+  async updateSuperAdminRole(id: string, role: StaffRole) {
+    const staff = await this.getById(id);
+    if (!staff) {
+      throw new NotFoundException(STAFF_NOT_FOUND);
+    }
+
+    if (staff.role === StaffRole.SUPER_ADMIN && role !== StaffRole.SUPER_ADMIN) {
+      await this.assertNotLastSuperAdmin(staff);
+    }
+
+    await this.staffRepository.update(id, { role });
+
+    return sanitizeStaff({ ...staff, role });
+  }
+
   async getStaff({
     tenantId,
     branchId,
   }: {
     tenantId?: string;
     branchId?: string;
-  }) {
-    let staff: Staffer[] = [];
+  }) {    let staff: Staffer[] = [];
 
     if (!tenantId && !branchId) {
       throw new Error("Tenant or branch is required");

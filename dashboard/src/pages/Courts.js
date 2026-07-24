@@ -1,20 +1,61 @@
-import { Button, Spin } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Empty, Input, Pagination, Select, Spin } from "antd";
 import { Link } from "react-router-dom";
 import CourtCard from "../components/CourtCard";
 import { getCourts } from "../actions/court_actions";
+import { getBranches } from "../actions/branch_action";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 // 🖼️ Default fallback image
 const FALLBACK_IMAGE = "/assets/images/placeholder.png";
+const PAGE_SIZE = 12;
 
 export default function Courts() {
   const { t } = useTranslation();
 
-  // 🔹 Fetch courts
+  // 🔹 Filters & pagination state
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [branchId, setBranchId] = useState();
+  const [sport, setSport] = useState();
+  const [status, setStatus] = useState();
+  const [page, setPage] = useState(1);
+
+  // 🔹 Debounce the search box (400ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const handleFilterChange = (setter) => (value) => {
+    setter(value);
+    setPage(1);
+  };
+
+  // 🔹 Fetch courts with applied filters
+  const params = {
+    page,
+    pageSize: PAGE_SIZE,
+    ...(search && { search }),
+    ...(branchId && { branchId }),
+    ...(sport && { sport }),
+    ...(status && { status }),
+  };
+
   const { isLoading, data } = useQuery({
-    queryKey: ["all-courts"],
-    queryFn: getCourts,
+    queryKey: ["all-courts", params],
+    queryFn: () => getCourts(params),
+    placeholderData: (previousData) => previousData,
+  });
+
+  // 🔹 Fetch branches for the branch filter
+  const { data: branchData } = useQuery({
+    queryKey: ["branches"],
+    queryFn: () => getBranches(),
   });
 
   // 🔹 Return a valid image URL or fallback
@@ -32,6 +73,21 @@ export default function Courts() {
     return FALLBACK_IMAGE;
   };
 
+  // 🔹 Group courts by branch
+  const courts = data?.items || [];
+  const groupedByBranch = courts.reduce((groups, court) => {
+    const key = court.branch?.id || "unknown";
+    if (!groups[key]) {
+      groups[key] = {
+        name: court.branch?.name || t("courts.unknown_branch"),
+        courts: [],
+      };
+    }
+    groups[key].courts.push(court);
+    return groups;
+  }, {});
+  const branchGroups = Object.values(groupedByBranch);
+
   return (
     <Spin spinning={isLoading}>
       <div className="content">
@@ -42,19 +98,79 @@ export default function Courts() {
           </Link>
         </div>
 
-        {data?.items?.length ? (
-          data.items.map((court) => (
-            <CourtCard
-              key={court.id}
-              id={court.id}
-              name={court.name}
-              status={court.status}
-              image={getImage(court.assets)}
-              court={court}
-            />
+        {/* 🔹 Filters */}
+        <div className="courts-filters">
+          <Input.Search
+            allowClear
+            placeholder={t("courts.search_placeholder")}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="courts-filter-search"
+          />
+          <Select
+            allowClear
+            placeholder={t("courts.all_branches")}
+            value={branchId}
+            onChange={handleFilterChange(setBranchId)}
+            options={branchData?.items?.map((branch) => ({
+              value: branch.id,
+              label: branch.name,
+            }))}
+          />
+          <Select
+            allowClear
+            placeholder={t("courts.all_sports")}
+            value={sport}
+            onChange={handleFilterChange(setSport)}
+            options={["tennis", "football", "paddle", "volleyball"].map(
+              (value) => ({ value, label: t(`courtForm.${value}`) })
+            )}
+          />
+          <Select
+            allowClear
+            placeholder={t("courts.all_statuses")}
+            value={status}
+            onChange={handleFilterChange(setStatus)}
+            options={["available", "unavailable"].map((value) => ({
+              value,
+              label: t(`courtCard.status.${value}`),
+            }))}
+          />
+        </div>
+
+        {/* 🔹 Courts grouped by branch */}
+        {courts.length ? (
+          branchGroups.map((group) => (
+            <section key={group.name} className="courts-branch-group">
+              <h5 className="courts-branch-title">{group.name}</h5>
+              {group.courts.map((court) => (
+                <CourtCard
+                  key={court.id}
+                  id={court.id}
+                  name={court.name}
+                  status={court.status}
+                  image={getImage(court.assets)}
+                  court={court}
+                />
+              ))}
+            </section>
           ))
         ) : (
-          <p className="no-data">{t("courts.no_courts")}</p>
+          <Empty description={t("courts.no_courts")} />
+        )}
+
+        {/* 🔹 Pagination */}
+        {data?.pagination?.totalCount > 0 && (
+          <div className="courts-pagination">
+            <Pagination
+              current={data.pagination.currentPage}
+              pageSize={PAGE_SIZE}
+              total={data.pagination.totalCount}
+              onChange={setPage}
+              showSizeChanger={false}
+              showTotal={(total) => t("courts.total_courts", { total })}
+            />
+          </div>
         )}
       </div>
     </Spin>

@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Inject,
   Injectable,
   Logger,
@@ -11,29 +10,33 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import type { Stripe } from 'stripe';
 
 import { Subscription } from './entities/subscription.entity';
 import { SubscriptionStatus } from './entities/enums';
 import {
-
   BranchAvailabilityResponseDto,
+  CourtAvailabilityResponseDto,
   CheckoutSessionResponseDto,
+  BillingOverviewResponseDto,
+  BillingInvoiceDto,
+  PendingChargesResponseDto,
 } from './dto';
 import { PaymentsService } from '../payments/payments.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { BranchesService } from '../branches/branches.service';
 import {
   SubscriptionEvents,
-
-  SubscriptionQuantityChangedPayload,
   SubscriptionCancelledPayload,
 } from './subscriptions.events';
 import * as ErrorCodes from '../shared/error-codes';
 import { BranchEvent, BranchEventPayload } from '../branches/branch.events';
-
+import { CourtEvent, CourtEventPayload } from '../courts/courts.events';
+import { CourtsService } from '../courts/courts.service';
+import { Court } from '../courts/entities/court.entity';
+import { PricingService, PRICING } from './pricing.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class SubscriptionsService {
@@ -47,6 +50,11 @@ export class SubscriptionsService {
     private readonly tenantsService: TenantsService,
     @Inject(forwardRef(() => BranchesService))
     private readonly branchesService: BranchesService,
+    @Inject(forwardRef(() => CourtsService))
+    private readonly courtsService: CourtsService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
+    private readonly pricingService: PricingService,
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
   ) { }
@@ -79,52 +87,18 @@ export class SubscriptionsService {
     });
   }
 
-  async updateQuantity(
-    tenantId: string,
-    {
-      newBranchCount,
-      prorationBehavior,
-    }: { newBranchCount: number; prorationBehavior?: Stripe.SubscriptionUpdateParams.ProrationBehavior },
-  ): Promise<Subscription> {
+  /**
+   * Recomputes billable units from actual branch/court counts and syncs
+   * the Stripe subscription items via the pricing engine.
+   */
+  async syncQuantities(tenantId: string): Promise<Subscription> {
     const subscription = await this.getActiveSubscription(tenantId);
 
     if (!subscription) {
       throw new NotFoundException(ErrorCodes.SUBSCRIPTION_NOT_FOUND);
     }
 
-    const previousQuantity = subscription.quantity;
-
-    if (newBranchCount < subscription.quantity) {
-      const currentBranchCount =
-        await this.branchesService.countByTenant(tenantId);
-      if (newBranchCount < currentBranchCount) {
-        throw new BadRequestException(
-          `Cannot reduce to ${newBranchCount} branches. You have ${currentBranchCount} active branches.`,
-        );
-      }
-    }
-
-    const stripeSubscription = await this.paymentsService.updateSubscription(
-      subscription.providerSubscriptionId,
-      {
-        quantity: newBranchCount,
-        prorationBehavior: prorationBehavior || 'create_prorations',
-      },
-    );
-
-    subscription.quantity = newBranchCount;
-    subscription.currentPeriodEnd = new Date(
-      (stripeSubscription as any).current_period_end * 1000,
-    );
-    await this.subscriptionRepository.save(subscription);
-
-
-    this.eventEmitter.emit(SubscriptionEvents.QUANTITY_CHANGED, {
-      subscription,
-      previousQuantity,
-      newQuantity: newBranchCount,
-      isUpgrade: newBranchCount > previousQuantity,
-    } as SubscriptionQuantityChangedPayload);
+    await this.pricingService.syncTenantSubscription(subscription);
 
     return subscription;
   }
@@ -187,16 +161,9 @@ export class SubscriptionsService {
     const existingSubscription = await this.getActiveSubscription(tenantId);
 
     if (existingSubscription) {
-      if (branchCount <= existingSubscription.quantity) {
-        throw new BadRequestException(
-          'Cannot downgrade subscription through checkout. Use billing portal or contact support.',
-        );
-      }
-
-      await this.updateQuantity(tenantId, {
-        newBranchCount: branchCount,
-        prorationBehavior: 'create_prorations',
-      });
+      // Pricing is derived from actual branch/court counts; an active
+      // subscription never needs checkout, just a quantity re-sync.
+      await this.syncQuantities(tenantId);
 
       const baseUrl =
         this.configService.get('app.frontendUrl') || 'http://localhost:3000';
@@ -219,7 +186,7 @@ export class SubscriptionsService {
     const session = await this.paymentsService.createCheckoutSession({
       customerId: providerCustomerId,
       priceId,
-      quantity: branchCount,
+      quantity: 1,
       successUrl: successUrl || defaultSuccessUrl,
       cancelUrl: cancelUrl || defaultCancelUrl,
       metadata: { tenantId },
@@ -230,106 +197,23 @@ export class SubscriptionsService {
     };
   }
 
-  async incrementBranchCount(tenantId: string): Promise<Subscription> {
-    let subscription = await this.getActiveSubscription(tenantId);
-
-
-
-    const newQuantity = subscription.quantity + 1;
-
-    const stripeSubscription = await this.paymentsService.updateSubscription(
-      subscription.providerSubscriptionId,
-      {
-        quantity: newQuantity,
-        prorationBehavior: 'create_prorations',
-      },
-    );
-
-    const previousQuantity = subscription.quantity;
-    subscription.quantity = newQuantity;
-    subscription.currentPeriodEnd = new Date(
-      (stripeSubscription as any).current_period_end * 1000,
-    );
-    await this.subscriptionRepository.save(subscription);
-
-
-    this.eventEmitter.emit(SubscriptionEvents.QUANTITY_CHANGED, {
-      subscription,
-      previousQuantity,
-      newQuantity,
-      isUpgrade: true,
-    } as SubscriptionQuantityChangedPayload);
-
-    return subscription;
-  }
-
-  async decrementBranchCount(tenantId: string): Promise<Subscription | null> {
-    const subscription = await this.getActiveSubscription(tenantId);
-
-    if (!subscription || subscription.quantity <= 1) {
-      return subscription;
-    }
-
-    const newQuantity = subscription.quantity - 1;
-
-    const stripeSubscription = await this.paymentsService.updateSubscription(
-      subscription.providerSubscriptionId,
-      {
-        quantity: newQuantity,
-        prorationBehavior: 'none',
-      },
-    );
-
-    const previousQuantity = subscription.quantity;
-    subscription.quantity = newQuantity;
-    subscription.currentPeriodEnd = new Date(
-      (stripeSubscription as any).current_period_end * 1000,
-    );
-    await this.subscriptionRepository.save(subscription);
-
-
-    this.eventEmitter.emit(SubscriptionEvents.QUANTITY_CHANGED, {
-      subscription,
-      previousQuantity,
-      newQuantity,
-      isUpgrade: false,
-    } as SubscriptionQuantityChangedPayload);
-
-    return subscription;
-  }
-
-
-
   async getBranchAvailability(
     tenantId: string,
   ): Promise<BranchAvailabilityResponseDto> {
     const subscription = await this.getCurrentSubscription(tenantId);
     const currentCount = await this.branchesService.countByTenant(tenantId);
 
-    if (!subscription) {
-      return {
-        canCreate: false,
-        currentCount,
-        limit: 0,
-      };
-    }
-
-    if (subscription.status !== SubscriptionStatus.ACTIVE) {
-      return {
-        canCreate: false,
-        currentCount,
-        limit: subscription.quantity,
-        subscriptionStatus: subscription.status,
-      };
-    }
-
-    const canCreate = currentCount < subscription.quantity;
+    // Branches are billed per unit: any active subscription can add branches.
+    const isActive = !!subscription && [
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.PAST_DUE,
+    ].includes(subscription.status);
 
     return {
-      canCreate,
+      canCreate: isActive,
       currentCount,
-      limit: subscription.quantity,
-      subscriptionStatus: subscription.status,
+      limit: null,
+      subscriptionStatus: subscription?.status,
     };
   }
 
@@ -337,6 +221,90 @@ export class SubscriptionsService {
     tenantId: string,
   ): Promise<BranchAvailabilityResponseDto> {
     return this.getBranchAvailability(tenantId);
+  }
+
+  async getCourtAvailability(
+    tenantId: string,
+  ): Promise<CourtAvailabilityResponseDto> {
+    const subscription = await this.getCurrentSubscription(tenantId);
+    const currentCount = await this.courtsService.countByTenant(tenantId);
+
+    const isActive = !!subscription && [
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.PAST_DUE,
+    ].includes(subscription.status);
+
+    return {
+      canCreate: isActive,
+      currentCount,
+      limit: null,
+      subscriptionStatus: subscription?.status,
+    };
+  }
+
+  async getBillingOverview(tenantId: string): Promise<BillingOverviewResponseDto> {
+    const subscription = await this.getCurrentSubscription(tenantId);
+    const breakdown = await this.pricingService.computeTenantBreakdown(tenantId);
+
+    return {
+      subscription: subscription
+        ? {
+          id: subscription.id,
+          status: subscription.status,
+          currentPeriodStart: subscription.currentPeriodStart,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          cancelledAt: subscription.cancelledAt,
+        }
+        : null,
+      breakdown,
+      pricing: {
+        baseAmountCents: PRICING.BASE_AMOUNT_CENTS,
+        addonAmountCents: PRICING.ADDON_AMOUNT_CENTS,
+        currency: PRICING.CURRENCY,
+      },
+      nextInvoiceAmountCents: subscription
+        ? breakdown.monthlyAmountCents
+        : null,
+    };
+  }
+
+  async getBillingInvoices(tenantId: string): Promise<BillingInvoiceDto[]> {
+    const tenant = await this.tenantsService.getTenant(tenantId);
+
+    if (!tenant.providerCustomerId) {
+      return [];
+    }
+
+    const invoices = await this.paymentsService.listInvoices(
+      tenant.providerCustomerId,
+    );
+
+    return invoices.map((invoice: any) => ({
+      id: invoice.id,
+      number: invoice.number,
+      status: invoice.status,
+      amountDueCents: invoice.amount_due,
+      amountPaidCents: invoice.amount_paid,
+      currency: invoice.currency,
+      createdAt: new Date(invoice.created * 1000),
+      hostedInvoiceUrl: invoice.hosted_invoice_url,
+      pdfUrl: invoice.invoice_pdf,
+    }));
+  }
+
+  async getPendingCharges(tenantId: string): Promise<PendingChargesResponseDto> {
+    const pendingCourts =
+      await this.courtsService.findPendingPaymentByTenant(tenantId);
+
+    return {
+      count: pendingCourts.length,
+      courts: pendingCourts.map((court) => ({
+        id: court.id,
+        name: court.name,
+        status: court.status,
+        branchId: court.branchId,
+      })),
+    };
   }
 
   async handleSubscriptionCreated(event: Stripe.Event): Promise<void> {
@@ -370,7 +338,7 @@ export class SubscriptionsService {
     const newStatus = this.mapStripeStatus(stripeSubscription.status);
 
     subscription.status = newStatus;
-    subscription.quantity = stripeSubscription.items.data[0].quantity;
+    subscription.quantity = this.getBaseItemQuantity(stripeSubscription);
     subscription.currentPeriodStart = new Date(
       stripeSubscription.current_period_start * 1000,
     );
@@ -415,6 +383,27 @@ export class SubscriptionsService {
     if (!subscription) {
       return;
     }
+
+    if (
+      ![
+        SubscriptionStatus.ACTIVE,
+        SubscriptionStatus.PAST_DUE,
+      ].includes(subscription.status)
+    ) {
+      // A paid invoice means the subscription is in good standing again.
+      subscription.status = SubscriptionStatus.ACTIVE;
+      await this.subscriptionRepository.save(subscription);
+    }
+
+    // Payment confirmed: move all of the tenant's courts that were
+    // waiting for payment into the ops approval queue.
+    const courts = await this.courtsService.markTenantCourtsPendingApproval(
+      subscription.tenantId,
+    );
+
+    for (const court of courts) {
+      await this.notifyOpsCourtPendingApproval(court);
+    }
   }
 
   async handleInvoicePaymentFailed(event: Stripe.Event): Promise<void> {
@@ -437,6 +426,19 @@ export class SubscriptionsService {
       subscription,
       invoice: stripeInvoice,
     });
+
+    await this.notificationsService.notifyStaff(
+      { tenantId: subscription.tenantId },
+      {
+        email: false,
+        type: NotificationType.SUBSCRIPTION_PAYMENT_FAILED,
+        data: {
+          kind: NotificationType.SUBSCRIPTION_PAYMENT_FAILED,
+          tenantId: subscription.tenantId,
+          invoiceId: stripeInvoice.id,
+        },
+      },
+    );
   }
 
 
@@ -462,6 +464,21 @@ export class SubscriptionsService {
         : setupIntent.payment_method?.id;
   }
 
+  private async notifyOpsCourtPendingApproval(court: Court): Promise<void> {
+    await this.notificationsService.notifyOps({
+      type: NotificationType.COURT_PENDING_APPROVAL,
+      data: {
+        kind: NotificationType.COURT_PENDING_APPROVAL,
+        courtId: court.id,
+        branchId: court.branchId,
+        courtName: court.name,
+        branchName: court.branch?.name,
+        tenantId: court.branch?.tenantId,
+      },
+      resourceId: court.id,
+    });
+  }
+
   private async ensureProviderCustomer(tenant: any): Promise<string> {
     if (tenant.providerCustomerId) {
       return tenant.providerCustomerId;
@@ -484,6 +501,14 @@ export class SubscriptionsService {
     return customer.id;
   }
 
+  private getBaseItemQuantity(stripeSubscription: any): number {
+    const basePriceId = this.configService.get('stripe.branchPriceId');
+    const items: any[] = stripeSubscription.items?.data ?? [];
+    const baseItem =
+      items.find((item) => item.price?.id === basePriceId) ?? items[0];
+    return baseItem?.quantity ?? 1;
+  }
+
   private async syncSubscriptionFromStripe(
     stripeSubscription: any,
   ): Promise<Subscription> {
@@ -503,7 +528,7 @@ export class SubscriptionsService {
     }
 
     subscription.status = this.mapStripeStatus(stripeSubscription.status);
-    subscription.quantity = stripeSubscription.items.data[0].quantity;
+    subscription.quantity = this.getBaseItemQuantity(stripeSubscription);
     subscription.currentPeriodStart = new Date(
       stripeSubscription.current_period_start * 1000,
     );
@@ -524,13 +549,89 @@ export class SubscriptionsService {
     return statusMap[stripeStatus] || SubscriptionStatus.ACTIVE;
   }
 
+  @OnEvent(BranchEvent.BRANCH_CREATED)
+  async handleBranchCreated(event: BranchEventPayload): Promise<void> {
+    await this.syncAfterUnitChange(event.branch.tenantId);
+  }
+
   @OnEvent(BranchEvent.BRANCH_DELETED)
   async handleBranchDeleted(event: BranchEventPayload): Promise<void> {
-    const { branch } = event;
-    const subscription = await this.getActiveSubscription(branch.tenantId);
+    await this.syncAfterUnitChange(event.branch.tenantId);
+  }
+
+  @OnEvent(CourtEvent.COURT_DELETED)
+  async handleCourtDeleted(event: CourtEventPayload): Promise<void> {
+    const tenantId = event.court.branch?.tenantId;
+    if (tenantId) {
+      await this.syncAfterUnitChange(tenantId);
+    }
+  }
+
+  @OnEvent(CourtEvent.COURT_CREATED)
+  async handleCourtCreated({
+    court,
+    branch,
+  }: CourtEventPayload & { branch?: any }): Promise<void> {
+    const tenantId = branch?.tenantId ?? court.branch?.tenantId;
+    if (!tenantId) {
+      return;
+    }
+
+    const subscription = await this.getActiveSubscription(tenantId);
     if (!subscription) {
       return;
     }
-    await this.decrementBranchCount(branch.tenantId);
+
+    const { direction } =
+      await this.pricingService.syncTenantSubscription(subscription);
+
+    if (direction === 'increased') {
+      // New billable unit: the prorated charge is invoiced immediately and
+      // the court stays pending_payment until invoice.paid confirms it.
+      await this.notificationsService.notifyStaff(
+        { tenantId },
+        {
+          email: true,
+          type: NotificationType.COURT_PENDING_PAYMENT,
+          data: {
+            kind: NotificationType.COURT_PENDING_PAYMENT,
+            courtId: court.id,
+            branchId: court.branchId,
+            courtName: court.name,
+            branchName: branch?.name,
+          },
+          emailData: {
+            courtName: court.name,
+            branchName: branch?.name,
+          },
+          resourceId: court.id,
+        },
+      );
+      return;
+    }
+
+    // Court fits within the included units: no charge required, send it
+    // straight to the ops approval queue.
+    const [updatedCourt] = await this.courtsService.markCourtsPendingApproval([
+      court.id,
+    ]);
+    if (updatedCourt) {
+      await this.notifyOpsCourtPendingApproval(updatedCourt);
+    }
+  }
+
+  private async syncAfterUnitChange(tenantId: string): Promise<void> {
+    try {
+      const subscription = await this.getActiveSubscription(tenantId);
+      if (!subscription) {
+        return;
+      }
+      await this.pricingService.syncTenantSubscription(subscription);
+    } catch (error) {
+      this.logger.error(
+        `Failed to sync subscription quantities for tenant ${tenantId}`,
+        error,
+      );
+    }
   }
 }

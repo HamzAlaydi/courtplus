@@ -247,6 +247,39 @@ export class CourtsController {
   ): Promise<void> {
     return this.courtsService.delete(id, user);
   }
+
+  @Post(':id/resubmit')
+  @ApiOperation({
+    summary: 'Resubmit a court for approval',
+    description:
+      'Resubmits a court that has changes requested back to pending approval. Only staff members of the owning tenant can perform this operation.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The court has been successfully resubmitted.',
+    type: Court,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'The court is not in changes_requested status.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Court not found with the specified ID.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The UUID of the court to resubmit',
+    type: String,
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @AuthorizedUserType.isStaff()
+  resubmit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: SessionUser,
+  ): Promise<Court> {
+    return this.courtsService.resubmit(id, user);
+  }
   @Get(':id/availability')
   @ApiExtraModels(SlotsResponse, GetCourtAvailableDaysResponseDto)
   @ApiOperation({

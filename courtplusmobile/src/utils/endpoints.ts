@@ -1,5 +1,9 @@
 import { Platform } from "react-native";
 
+// Flip to false when you want dev builds to hit the LOCAL backend instead
+// (Android then uses `adb reverse tcp:3000 tcp:3000` over USB).
+const USE_PROD_IN_DEV = true;
+
 // In dev builds, hit the local backend. Android uses `adb reverse tcp:3000`
 // (run once per device connection) so localhost works on both emulator and
 // physical devices; iOS simulator reaches the host directly.
@@ -9,7 +13,10 @@ const devBaseUrl = Platform.select({
 });
 
 export const endPoints = {
-  baseUrl: __DEV__ ? devBaseUrl : "https://api.courtplusapp.com/",
+  baseUrl:
+    __DEV__ && !USE_PROD_IN_DEV
+      ? devBaseUrl
+      : "https://api.courtplusapp.com/",
   login: "auth/customers/login/phone",
   sendCode: "auth/customers/send-code",
   signup: "auth/customers/signup/phone",

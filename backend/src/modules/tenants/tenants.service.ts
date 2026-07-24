@@ -1,14 +1,15 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Like, Not, Repository } from 'typeorm';
 import { Tenant, type TenantCount } from './entities/tenant.entity';
+import { UnsuspendRequest } from './entities/unsuspend-request.entity';
 import { ListTenantsDto, ListTenantsResponseDto } from '../admin/dto/admin-tenants.dto';
 import { TenantPreferences } from './entities/tenant-preferences.entity';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { UpdateTenantPreferencesDto } from './dto/update-tenant-preferences.dto';
 import { AssetsService } from 'src/modules/assets/assets.service';
 import { Asset, AssetType } from 'src/modules/assets/entities/asset.entity';
-import { TENANT_NOT_FOUND } from '../shared/error-codes';
+import { TENANT_NOT_FOUND, TENANT_ALREADY_BLOCKED, TENANT_NOT_BLOCKED, UNSUSPEND_REQUEST_ALREADY_EXISTS } from '../shared/error-codes';
 import { OnEvent } from '@nestjs/event-emitter';
 import { BranchEvent } from '../branches/branch.events';
 import { CourtEvent } from '../courts/courts.events';
@@ -19,6 +20,8 @@ import { SessionUser } from '../auth/@types/session';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { BranchAvailabilityResponseDto } from '../subscriptions/dto/branch-availability.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
 @Injectable()
 export class TenantsService {
   constructor(
@@ -26,9 +29,13 @@ export class TenantsService {
     private readonly tenantRepository: Repository<Tenant>,
     @InjectRepository(TenantPreferences)
     private readonly tenantPreferencesRepository: Repository<TenantPreferences>,
+    @InjectRepository(UnsuspendRequest)
+    private readonly unsuspendRequestRepository: Repository<UnsuspendRequest>,
     private readonly assetsService: AssetsService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly subscriptionsService: SubscriptionsService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
   ) { }
 
 
@@ -43,7 +50,11 @@ export class TenantsService {
 
 
 
-  async blockTenant(tenantId: string, blocked: boolean): Promise<void> {
+  async blockTenant(
+    tenantId: string,
+    blocked: boolean,
+    reason?: string,
+  ): Promise<void> {
     const tenant = await this.tenantRepository.findOne({
       where: { id: tenantId },
     });
@@ -52,9 +63,66 @@ export class TenantsService {
       throw new NotFoundException(TENANT_NOT_FOUND);
     }
 
+    if (blocked && tenant.blockedAt) {
+      throw new BadRequestException(TENANT_ALREADY_BLOCKED);
+    }
+    if (!blocked && !tenant.blockedAt) {
+      throw new BadRequestException(TENANT_NOT_BLOCKED);
+    }
+
     await this.tenantRepository.update(tenantId, {
       blockedAt: blocked ? new Date() : null,
+      blockedReason: blocked ? reason : null,
     });
+
+    if (!blocked) {
+      await this.unsuspendRequestRepository.update(
+        { tenantId, resolvedAt: IsNull() },
+        { resolvedAt: new Date() },
+      );
+    }
+  }
+
+  async requestUnsuspend(
+    tenantId: string,
+    message: string,
+  ): Promise<UnsuspendRequest> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(TENANT_NOT_FOUND);
+    }
+
+    if (!tenant.blockedAt) {
+      throw new BadRequestException(TENANT_NOT_BLOCKED);
+    }
+
+    const existingRequest = await this.unsuspendRequestRepository.findOne({
+      where: { tenantId, resolvedAt: IsNull() },
+    });
+    if (existingRequest) {
+      throw new BadRequestException(UNSUSPEND_REQUEST_ALREADY_EXISTS);
+    }
+
+    const request = await this.unsuspendRequestRepository.save({
+      tenantId,
+      message,
+    });
+
+    await this.notificationsService.notifyOps({
+      type: NotificationType.TENANT_UNSUSPEND_REQUESTED,
+      data: {
+        kind: NotificationType.TENANT_UNSUSPEND_REQUESTED,
+        tenantId,
+        tenantName: tenant.name,
+        message,
+      },
+      resourceId: request.id,
+    });
+
+    return request;
   }
 
   async listTenants({

@@ -8,6 +8,7 @@ import { AssetsModule } from '../assets/assets.module';
 import { SchedulesModule } from '../schedules/schedules.module';
 import { BookmarksModule } from '../bookmarks/bookmarks.module';
 import { BookingsModule } from '../bookings/bookings.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { BookingsModule } from '../bookings/bookings.module';
     SchedulesModule,
     forwardRef(() => BookmarksModule),
     forwardRef(() => BookingsModule),
+    forwardRef(() => SubscriptionsModule),
   ],
   controllers: [CourtsController],
   providers: [CourtsService],

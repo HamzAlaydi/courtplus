@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -26,6 +27,7 @@ import {
   BRANCH_NOT_FOUND,
   BRANCH_CREATION_NOT_ALLOWED,
   NOT_ALLOWED,
+  INVALID_BRANCH_STATUS_TRANSITION,
 } from '../shared/error-codes';
 import { AssetType } from '../assets/entities/asset.entity';
 import { ListBranchesResponseDto } from './dto/list-branches-response.dto';
@@ -189,6 +191,12 @@ export class BranchesService {
             stafferId: user.id,
           });
       }
+    } else {
+      // Customer-facing visibility: hide suspended branches and
+      // branches of blocked tenants.
+      queryBuilder.leftJoin('branch.tenant', 'tenant');
+      queryBuilder.andWhere('branch.suspendedAt IS NULL');
+      queryBuilder.andWhere('tenant.blockedAt IS NULL');
     }
 
     if (search) {
@@ -295,6 +303,9 @@ export class BranchesService {
       if (user.role !== StaffRole.SUPER_ADMIN && user.role !== StaffRole.OWNER) {
         where.staff = { id: user.id };
       }
+    } else if (user?.type === UserType.Customer) {
+      where.suspendedAt = IsNull();
+      where.tenant = { blockedAt: IsNull() };
     }
 
     const branch = await this.branchRepository.findOne({
@@ -445,6 +456,42 @@ export class BranchesService {
 
   async exists(id: string) {
     return this.branchRepository.exists({ where: { id, deletedAt: IsNull() } });
+  }
+
+  @Transactional()
+  async suspend(id: string, reason: string): Promise<Branch> {
+    const branch = await this.branchRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+    if (!branch) {
+      throw new NotFoundException(BRANCH_NOT_FOUND);
+    }
+    if (branch.suspendedAt) {
+      throw new BadRequestException(INVALID_BRANCH_STATUS_TRANSITION);
+    }
+    await this.branchRepository.update(id, {
+      suspendedAt: new Date(),
+      suspendedReason: reason,
+    });
+    return this.branchRepository.findOne({ where: { id } });
+  }
+
+  @Transactional()
+  async unsuspend(id: string): Promise<Branch> {
+    const branch = await this.branchRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+    if (!branch) {
+      throw new NotFoundException(BRANCH_NOT_FOUND);
+    }
+    if (!branch.suspendedAt) {
+      throw new BadRequestException(INVALID_BRANCH_STATUS_TRANSITION);
+    }
+    await this.branchRepository.update(id, {
+      suspendedAt: null,
+      suspendedReason: null,
+    });
+    return this.branchRepository.findOne({ where: { id } });
   }
 
   async countByTenant(tenantId: string): Promise<number> {

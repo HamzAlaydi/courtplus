@@ -262,6 +262,10 @@
     "unit_rate": "ر.س"
   },
   "court": {
+    "sport": "الرياضة",
+    "not_specified": "غير محدد",
+    "unknown_location": "موقع غير معروف",
+    "untitled": "ملعب بدون اسم",
     "hourly_rate": "السعر بالساعة",
     "title": "تفاصيل الملعب",
     "edit": "تعديل الملعب",
@@ -290,7 +294,13 @@
   "courts": {
     "title": "الملاعب",
     "add_new": "إضافة ملعب جديد",
-    "no_courts": "لا توجد ملاعب متاحة"
+    "no_courts": "لا توجد ملاعب متاحة",
+    "search_placeholder": "ابحث عن الملاعب بالاسم",
+    "all_branches": "كل الفروع",
+    "all_sports": "كل الرياضات",
+    "all_statuses": "كل الحالات",
+    "unknown_branch": "فرع غير معروف",
+    "total_courts": "إجمالي {{total}} ملعبًا"
   },
   "scheduleDetails": {
     "booking_id": "رقم الحجز",

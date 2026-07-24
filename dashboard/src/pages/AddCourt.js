@@ -43,8 +43,8 @@ export default function CourtForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // 🔹 Fetch branch data using `useQuery`
-  const { data: court } = useQuery({
+  // 🔹 Fetch court data when editing
+  const { data: court, isLoading: isCourtLoading } = useQuery({
     queryKey: ["court", id], // 🔹 Unique query key
     queryFn: () => getCourt(id), // 🔹 API call
     enabled: !!id, // 🔹 Only run query if `id` exists
@@ -86,8 +86,15 @@ export default function CourtForm() {
       setAvailabilities(court.schedule?.availabilities || []);
       setCourtStatus(court.status === "available");
 
-      if (court?.location?.placeId) {
-        setPlaceId(court.location.placeId);
+      // ✅ Seed location state (used as submit payload) from the court
+      if (court.location) {
+        setPlaceId(court.location.placeId || "");
+        setPlace({
+          name: court.location.name || "",
+          address: court.location.address || "",
+          lat: court.location.lat,
+          lng: court.location.lng,
+        });
       }
 
       if (court.assets?.length > 0) {
@@ -234,7 +241,8 @@ export default function CourtForm() {
   };
 
   return (
-    <div className="court-form-container content">
+    <Spin spinning={!!id && isCourtLoading}>
+      <div className="court-form-container content">
       <div className="content-header">
         <h4>{id ? t("courtForm.title_edit") : t("courtForm.title_add")}</h4>
         {id && (
@@ -491,6 +499,7 @@ export default function CourtForm() {
           confirmText: t("courtForm.delete_confirm"),
         }}
       />
-    </div>
+      </div>
+    </Spin>
   );
 }

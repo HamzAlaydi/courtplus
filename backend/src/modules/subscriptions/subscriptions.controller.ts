@@ -23,6 +23,7 @@ import {
   CreateCheckoutSessionDto,
   CheckoutSessionResponseDto,
   BranchAvailabilityResponseDto,
+  CourtAvailabilityResponseDto,
 } from './dto';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import type { SessionUser } from '../auth/@types/session';
@@ -114,6 +115,16 @@ export class SubscriptionsController {
     @CurrentUser() user: SessionUser,
   ): Promise<BranchAvailabilityResponseDto> {
     return this.subscriptionsService.getBranchAvailability(user.tenantId);
+  }
+
+  @Get('court-availability')
+  @AuthorizedUserType.isStaff([StaffRole.OWNER])
+  @ApiOperation({ summary: 'Check if tenant can create new court' })
+  @ApiResponse({ status: 200, type: CourtAvailabilityResponseDto })
+  async getCourtAvailability(
+    @CurrentUser() user: SessionUser,
+  ): Promise<CourtAvailabilityResponseDto> {
+    return this.subscriptionsService.getCourtAvailability(user.tenantId);
   }
 
   @Post('webhook')

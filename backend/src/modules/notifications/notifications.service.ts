@@ -192,7 +192,7 @@ export class NotificationsService {
 
       const { title, body, image } = this.generateNotificationContent(
         notification.type,
-        notification.relations,
+        { ...notification.data, ...notification.relations },
         language,
       );
       notification.content = body;
@@ -435,6 +435,42 @@ export class NotificationsService {
     },
   ) {
     const staff = await this.staffService.getStaff({ tenantId, branchId });
+    await this.notifyStaffMembers(staff, { email, emailData, data, type, resourceId });
+  }
+
+  async notifyOps({
+    email = false,
+    emailData,
+    data,
+    type,
+    resourceId,
+  }: {
+    email?: boolean;
+    emailData?: any;
+    data?: any;
+    type: NotificationType;
+    resourceId?: string;
+  }) {
+    const superAdmins = await this.staffService.getSuperAdmins();
+    await this.notifyStaffMembers(superAdmins, { email, emailData, data, type, resourceId });
+  }
+
+  private async notifyStaffMembers(
+    staff: { id: string; email?: string }[],
+    {
+      email = true,
+      emailData,
+      data,
+      type,
+      resourceId,
+    }: {
+      email?: boolean;
+      emailData?: any;
+      data?: any;
+      type: NotificationType;
+      resourceId?: string;
+    },
+  ) {
     const staffIds = staff.map((staffer) => staffer.id);
     const notifications: DeepPartial<Notification>[] = staff.map(
       (staffer) => ({
@@ -454,7 +490,9 @@ export class NotificationsService {
     await this.sendPushNotifications(staffIds, { data, type });
 
     if (email) {
-      const emails = staff.map((staffer) => staffer.email);
+      const emails = staff
+        .map((staffer) => staffer.email)
+        .filter((email): email is string => !!email);
       await this.sendEmail(emails, { data: emailData, type });
     }
   }

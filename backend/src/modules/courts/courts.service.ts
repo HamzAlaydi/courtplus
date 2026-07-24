@@ -492,6 +492,8 @@ export class CourtsService {
       .createQueryBuilder('court')
       .where('court.id = :id', { id })
       .andWhere('court.deletedAt IS NULL');
+
+    if (relations.branch) {
       queryBuilder
         .leftJoinAndSelect('court.branch', 'branch')
         .leftJoinAndSelect('branch.location', 'branchLocation')
@@ -550,8 +552,8 @@ export class CourtsService {
           'court.assets',
           'assets',
           'assets',
-          'assets.resourceId = court.id AND assets.type = :type',
-          { type: AssetType.CourtImage },
+          'assets.resourceId = court.id AND assets.type IN (:...assetTypes)',
+          { assetTypes: [AssetType.CourtImage, AssetType.CourtVideo] },
         )
         .addSelect([
           'assets.id',
@@ -559,6 +561,17 @@ export class CourtsService {
           'assets.type',
           'assets.position',
         ]);
+    }
+
+    if (user && user.type !== UserType.Staff) {
+      // Customer-facing visibility: non-available courts and courts of
+      // suspended branches / blocked tenants are hidden (404).
+      queryBuilder.leftJoin('branch.tenant', 'tenant');
+      queryBuilder.andWhere('court.status = :visibleStatus', {
+        visibleStatus: CourtStatus.AVAILABLE,
+      });
+      queryBuilder.andWhere('branch.suspendedAt IS NULL');
+      queryBuilder.andWhere('tenant.blockedAt IS NULL');
     }
 
     const court = await queryBuilder.getOne();
@@ -801,6 +814,152 @@ export class CourtsService {
   @Transactional()
   async deleteBranchCourts(branchId: string) {
     await this.courtRepository.softDelete({ branchId });
+  }
+
+  private assertCourtStatus(court: Court, allowed: CourtStatus[]) {
+    if (!allowed.includes(court.status)) {
+      throw new BadRequestException(INVALID_COURT_STATUS_TRANSITION);
+    }
+  }
+
+  private async findForModeration(id: string): Promise<Court> {
+    const court = await this.courtRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+      relations: ['branch'],
+    });
+    if (!court) {
+      throw new NotFoundException(COURT_NOT_FOUND);
+    }
+    return court;
+  }
+
+  @Transactional()
+  async approve(id: string, reviewer: SessionUser): Promise<Court> {
+    const court = await this.findForModeration(id);
+    this.assertCourtStatus(court, [CourtStatus.PENDING_APPROVAL]);
+    await this.courtRepository.update(id, {
+      status: CourtStatus.AVAILABLE,
+      rejectionReason: null,
+      reviewedAt: new Date(),
+      reviewedByStaffId: reviewer.id,
+    });
+    return this.findForModeration(id);
+  }
+
+  @Transactional()
+  async requestChanges(
+    id: string,
+    reason: string,
+    reviewer: SessionUser,
+  ): Promise<Court> {
+    const court = await this.findForModeration(id);
+    this.assertCourtStatus(court, [CourtStatus.PENDING_APPROVAL]);
+    await this.courtRepository.update(id, {
+      status: CourtStatus.CHANGES_REQUESTED,
+      rejectionReason: reason,
+      reviewedAt: new Date(),
+      reviewedByStaffId: reviewer.id,
+    });
+    return this.findForModeration(id);
+  }
+
+  @Transactional()
+  async suspend(id: string, reason: string, reviewer: SessionUser): Promise<Court> {
+    const court = await this.findForModeration(id);
+    this.assertCourtStatus(court, [
+      CourtStatus.AVAILABLE,
+      CourtStatus.PENDING_APPROVAL,
+    ]);
+    await this.courtRepository.update(id, {
+      status: CourtStatus.SUSPENDED,
+      rejectionReason: reason,
+      reviewedAt: new Date(),
+      reviewedByStaffId: reviewer.id,
+    });
+    return this.findForModeration(id);
+  }
+
+  @Transactional()
+  async unsuspend(id: string, reviewer: SessionUser): Promise<Court> {
+    const court = await this.findForModeration(id);
+    this.assertCourtStatus(court, [CourtStatus.SUSPENDED]);
+    await this.courtRepository.update(id, {
+      status: CourtStatus.AVAILABLE,
+      rejectionReason: null,
+      reviewedAt: new Date(),
+      reviewedByStaffId: reviewer.id,
+    });
+    return this.findForModeration(id);
+  }
+
+  @Transactional()
+  async resubmit(id: string, currentUser: SessionUser): Promise<Court> {
+    const court = await this.findForModeration(id);
+    if (court.branch.tenantId !== currentUser.tenantId) {
+      throw new ForbiddenException(NOT_ALLOWED);
+    }
+    this.assertCourtStatus(court, [CourtStatus.CHANGES_REQUESTED]);
+    await this.courtRepository.update(id, {
+      status: CourtStatus.PENDING_APPROVAL,
+      submittedAt: new Date(),
+    });
+    const updatedCourt = await this.findForModeration(id);
+
+    runOnTransactionCommit(() => {
+      this.eventEmitter.emit(CourtEvent.COURT_RESUBMITTED, {
+        court: updatedCourt,
+      } satisfies CourtEventPayload);
+    });
+
+    return updatedCourt;
+  }
+
+  @Transactional()
+  async markCourtsPendingApproval(ids: string[]): Promise<Court[]> {
+    if (!ids.length) {
+      return [];
+    }
+    await this.courtRepository.update(
+      { id: In(ids), status: CourtStatus.PENDING_PAYMENT, deletedAt: IsNull() },
+      {
+        status: CourtStatus.PENDING_APPROVAL,
+        submittedAt: new Date(),
+      },
+    );
+    return this.courtRepository.find({
+      where: { id: In(ids), status: CourtStatus.PENDING_APPROVAL },
+      relations: ['branch'],
+    });
+  }
+
+  async markTenantCourtsPendingApproval(tenantId: string): Promise<Court[]> {
+    const pendingCourts = await this.courtRepository.find({
+      where: {
+        status: CourtStatus.PENDING_PAYMENT,
+        deletedAt: IsNull(),
+        branch: { tenantId },
+      },
+      relations: ['branch'],
+      select: ['id'],
+    });
+    return this.markCourtsPendingApproval(pendingCourts.map((court) => court.id));
+  }
+
+  async findPendingPaymentByTenant(tenantId: string): Promise<Court[]> {
+    return this.courtRepository.find({
+      where: {
+        status: CourtStatus.PENDING_PAYMENT,
+        deletedAt: IsNull(),
+        branch: { tenantId },
+      },
+      relations: ['branch'],
+    });
+  }
+
+  async countByTenant(tenantId: string): Promise<number> {
+    return this.courtRepository.count({
+      where: { deletedAt: IsNull(), branch: { tenantId } },
+    });
   }
 
   async getAvailability(

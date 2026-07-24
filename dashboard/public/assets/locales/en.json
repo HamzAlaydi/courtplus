@@ -268,6 +268,10 @@
     "unit_rate": "SAR"
   },
   "court": {
+    "sport": "Sport",
+    "not_specified": "Not specified",
+    "unknown_location": "Unknown location",
+    "untitled": "Untitled Court",
     "hourly_rate": "Hourly Rate",
     "title": "Court Details",
     "edit": "Edit Court",
@@ -296,7 +300,13 @@
   "courts": {
     "title": "Courts",
     "add_new": "Add New Court",
-    "no_courts": "No courts available"
+    "no_courts": "No courts available",
+    "search_placeholder": "Search courts by name",
+    "all_branches": "All Branches",
+    "all_sports": "All Sports",
+    "all_statuses": "All Statuses",
+    "unknown_branch": "Unknown Branch",
+    "total_courts": "Total {{total}} courts"
   },
   "scheduleDetails": {
     "booking_id": "Booking ID",

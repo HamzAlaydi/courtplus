@@ -1,0 +1,41 @@
+@use "../base/index" as *;
+
+.courts-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-bottom: 2.4rem;
+
+  .courts-filter-search {
+    flex: 1 1 240px;
+    max-width: 360px;
+  }
+
+  .ant-select {
+    flex: 1 1 160px;
+    max-width: 220px;
+  }
+}
+
+.courts-branch-group {
+  margin-bottom: 2.4rem;
+
+  .courts-branch-title {
+    margin: 0 0 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f5f5f5;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  .court-card {
+    margin-bottom: 1.6rem;
+  }
+}
+
+.courts-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.4rem;
+}

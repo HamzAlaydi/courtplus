@@ -54,6 +54,8 @@ export default async function getConfig() {
       subscriptionsWebhookSecret: env.STRIPE_SUBSCRIPTIONS_WEBHOOK_SECRET,
       branchProductId: env.STRIPE_BRANCH_PRODUCT_ID,
       branchPriceId: env.STRIPE_BRANCH_PRICE_ID,
+      branchAddonPriceId: env.STRIPE_BRANCH_ADDON_PRICE_ID,
+      courtAddonPriceId: env.STRIPE_COURT_ADDON_PRICE_ID,
     },
     mail: {
       driver: env.MAIL_DRIVER || 'ses',

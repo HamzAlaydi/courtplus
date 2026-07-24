@@ -236,4 +236,26 @@ export class StripeService {
   ): Promise<Stripe.SetupIntent> {
     return this.stripe.setupIntents.retrieve(setupIntentId);
   }
+
+  async updateSubscriptionItems(
+    subscriptionId: string,
+    items: Stripe.SubscriptionUpdateParams.Item[],
+    prorationBehavior: Stripe.SubscriptionUpdateParams.ProrationBehavior,
+  ): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.update(subscriptionId, {
+      items,
+      proration_behavior: prorationBehavior,
+    });
+  }
+
+  async listInvoices(
+    customerId: string,
+    limit = 24,
+  ): Promise<Stripe.Invoice[]> {
+    const invoices = await this.stripe.invoices.list({
+      customer: customerId,
+      limit,
+    });
+    return invoices.data;
+  }
 }
