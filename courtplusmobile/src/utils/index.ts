@@ -1,4 +1,5 @@
 export * from "./helpers";
+export * from "./geocoding";
 export * from "./metrics";
 export * from "./endpoints";
 export * from "./zustandStorage";

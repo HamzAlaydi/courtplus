@@ -1,9 +1,8 @@
 import DeviceCountry, { TYPE_CONFIGURATION } from "react-native-device-country";
-import Geocoder from "react-native-geocoding";
 import { useCallback } from "react";
 import Geolocation from "react-native-geolocation-service";
 import { PermissionsAndroid } from "react-native";
-import { isAndroid, Location } from "utils";
+import { isAndroid, Location, reverseGeocode } from "utils";
 import { useUserStore } from "store";
 
 export const useLocation = () => {
@@ -66,14 +65,8 @@ export const useLocation = () => {
 
   const getLocationName = useCallback(async (pos: Location) => {
     try {
-      const response = await Geocoder.from({
-        lat: pos.lat,
-        lng: pos.long,
-      });
-      if (response.results.length > 0) {
-        return response.results[0].formatted_address;
-      }
-      return "";
+      const result = await reverseGeocode(pos.lat, pos.long);
+      return result?.formattedAddress ?? "";
     } catch (error) {
       return "";
     }

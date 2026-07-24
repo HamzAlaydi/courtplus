@@ -1,31 +1,62 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Client } from '@googlemaps/google-maps-services-js';
 import { Location } from './entities/location.entity';
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { CoordinatesDto } from './dto/create-branch.dto';
 import { Transactional } from 'typeorm-transactional';
+
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
+// Required by the Nominatim usage policy: https://operations.osmfoundation.org/policies/nominatim/
+const NOMINATIM_USER_AGENT = 'CourtPlusApp/1.0 (contact@courtplusapp.com)';
+
 @Injectable()
 export class LocationsService {
-  private client: Client;
   constructor(
     @InjectRepository(Location)
     private readonly locationRepository: Repository<Location>,
-    private readonly configService: ConfigService,
-  ) {
-    this.client = new Client({});
+  ) {}
+
+  private async nominatimRequest(path: string, params: Record<string, string>) {
+    const url = new URL(`${NOMINATIM_BASE_URL}${path}`);
+    url.search = new URLSearchParams({ format: 'json', ...params }).toString();
+
+    const response = await fetch(url, {
+      headers: { 'User-Agent': NOMINATIM_USER_AGENT },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Nominatim request failed with status ${response.status}`);
+    }
+
+    return response.json();
   }
 
   async getPlaceDetails(placeId: string) {
-    const response = await this.client.placeDetails({
-      params: {
-        place_id: placeId,
-        key: this.configService.get('google.mapsApiKey'),
-      },
+    const results = await this.nominatimRequest('/search', {
+      q: placeId,
+      addressdetails: '1',
+      limit: '1',
     });
 
-    return response.data.result;
+    if (!Array.isArray(results) || results.length === 0) {
+      throw new Error(`No place found for query: ${placeId}`);
+    }
+
+    const result = results[0];
+
+    return {
+      place_id: result.place_id,
+      name: result.display_name.split(',')[0].trim(),
+      formatted_address: result.display_name,
+      address_components: this.toAddressComponents(result.address),
+      geometry: {
+        location: {
+          lat: parseFloat(result.lat),
+          lng: parseFloat(result.lon),
+        },
+      },
+      raw: result,
+    };
   }
 
   async getByPlaceId(placeId: string) {
@@ -100,6 +131,18 @@ export class LocationsService {
     });
   }
 
+  private toAddressComponents(address: Record<string, string> | undefined) {
+    if (!address || typeof address !== 'object') {
+      return [];
+    }
+
+    return Object.entries(address).map(([type, value]) => ({
+      long_name: value,
+      short_name: value,
+      types: [type],
+    }));
+  }
+
   private extractCountry(addressComponents: any[]): string | null {
     if (!addressComponents || !Array.isArray(addressComponents)) {
       return null;
@@ -114,19 +157,14 @@ export class LocationsService {
 
   async getCountryFromCoordinates(lat: number, lng: number): Promise<string | null> {
     try {
-      const response = await this.client.reverseGeocode({
-        params: {
-          latlng: { lat, lng },
-          key: this.configService.get('google.mapsApiKey'),
-        },
+      const result = await this.nominatimRequest('/reverse', {
+        lat: String(lat),
+        lon: String(lng),
+        addressdetails: '1',
       });
 
-      if (response.data.results && response.data.results.length > 0) {
-        const countryResult = response.data.results[0];
-        return this.extractCountry(countryResult.address_components);
-      }
-
-      return null;
+      const addressComponents = this.toAddressComponents(result?.address);
+      return this.extractCountry(addressComponents);
     } catch (error) {
       console.error('Error getting country from coordinates:', error);
       return null;

@@ -34,7 +34,6 @@
     "@aws-sdk/s3-presigned-post": "^3.821.0",
     "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@better-auth/utils": "^0.2.4",
-    "@googlemaps/google-maps-services-js": "^3.4.1",
     "@keyv/redis": "^4.4.0",
     "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs-modules/ioredis": "^2.0.2",
