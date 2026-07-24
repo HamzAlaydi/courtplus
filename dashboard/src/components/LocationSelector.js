@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, InputNumber, AutoComplete } from "antd";
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
-
-const containerStyle = { width: "100%", height: "300px" };
+import LocationMap from "./LocationMap";
 
 const NOMINATIM_URL =
   "https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=";
 
 export default function LocationSelector({
-  apiKey = "AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E",
   initialPlaceName = "",
   initialCoordinates = null,
   initialAddress = "",
   onChange,
 }) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: apiKey,
-  });
-
   // Convert backend GeoJSON if needed
   const parseGeo = (coords) => {
     if (!coords) return { lat: 25.276987, lng: 55.296249 };
@@ -112,8 +105,8 @@ export default function LocationSelector({
     updateLocation(coordinates.lat, Number(value), "");
 
   // Map select
-  const handleMapPick = (e) => {
-    updateLocation(e.latLng.lat(), e.latLng.lng(), "");
+  const handleMapPick = (lat, lng) => {
+    updateLocation(lat, lng, "");
   };
 
   return (
@@ -150,16 +143,12 @@ export default function LocationSelector({
         </Col>
       </Row>
 
-      {isLoaded && (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={coordinates}
-          zoom={15}
-          onClick={handleMapPick}
-        >
-          <Marker position={coordinates} draggable onDragEnd={handleMapPick} />
-        </GoogleMap>
-      )}
+      <LocationMap
+        center={coordinates}
+        zoom={15}
+        markerPosition={coordinates}
+        onPick={handleMapPick}
+      />
 
       <div style={{ marginTop: 10 }}>
         <label>Address</label>
