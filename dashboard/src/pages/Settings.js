@@ -1,4 +1,4 @@
-import { Card, Form, Input, Button, Modal, Typography } from "antd";
+import { Collapse, Form, Input, Button, Modal, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "react-phone-number-input/style.css";
@@ -299,169 +299,193 @@ export default function SettingsPage() {
     >
       <h2>{t("settings.title")}</h2>
 
-      {/* BUSINESS PROFILE */}
-      <Card
-        title={t("business_profile.title")}
+      {/* SETTINGS SECTIONS (accordion) */}
+      <Collapse
+        accordion
+        defaultActiveKey={["business"]}
         style={{ marginBottom: 24 }}
-      >
-        <Form
-          form={businessForm}
-          layout="vertical"
-          onFinish={handleSaveBusiness}
-        >
-          <Form.Item
-            name="name"
-            label={t("business_profile.name")}
-            rules={[{ required: true, min: 3 }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="phoneNumber"
-            label={t("business_profile.phone")}
-            rules={[
-              {
-                validator: (_, value) =>
-                  !value || isValidPhoneNumber(value)
-                    ? Promise.resolve()
-                    : Promise.reject(
-                        new Error(t("business_profile.phone_invalid"))
-                      ),
-              },
-            ]}
-          >
-            <PhoneInput defaultCountry="EG" />
-          </Form.Item>
-          <Form.Item label={t("business_profile.logo")}>
-            <ImageUploader
-              initialUrl={logoUrl}
-              onFileChange={handleUploadLogo}
-              shape="circle"
-            />
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loadingBusiness}>
-            {t("business_profile.save")}
-          </Button>
-        </Form>
-      </Card>
-
-      {/* CHANGE PASSWORD */}
-      <Card title={t("settings.passwordSection")} style={{ marginBottom: 24 }}>
-        <Form
-          form={passwordForm}
-          layout="vertical"
-          onFinish={handleChangePassword}
-        >
-          <Form.Item
-            name="oldPassword"
-            label={t("settings.oldPassword")}
-            rules={[{ required: true }]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name="newPassword"
-            label={t("settings.newPassword")}
-            rules={[{ required: true }]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name="confirmPassword"
-            label={t("settings.confirmNewPassword")}
-            dependencies={["newPassword"]}
-            rules={[
-              { required: true },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  return !value || value === getFieldValue("newPassword")
-                    ? Promise.resolve()
-                    : Promise.reject();
-                },
-              }),
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loadingPass}>
-            {t("settings.updatePassword")}
-          </Button>
-        </Form>
-      </Card>
-
-      {/* EMAIL */}
-      {!pendingVerification ? (
-        <Card title={t("settings.emailSection")}>
-          <Form form={emailForm} layout="vertical" onFinish={handleChangeEmail}>
-            <Form.Item
-              name="email"
-              label={t("settings.newEmail")}
-              rules={[{ required: true, type: "email" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              label={t("settings.currentPassword")}
-              rules={[{ required: true }]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Button type="primary" htmlType="submit" loading={loadingEmail}>
-              {t("settings.sendVerification")}
-            </Button>
-          </Form>
-        </Card>
-      ) : (
-        <Card title={`${t("settings.verifyEmailTitle")} (${pendingEmail})`}>
-          <Form
-            form={verifyForm}
-            layout="vertical"
-            onFinish={handleVerifyEmail}
-          >
-            <Form.Item
-              name="code"
-              label={t("settings.verificationCode")}
-              rules={[{ required: true }]}
-            >
-              <Input />
-            </Form.Item>
-            <Button type="primary" htmlType="submit" loading={loadingVerify}>
-              {t("settings.verifyEmail")}
-            </Button>
-            <Button
-              danger
-              onClick={handleCancelEmailChange}
-              loading={loadingCancel}
-            >
-              {t("settings.cancelEmailChange")}
-            </Button>
-            <div style={{ textAlign: "center", marginTop: 12 }}>
-              {canResendEmail ? (
-                <Button type="link" onClick={handleResendEmailOtp}>
-                  {t("settings.resendCode")}
+        items={[
+          {
+            key: "business",
+            label: t("business_profile.title"),
+            children: (
+              <Form
+                form={businessForm}
+                layout="vertical"
+                onFinish={handleSaveBusiness}
+              >
+                <Form.Item
+                  name="name"
+                  label={t("business_profile.name")}
+                  rules={[{ required: true, min: 3 }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="phoneNumber"
+                  label={t("business_profile.phone")}
+                  rules={[
+                    {
+                      validator: (_, value) =>
+                        !value || isValidPhoneNumber(value)
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              new Error(t("business_profile.phone_invalid"))
+                            ),
+                    },
+                  ]}
+                >
+                  <PhoneInput defaultCountry="EG" />
+                </Form.Item>
+                <Form.Item label={t("business_profile.logo")}>
+                  <ImageUploader
+                    initialUrl={logoUrl}
+                    onFileChange={handleUploadLogo}
+                    shape="circle"
+                  />
+                </Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loadingBusiness}
+                >
+                  {t("business_profile.save")}
                 </Button>
-              ) : (
-                <Text type="secondary">
-                  {t("settings.resendIn")} {emailTimer}s
-                </Text>
-              )}
-            </div>
-          </Form>
-        </Card>
-      )}
-
-      {/* DELETE ACCOUNT */}
-
-      <Button
-        style={{ marginTop: 24 }}
-        type="primary"
-        danger
-        block
-        onClick={() => setDeleteModalOpen(true)}
-      >
-        {t("settings.deleteAccount")}
-      </Button>
+              </Form>
+            ),
+          },
+          {
+            key: "password",
+            label: t("settings.passwordSection"),
+            children: (
+              <Form
+                form={passwordForm}
+                layout="vertical"
+                onFinish={handleChangePassword}
+              >
+                <Form.Item
+                  name="oldPassword"
+                  label={t("settings.oldPassword")}
+                  rules={[{ required: true }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item
+                  name="newPassword"
+                  label={t("settings.newPassword")}
+                  rules={[{ required: true }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item
+                  name="confirmPassword"
+                  label={t("settings.confirmNewPassword")}
+                  dependencies={["newPassword"]}
+                  rules={[
+                    { required: true },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        return !value || value === getFieldValue("newPassword")
+                          ? Promise.resolve()
+                          : Promise.reject();
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" loading={loadingPass}>
+                  {t("settings.updatePassword")}
+                </Button>
+              </Form>
+            ),
+          },
+          {
+            key: "email",
+            label: pendingVerification
+              ? `${t("settings.verifyEmailTitle")} (${pendingEmail})`
+              : t("settings.emailSection"),
+            children: !pendingVerification ? (
+              <Form
+                form={emailForm}
+                layout="vertical"
+                onFinish={handleChangeEmail}
+              >
+                <Form.Item
+                  name="email"
+                  label={t("settings.newEmail")}
+                  rules={[{ required: true, type: "email" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  label={t("settings.currentPassword")}
+                  rules={[{ required: true }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" loading={loadingEmail}>
+                  {t("settings.sendVerification")}
+                </Button>
+              </Form>
+            ) : (
+              <Form
+                form={verifyForm}
+                layout="vertical"
+                onFinish={handleVerifyEmail}
+              >
+                <Form.Item
+                  name="code"
+                  label={t("settings.verificationCode")}
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loadingVerify}
+                >
+                  {t("settings.verifyEmail")}
+                </Button>
+                <Button
+                  danger
+                  onClick={handleCancelEmailChange}
+                  loading={loadingCancel}
+                >
+                  {t("settings.cancelEmailChange")}
+                </Button>
+                <div style={{ textAlign: "center", marginTop: 12 }}>
+                  {canResendEmail ? (
+                    <Button type="link" onClick={handleResendEmailOtp}>
+                      {t("settings.resendCode")}
+                    </Button>
+                  ) : (
+                    <Text type="secondary">
+                      {t("settings.resendIn")} {emailTimer}s
+                    </Text>
+                  )}
+                </div>
+              </Form>
+            ),
+          },
+          {
+            key: "delete",
+            label: t("settings.deleteAccount"),
+            children: (
+              <Button
+                type="primary"
+                danger
+                block
+                onClick={() => setDeleteModalOpen(true)}
+              >
+                {t("settings.deleteAccount")}
+              </Button>
+            ),
+          },
+        ]}
+      />
 
       <Modal
         open={deleteModalOpen}

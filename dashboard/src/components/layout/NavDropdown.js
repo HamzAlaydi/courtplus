@@ -143,7 +143,7 @@ const NavDropdown = () => {
               </>
             }
           >
-            {user?.phoneNumber || t("nav.noPhone")}
+            {user?.phoneNumber || tenant?.phoneNumber || t("nav.noPhone")}
           </Descriptions.Item>
           <Descriptions.Item
             label={
