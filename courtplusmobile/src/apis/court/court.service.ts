@@ -14,14 +14,20 @@ export const getCourts = async ({
   currentLocation,
   ...params
 }: CourtsRequest) => {
+  // Only geo-filter (and send the X-Location header) when BOTH coordinates
+  // are valid numbers — a partial location breaks the backend location parser.
+  const hasLocation =
+    Number.isFinite(params.lat) && Number.isFinite(params.lng);
   const response = await axiosInstance.get<CourtsResponse>(endPoints.courts, {
     params: {
       pageSize,
+      // radius is required by the backend whenever coordinates are sent
+      ...(hasLocation ? { radius: DEFAULT_COURTS_RADIUS } : {}),
       ...params,
     },
-    headers: {
-      ["X-Location"]: currentLocation,
-    },
+    ...(hasLocation
+      ? { headers: { ["X-Location"]: `${params.lat},${params.lng}` } }
+      : {}),
   });
   if (response.data.OK) {
     return response.data.items;

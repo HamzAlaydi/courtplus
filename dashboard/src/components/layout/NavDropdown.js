@@ -2,14 +2,16 @@ import {
   DownOutlined,
   MailOutlined,
   PhoneOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Spin, Modal, Button, Descriptions } from "antd";
+import { Avatar, Dropdown, Spin, Modal, Button, Descriptions, Tag } from "antd";
 import { useDispatch } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { logout } from "../../context/auth";
 import { getMe } from "../../actions/staff.action";
+import { getTenant } from "../../actions/tenant_action";
 import { useNavigate } from "react-router-dom";
 
 const NavDropdown = () => {
@@ -20,9 +22,13 @@ const NavDropdown = () => {
   const isRTL = i18n.dir() === "rtl";
 
   const { isLoading, data: user } = useQuery({
-    queryKey: ["me"],
+    queryKey: ["staff-me"],
     queryFn: getMe,
-    keepPreviousData: true,
+  });
+
+  const { data: tenant } = useQuery({
+    queryKey: ["tenant"],
+    queryFn: getTenant,
   });
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -35,22 +41,33 @@ const NavDropdown = () => {
   const openProfileModal = () => setIsModalVisible(true);
   const closeProfileModal = () => setIsModalVisible(false);
 
+  const handleEditProfile = () => {
+    setIsModalVisible(false);
+    navigate("/settings");
+  };
+
   if (isLoading) return <Spin />;
 
+  const fullName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email;
   const initials = user
-    ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
+    ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase() ||
+      "U"
     : "U";
+
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleDateString(i18n.language) : t("nav.noPhone");
 
   const items = [
     {
-      label: <span onClick={openProfileModal}>{t("nav.profile")}</span>,
+      label: t("nav.profile"),
       key: "profile",
+      onClick: openProfileModal,
     },
     {
-      label: (
-        <span onClick={() => navigate("/settings")}>{t("nav.settings")}</span>
-      ),
+      label: t("nav.settings"),
       key: "settings",
+      onClick: () => navigate("/settings"),
     },
     { type: "divider" },
     {
@@ -69,9 +86,7 @@ const NavDropdown = () => {
             {initials}
           </Avatar>
           <div className="nav-user-info">
-            <span className="nav-name">
-              {user?.firstName} {user?.lastName}
-            </span>
+            <span className="nav-name">{fullName}</span>
             <small className="nav-role">{user?.role}</small>
           </div>
           <DownOutlined className="nav-down-icon" />
@@ -86,7 +101,10 @@ const NavDropdown = () => {
           <Button key="close" onClick={closeProfileModal}>
             {t("nav.close")}
           </Button>,
-          <Button key="logout" type="primary" danger onClick={handleLogout}>
+          <Button key="edit" type="primary" onClick={handleEditProfile}>
+            {t("nav.editProfile")}
+          </Button>,
+          <Button key="logout" danger onClick={handleLogout}>
             {t("nav.logout")}
           </Button>,
         ]}
@@ -96,10 +114,10 @@ const NavDropdown = () => {
           <Avatar size={100} className="profile-avatar">
             {initials}
           </Avatar>
-          <h3>
-            {user?.firstName} {user?.lastName}
-          </h3>
-          <p className="profile-role">{user?.role}</p>
+          <h3>{fullName}</h3>
+          <Tag color="green" className="profile-role">
+            {user?.role}
+          </Tag>
         </div>
 
         <Descriptions
@@ -127,16 +145,22 @@ const NavDropdown = () => {
           >
             {user?.phoneNumber || t("nav.noPhone")}
           </Descriptions.Item>
+          <Descriptions.Item
+            label={
+              <>
+                <ShopOutlined /> {t("nav.tenant")}
+              </>
+            }
+          >
+            {tenant?.name || "—"}
+          </Descriptions.Item>
           <Descriptions.Item label={t("nav.created")}>
-            {new Date(user?.createdAt).toLocaleDateString()}
+            {formatDate(user?.createdAt)}
           </Descriptions.Item>
           <Descriptions.Item label={t("nav.verified")}>
             {user?.verifiedAt
-              ? new Date(user.verifiedAt).toLocaleDateString()
+              ? formatDate(user.verifiedAt)
               : t("nav.notVerified")}
-          </Descriptions.Item>
-          <Descriptions.Item label={t("nav.tenantId")}>
-            {user?.tenantId}
           </Descriptions.Item>
         </Descriptions>
       </Modal>

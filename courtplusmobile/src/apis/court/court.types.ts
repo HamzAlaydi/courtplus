@@ -11,10 +11,13 @@ export interface CourtsRequest {
   lng?: number;
   lat?: number;
   radius?: number;
-  currentLocation: string;
+  currentLocation?: string;
   sortBy?: string;
   sortDirection?: string;
 }
+
+/** Default geo-filter radius in meters when the device location is known. */
+export const DEFAULT_COURTS_RADIUS = 50000;
 
 export interface CourtsResponse extends ApiResponse {
   items: Court[];
