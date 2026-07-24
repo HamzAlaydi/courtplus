@@ -34,6 +34,9 @@ export default function SettingsPage() {
   /* ================= EMAIL STATE ================= */
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
+  const [emailChangeCreds, setEmailChangeCreds] = useState(null); // 🔐 stored once for resend
+  const [emailTimer, setEmailTimer] = useState(60);
+  const [canResendEmail, setCanResendEmail] = useState(false);
 
   /* ================= DELETE ACCOUNT STATE ================= */
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -60,6 +63,24 @@ export default function SettingsPage() {
     return () => clearInterval(interval);
   }, [deleteStep, canResend]);
 
+  /* ================= EMAIL OTP COUNTDOWN ================= */
+  useEffect(() => {
+    if (!pendingVerification || canResendEmail) return;
+
+    const interval = setInterval(() => {
+      setEmailTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResendEmail(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [pendingVerification, canResendEmail]);
+
   /* ================= CHANGE PASSWORD ================= */
   const handleChangePassword = async (values) => {
     setLoadingPass(true);
@@ -85,6 +106,9 @@ export default function SettingsPage() {
       notify("success", t("settings.codeSent"));
       setPendingVerification(true);
       setPendingEmail(values.email);
+      setEmailChangeCreds(values); // 🔐 store for resend
+      setEmailTimer(60);
+      setCanResendEmail(false);
       emailForm.resetFields();
     } catch {
       notify("error", t("settings.sendCodeFailed"));
@@ -100,6 +124,7 @@ export default function SettingsPage() {
       notify("success", t("settings.emailVerified"));
       setPendingVerification(false);
       setPendingEmail("");
+      setEmailChangeCreds(null); // 🔐 clear safely
       verifyForm.resetFields();
     } catch {
       notify("error", t("settings.emailVerificationFailed"));
@@ -115,10 +140,28 @@ export default function SettingsPage() {
       notify("success", t("settings.emailCancelSuccess"));
       setPendingVerification(false);
       setPendingEmail("");
+      setEmailChangeCreds(null); // 🔐 clear safely
     } catch {
       notify("error", t("settings.emailCancelFailed"));
     } finally {
       setLoadingCancel(false);
+    }
+  };
+
+  /* ================= RESEND EMAIL OTP ================= */
+  const handleResendEmailOtp = async () => {
+    if (!emailChangeCreds) {
+      notify("error", t("settings.otpResendFailed"));
+      return;
+    }
+
+    try {
+      await changeEmail(emailChangeCreds);
+      notify("success", t("settings.otpResent"));
+      setEmailTimer(60);
+      setCanResendEmail(false);
+    } catch {
+      notify("error", t("settings.otpResendFailed"));
     }
   };
 
@@ -281,6 +324,17 @@ export default function SettingsPage() {
             >
               {t("settings.cancelEmailChange")}
             </Button>
+            <div style={{ textAlign: "center", marginTop: 12 }}>
+              {canResendEmail ? (
+                <Button type="link" onClick={handleResendEmailOtp}>
+                  {t("settings.resendCode")}
+                </Button>
+              ) : (
+                <Text type="secondary">
+                  {t("settings.resendIn")} {emailTimer}s
+                </Text>
+              )}
+            </div>
           </Form>
         </Card>
       )}

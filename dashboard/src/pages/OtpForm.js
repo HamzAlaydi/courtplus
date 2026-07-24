@@ -1,13 +1,19 @@
-import { Form, Button, Input } from "antd";
+import { Form, Button, Input, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { verifyStaff } from "../actions/auth_actions";
+import { verifyStaff, resendVerificationCode } from "../actions/auth_actions";
 import { useNotification } from "../modules/NotificationProvider";
+import { useTranslation } from "react-i18next";
+
+const { Text } = Typography;
 
 export default function OtpForm() {
+  const { t } = useTranslation();
   const notify = useNotification();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState();
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,6 +29,36 @@ export default function OtpForm() {
       setEmail(email);
     }
   }, [location, navigate]); // Depend on location to handle any changes to the URL
+
+  /* ================= OTP RESEND COUNTDOWN ================= */
+  useEffect(() => {
+    if (canResend) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [canResend]);
+
+  const handleResendOtp = () => {
+    resendVerificationCode({ email })
+      .then(() => {
+        notify("success", t("settings.otpResent"));
+        setTimer(60);
+        setCanResend(false);
+      })
+      .catch(() => {
+        notify("error", t("settings.otpResendFailed"));
+      });
+  };
 
   const onFinish = (values) => {
     setLoading(true);
@@ -75,6 +111,17 @@ export default function OtpForm() {
                 Sign Up
               </Button>
             </Form.Item>
+            <div style={{ textAlign: "center", marginTop: 12 }}>
+              {canResend ? (
+                <Button type="link" onClick={handleResendOtp}>
+                  {t("settings.resendCode")}
+                </Button>
+              ) : (
+                <Text type="secondary">
+                  {t("settings.resendIn")} {timer}s
+                </Text>
+              )}
+            </div>
           </Form>
         </div>
         <h5>

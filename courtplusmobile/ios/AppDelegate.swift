@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
      FirebaseApp.configure()
-    GMSServices.provideAPIKey("AIzaSyCyP-YultR_6jEofQEZnNRVPITqMv1Fsgo")
+    GMSServices.provideAPIKey("AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E")
  
     factory.startReactNative(
       withModuleName: "Court Plus",

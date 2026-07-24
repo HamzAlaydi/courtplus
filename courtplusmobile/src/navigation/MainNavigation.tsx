@@ -6,7 +6,7 @@ import { navigationRef } from "./types";
 
 export default function MainNavigation() {
   useEffect(() => {
-    Geocoder.init("AIzaSyCyP-YultR_6jEofQEZnNRVPITqMv1Fsgo");
+    Geocoder.init("AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E");
   }, []);
 
   return (

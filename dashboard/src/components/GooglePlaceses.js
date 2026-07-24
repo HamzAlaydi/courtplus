@@ -19,7 +19,7 @@ const GooglePlacesInput = ({
 
   return (
     <GooglePlacesAutocomplete
-      apiKey="AIzaSyCyP-YultR_6jEofQEZnNRVPITqMv1Fsgo"
+      apiKey="AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E"
       ref={autocompleteRef}
       value={inputValue}
       onChange={(e) => setInputValue(e.target.value)} // ✅ Allow manual input

@@ -10,7 +10,7 @@ import {
 const containerStyle = { width: "100%", height: "300px" };
 
 export default function LocationSelector({
-  apiKey = "AIzaSyCyP-YultR_6jEofQEZnNRVPITqMv1Fsgo",
+  apiKey = "AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E",
   initialPlaceName = "",
   initialCoordinates = null,
   initialAddress = "",

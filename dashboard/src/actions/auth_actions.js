@@ -62,6 +62,10 @@ export const verifyStaff = async (userData) => {
   return await authService.verifyStaff(userData);
 };
 
+export const resendVerificationCode = async (data) => {
+  return await authService.resendVerificationCode(data);
+};
+
 export const forgetPass = async (data) => {
   return await authService.forgetPass(data);
 };

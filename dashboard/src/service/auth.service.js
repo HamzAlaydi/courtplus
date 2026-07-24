@@ -35,6 +35,14 @@ class AuthService {
     });
   }
 
+  resendVerificationCode(data) {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/resend-verification-code`,
+      data: data,
+    });
+  }
+
   forgetPass(data) {
     return apiRequest({
       method: "post",

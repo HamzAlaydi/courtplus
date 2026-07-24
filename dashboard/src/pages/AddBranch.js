@@ -292,7 +292,7 @@ export default function AddBranch() {
                   rules={[{ required: true, message: "Location is required" }]}
                 >
                   <LocationSelector
-                    apiKey="AIzaSyCyP-YultR_6jEofQEZnNRVPITqMv1Fsgo"
+                    apiKey="AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E"
                     initialPlaceName={branch?.location?.name}
                     initialCoordinates={branch?.location?.coordinates} // GeoJSON
                     initialAddress={branch?.location?.address}
