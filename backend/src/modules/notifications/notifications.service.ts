@@ -43,6 +43,12 @@ export class NotificationsService {
     [NotificationType.BOOKING_CREATED]: EmailTemplate.STAFF_BOOKING_CREATED,
     [NotificationType.BOOKING_CANCELLED]: EmailTemplate.STAFF_BOOKING_CANCELLED,
     [NotificationType.BOOKING_REMINDER]: EmailTemplate.STAFF_BOOKING_REMINDER,
+    [NotificationType.COURT_APPROVED]: EmailTemplate.COURT_APPROVED,
+    [NotificationType.COURT_CHANGES_REQUESTED]: EmailTemplate.COURT_CHANGES_REQUESTED,
+    [NotificationType.COURT_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,
+    [NotificationType.BRANCH_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,
+    [NotificationType.TENANT_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,
+    [NotificationType.COURT_PENDING_PAYMENT]: EmailTemplate.COURT_PENDING_PAYMENT,
   };
 
   private readonly participantEmailTemplates: Partial<Record<NotificationType, EmailTemplate>> = {

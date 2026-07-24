@@ -18,6 +18,8 @@ import { UserTypeGuard } from 'src/modules/auth/guards/user-type.guard';
 import { AuthorizedUserType } from 'src/decorators/user-type.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StaffRole } from 'src/modules/staff/entities/enum';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 
 @ApiTags('Tenants')
 @ApiBearerAuth()
@@ -38,6 +40,7 @@ export class TenantsController {
     return this.tenantsService.getTenant(user.tenantId);
   }
   @Patch()
+  @Audited(LogEntity.TENANT, LogAction.UPDATE)
   @ApiOperation({ summary: 'Update tenant profile' })
   @ApiResponse({
     status: 200,
@@ -64,6 +67,7 @@ export class TenantsController {
   }
 
   @Patch('preferences')
+  @Audited(LogEntity.TENANT, LogAction.UPDATE)
   @ApiOperation({ summary: 'Update tenant preferences' })
   @ApiResponse({
     status: 200,
@@ -79,6 +83,7 @@ export class TenantsController {
   }
 
   @Post('request-unsuspend')
+  @Audited(LogEntity.UNSUSPEND_REQUEST, LogAction.CREATE)
   @ApiOperation({
     summary: 'Request tenant unsuspension',
     description:

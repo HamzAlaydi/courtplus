@@ -22,6 +22,7 @@ import { StatsModule } from './modules/stats/stats.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { PayoutsModule } from './modules/payouts/payouts.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { OpsModule } from './modules/ops/ops.module';
 export const APP_MODULES = [
   AdminModule,
   SharedModule,
@@ -47,4 +48,5 @@ export const APP_MODULES = [
   StatsModule,
   SubscriptionsModule,
   ContactModule,
+  OpsModule,
 ];

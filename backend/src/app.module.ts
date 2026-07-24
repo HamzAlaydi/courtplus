@@ -26,6 +26,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
+import { AuditInterceptor } from './modules/logging/audit.interceptor';
 
 @Module({
   imports: [
@@ -120,6 +121,10 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
     },
     {
       provide: 'ADD_TRANSACTIONAL_DATA_SOURCE',

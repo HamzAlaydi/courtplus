@@ -18,6 +18,10 @@ import { BookingJoinRequestApprovedEmail } from 'src/emails/booking-join-request
 import { BookingJoinRequestRejectedEmail } from 'src/emails/booking-join-request-rejected';
 import { BookingInvitationAcceptedEmail } from 'src/emails/booking-invitation-accepted';
 import { BookingInvitationRejectedEmail } from 'src/emails/booking-invitation-rejected';
+import { CourtApprovedEmail } from 'src/emails/court-approved';
+import { CourtChangesRequestedEmail } from 'src/emails/court-changes-requested';
+import { ResourceSuspendedEmail } from 'src/emails/resource-suspended';
+import { CourtPaymentPendingEmail } from 'src/emails/court-payment-pending';
 import { i18next } from 'src/modules/notifications/content/i18n';
 
 export enum EmailTemplate {
@@ -37,6 +41,10 @@ export enum EmailTemplate {
   BOOKING_JOIN_REQUEST_REJECTED = 'booking_join_request_rejected',
   BOOKING_INVITATION_ACCEPTED = 'booking_invitation_accepted',
   BOOKING_INVITATION_REJECTED = 'booking_invitation_rejected',
+  COURT_APPROVED = 'court_approved',
+  COURT_CHANGES_REQUESTED = 'court_changes_requested',
+  RESOURCE_SUSPENDED = 'resource_suspended',
+  COURT_PENDING_PAYMENT = 'court_pending_payment',
 }
 
 @Injectable()
@@ -64,6 +72,10 @@ export class EmailService {
       [EmailTemplate.BOOKING_JOIN_REQUEST_REJECTED]: BookingJoinRequestRejectedEmail,
       [EmailTemplate.BOOKING_INVITATION_ACCEPTED]: BookingInvitationAcceptedEmail,
       [EmailTemplate.BOOKING_INVITATION_REJECTED]: BookingInvitationRejectedEmail,
+      [EmailTemplate.COURT_APPROVED]: CourtApprovedEmail,
+      [EmailTemplate.COURT_CHANGES_REQUESTED]: CourtChangesRequestedEmail,
+      [EmailTemplate.RESOURCE_SUSPENDED]: ResourceSuspendedEmail,
+      [EmailTemplate.COURT_PENDING_PAYMENT]: CourtPaymentPendingEmail,
     };
   }
 

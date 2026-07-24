@@ -26,6 +26,8 @@ import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { ListUsersResponseDto } from '../users/dto/list-users-response.dto';
 import { ListTenantsDto, ListTenantsResponseDto } from './dto/admin-tenants.dto';
 import type { SessionUser } from '../auth/@types/session';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -53,6 +55,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/block')
+  @Audited(LogEntity.USER, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Block a user' })
   @ApiResponse({
@@ -64,6 +67,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/unblock')
+  @Audited(LogEntity.USER, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Unblock a user' })
   @ApiResponse({
@@ -88,6 +92,7 @@ export class AdminController {
   }
 
   @Patch('tenants/:id/block')
+  @Audited(LogEntity.TENANT, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Block a tenant' })
   @ApiResponse({
@@ -101,6 +106,7 @@ export class AdminController {
   }
 
   @Patch('tenants/:id/unblock')
+  @Audited(LogEntity.TENANT, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Unblock a tenant' })
   @ApiResponse({

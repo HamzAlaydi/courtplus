@@ -25,6 +25,8 @@ import { AuthorizedUserType } from 'src/decorators/user-type.decorator';
 import { StaffRole } from '../staff/entities/enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypeGuard } from '../auth/guards/user-type.guard';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 
 @ApiTags('Billing')
 @ApiBearerAuth()
@@ -60,6 +62,7 @@ export class BillingController {
   }
 
   @Post('portal')
+  @Audited(LogEntity.SUBSCRIPTION, LogAction.UPDATE)
   @ApiOperation({ summary: 'Get Stripe billing portal URL' })
   @ApiResponse({
     status: 200,

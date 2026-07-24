@@ -33,6 +33,8 @@ import { IsPublic } from 'src/decorators/is-public';
 import { Subscription } from './entities/subscription.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypeGuard } from '../auth/guards/user-type.guard';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 
 @ApiTags('Subscriptions')
 @ApiBearerAuth()
@@ -61,6 +63,7 @@ export class SubscriptionsController {
   }
 
   @Post('portal')
+  @Audited(LogEntity.SUBSCRIPTION, LogAction.UPDATE)
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   @ApiOperation({ summary: 'Get Stripe billing portal URL' })
   @ApiResponse({
@@ -79,6 +82,7 @@ export class SubscriptionsController {
   }
 
   @Post('cancel')
+  @Audited(LogEntity.SUBSCRIPTION, LogAction.UPDATE)
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   @ApiOperation({ summary: 'Cancel subscription' })
   @ApiResponse({ status: 200, type: Subscription })
@@ -92,6 +96,7 @@ export class SubscriptionsController {
   }
 
   @Post('checkout')
+  @Audited(LogEntity.SUBSCRIPTION, LogAction.CREATE)
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   @ApiOperation({ summary: 'Create Stripe checkout session for subscription' })
   @ApiResponse({ status: 200, type: CheckoutSessionResponseDto })

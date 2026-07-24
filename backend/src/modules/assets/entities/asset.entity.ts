@@ -72,9 +72,11 @@ export class Asset extends BaseEntity {
   /**
    * `url` is not persisted — derive the CDN URL on every load so consumers
    * always receive a usable link regardless of which query fetched the asset.
+   * Declared optional so spread-mapped asset objects (`{ ...asset, url }`)
+   * remain assignable to `Asset`.
    */
   @AfterLoad()
-  setCdnUrl() {
+  setCdnUrl?() {
     if (!this.url) {
       const cdnUrl = process.env.AWS_CDN_URL;
       if (cdnUrl && this.id) {

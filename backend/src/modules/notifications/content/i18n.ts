@@ -23,6 +23,10 @@ i18next.init({
           booking_join_request_rejected: 'Your join request was not approved',
           booking_invitation_accepted: 'Your invitation was accepted',
           booking_invitation_rejected: 'Your invitation was declined',
+          court_approved: 'Your court has been approved',
+          court_changes_requested: 'Changes requested for your court',
+          resource_suspended: 'A resource has been suspended',
+          court_pending_payment: 'Payment pending for your court',
         },
         notifications: {
           booking_cancelled: {
@@ -130,6 +134,59 @@ i18next.init({
             title: 'Booking Ended',
             content: 'Your booking has ended',
           },
+          court_pending_payment: {
+            title: 'Payment Pending',
+            content:
+              '{{courtName}} is waiting for the subscription charge to be paid',
+          },
+          court_pending_approval: {
+            title: 'New Court Pending Approval',
+            content: '{{courtName}} at {{branchName}} is waiting for review',
+          },
+          court_approved: {
+            title: 'Court Approved',
+            content: '{{courtName}} has been approved and is now live',
+          },
+          court_changes_requested: {
+            title: 'Changes Requested',
+            content: 'Changes were requested for {{courtName}}: {{reason}}',
+          },
+          court_resubmitted: {
+            title: 'Court Resubmitted',
+            content: '{{courtName}} was resubmitted for review',
+          },
+          court_suspended: {
+            title: 'Court Suspended',
+            content: '{{courtName}} has been suspended: {{reason}}',
+          },
+          court_unsuspended: {
+            title: 'Court Unsuspended',
+            content: '{{courtName}} is live again',
+          },
+          branch_suspended: {
+            title: 'Branch Suspended',
+            content: '{{branchName}} has been suspended: {{reason}}',
+          },
+          branch_unsuspended: {
+            title: 'Branch Unsuspended',
+            content: '{{branchName}} is active again',
+          },
+          tenant_suspended: {
+            title: 'Account Suspended',
+            content: 'Your account has been suspended: {{reason}}',
+          },
+          tenant_unsuspended: {
+            title: 'Account Unsuspended',
+            content: 'Your account suspension has been lifted',
+          },
+          tenant_unsuspend_requested: {
+            title: 'Unsuspend Requested',
+            content: '{{tenantName}} requested to be unsuspended',
+          },
+          subscription_payment_failed: {
+            title: 'Subscription Payment Failed',
+            content: 'Your subscription payment could not be processed',
+          },
         },
       },
     },
@@ -152,6 +209,10 @@ i18next.init({
           booking_join_request_rejected: 'لم يتم قبول طلب انضمامك',
           booking_invitation_accepted: 'تم قبول دعوتك',
           booking_invitation_rejected: 'تم رفض دعوتك',
+          court_approved: 'تمت الموافقة على ملعبك',
+          court_changes_requested: 'تم طلب تعديلات على ملعبك',
+          resource_suspended: 'تم تعليق أحد الموارد',
+          court_pending_payment: 'الدفع معلق لملعبك',
         },
         notifications: {
           booking_cancelled: {
@@ -257,6 +318,58 @@ i18next.init({
           booking_ended: {
             title: 'انتهى الحجز',
             content: 'انتهى حجزك',
+          },
+          court_pending_payment: {
+            title: 'الدفع معلق',
+            content: '{{courtName}} بانتظار سداد رسوم الاشتراك',
+          },
+          court_pending_approval: {
+            title: 'ملعب جديد بانتظار الموافقة',
+            content: '{{courtName}} في {{branchName}} بانتظار المراجعة',
+          },
+          court_approved: {
+            title: 'تمت الموافقة على الملعب',
+            content: 'تمت الموافقة على {{courtName}} وأصبح متاحاً الآن',
+          },
+          court_changes_requested: {
+            title: 'تم طلب تعديلات',
+            content: 'تم طلب تعديلات على {{courtName}}: {{reason}}',
+          },
+          court_resubmitted: {
+            title: 'تمت إعادة تقديم الملعب',
+            content: 'تمت إعادة تقديم {{courtName}} للمراجعة',
+          },
+          court_suspended: {
+            title: 'تم تعليق الملعب',
+            content: 'تم تعليق {{courtName}}: {{reason}}',
+          },
+          court_unsuspended: {
+            title: 'تم إلغاء تعليق الملعب',
+            content: '{{courtName}} متاح مرة أخرى',
+          },
+          branch_suspended: {
+            title: 'تم تعليق الفرع',
+            content: 'تم تعليق {{branchName}}: {{reason}}',
+          },
+          branch_unsuspended: {
+            title: 'تم إلغاء تعليق الفرع',
+            content: '{{branchName}} نشط مرة أخرى',
+          },
+          tenant_suspended: {
+            title: 'تم تعليق الحساب',
+            content: 'تم تعليق حسابك: {{reason}}',
+          },
+          tenant_unsuspended: {
+            title: 'تم إلغاء تعليق الحساب',
+            content: 'تم رفع تعليق حسابك',
+          },
+          tenant_unsuspend_requested: {
+            title: 'طلب إلغاء تعليق',
+            content: '{{tenantName}} طلب إلغاء تعليق حسابه',
+          },
+          subscription_payment_failed: {
+            title: 'فشل دفع الاشتراك',
+            content: 'تعذر معالجة دفعة اشتراكك',
           },
         },
       },

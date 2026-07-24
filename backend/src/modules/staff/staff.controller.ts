@@ -47,6 +47,8 @@ import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { ListStaffResponseDto } from './dto/list-staff-response.dto';
 import { ListStaffDto } from './dto/list-staff.dto';
 import { StaffRole } from './entities/enum';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 @Controller('staff')
 @UseGuards(JwtAuthGuard, UserTypeGuard)
 @ApiBearerAuth()
@@ -76,6 +78,7 @@ export class StaffController {
   @ApiBody({
     type: UpdateStaffDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Patch('me')
   async updateMe(
     @CurrentUser() currentUser: SessionUser,
@@ -96,6 +99,7 @@ export class StaffController {
   @ApiBody({
     type: RequestAccountDeletionDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.DELETE)
   @Post('me/delete')
   async requestAccountDeletion(
     @CurrentUser() currentUser: SessionUser,
@@ -115,6 +119,7 @@ export class StaffController {
   @ApiBody({
     type: VerifyAccountDeletionDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.DELETE)
   @Post('me/delete/verify')
   async verifyAccountDeletion(
     @CurrentUser() currentUser: SessionUser,
@@ -139,6 +144,7 @@ export class StaffController {
       },
     },
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @UseGuards(ThrottlerGuard)
   @Post('me/phone/code')
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
@@ -167,6 +173,7 @@ export class StaffController {
       },
     },
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @UseGuards(ThrottlerGuard)
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   @Post('me/phone/verify')
@@ -185,6 +192,7 @@ export class StaffController {
   @ApiBody({
     type: ChangePasswordDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('me/change-password')
   async changePassword(
     @CurrentUser() currentUser: SessionUser,
@@ -201,6 +209,7 @@ export class StaffController {
   @ApiBody({
     type: RequestEmailChangeDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('me/email/change')
   async requestEmailChange(
     @CurrentUser() currentUser: SessionUser,
@@ -220,6 +229,7 @@ export class StaffController {
   @ApiBody({
     type: VerifyEmailChangeDto,
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('me/email/verify')
   async verifyEmailChange(
     @CurrentUser() currentUser: SessionUser,
@@ -236,6 +246,7 @@ export class StaffController {
     status: 200,
     description: 'Email change cancelled',
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('me/email/cancel')
   async cancelEmailChange(
     @CurrentUser() currentUser: SessionUser,
@@ -249,6 +260,7 @@ export class StaffController {
     description: 'Invite link generated successfully',
   })
   @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.SUPER_ADMIN])
+  @Audited(LogEntity.STAFF, LogAction.CREATE)
   @Post('invite')
   async generateInviteLink(
     @CurrentUser() currentUser: SessionUser,
@@ -295,6 +307,7 @@ export class StaffController {
     status: 200,
     description: 'Invitation revoked successfully',
   })
+  @Audited(LogEntity.STAFF, LogAction.DELETE)
   @Post('invitations/:id/revoke')
   @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.SUPER_ADMIN])
   async revokeInvitation(
@@ -312,6 +325,7 @@ export class StaffController {
     status: 200,
     description: 'Staff role updated successfully',
   })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Patch(':id/role')
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   async updateStaffRole(
@@ -332,6 +346,7 @@ export class StaffController {
     description: 'Staff members assigned to a branch successfully',
   })
   @ApiBody({ type: BranchStaffDto })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('assign')
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   async assignStaffToBranch(
@@ -347,6 +362,7 @@ export class StaffController {
     description: 'Staff members unassigned from branch successfully',
   })
   @ApiBody({ type: BranchStaffDto })
+  @Audited(LogEntity.STAFF, LogAction.UPDATE)
   @Post('unassign')
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   async unassignStaffFromBranch(

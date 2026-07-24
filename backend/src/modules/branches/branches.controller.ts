@@ -31,6 +31,8 @@ import type { SessionUser } from 'src/modules/auth/@types/session';
 import { UserType } from 'src/modules/auth/@types/user.type';
 import { ListBranchesResponseDto } from './dto/list-branches-response.dto';
 import { GetBranchDto } from './dto/get-branch.dto';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 
 @ApiTags('Branches')
 @UseGuards(JwtAuthGuard, UserTypeGuard)
@@ -117,6 +119,7 @@ export class BranchesController {
       },
     },
   })
+  @Audited(LogEntity.BRANCH, LogAction.CREATE)
   @AuthorizedUserType.isStaff()
   create(
     @Body() createBranchDto: CreateBranchDto,
@@ -278,6 +281,7 @@ export class BranchesController {
       },
     },
   })
+  @Audited(LogEntity.BRANCH, LogAction.UPDATE)
   @AuthorizedUserType.isStaff()
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -315,6 +319,7 @@ export class BranchesController {
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @Audited(LogEntity.BRANCH, LogAction.DELETE)
   @AuthorizedUserType.isStaff()
   delete(
     @Param('id', ParseUUIDPipe) id: string,

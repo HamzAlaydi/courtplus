@@ -37,6 +37,8 @@ import { SlotsResponse } from './dto/slots-response.dto';
 import { GetCourtAvailableDaysResponseDto } from './dto/get-court-days-availability-response.dto';
 import { Location, UserLocation } from 'src/decorators/location.decorator';
 import { COURT_NOT_FOUND } from '../shared/error-codes';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from '../logging/entities/log.entity';
 @ApiTags('Courts')
 @UseGuards(JwtAuthGuard, UserTypeGuard)
 @ApiBearerAuth()
@@ -68,6 +70,7 @@ export class CourtsController {
     status: 403,
     description: 'Forbidden. User does not have staff privileges.',
   })
+  @Audited(LogEntity.COURT, LogAction.CREATE)
   @AuthorizedUserType.isStaff()
   create(
     @Body() createCourtDto: CreateCourtDto,
@@ -203,6 +206,7 @@ export class CourtsController {
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @Audited(LogEntity.COURT, LogAction.UPDATE)
   @AuthorizedUserType.isStaff()
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -240,6 +244,7 @@ export class CourtsController {
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @Audited(LogEntity.COURT, LogAction.DELETE)
   @AuthorizedUserType.isStaff()
   delete(
     @Param('id', ParseUUIDPipe) id: string,
@@ -273,6 +278,7 @@ export class CourtsController {
     type: String,
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @Audited(LogEntity.COURT, LogAction.UPDATE)
   @AuthorizedUserType.isStaff()
   resubmit(
     @Param('id', ParseUUIDPipe) id: string,
