@@ -69,10 +69,25 @@ export default function AddBranch() {
 
   useEffect(() => {
     if (branch) {
+      // ✅ Seed location in the exact shape the submit handler consumes
+      // (same as LocationSelector's onChange output)
+      const rawCoords = branch.location?.coordinates;
+      const coordinates = rawCoords?.coordinates
+        ? { lat: rawCoords.coordinates[1], lng: rawCoords.coordinates[0] } // GeoJSON [lng, lat]
+        : rawCoords || null;
+
       form.setFieldsValue({
         name: branch.name || "",
         status: branch.status || "open",
         phoneNumber: branch.phoneNumber || "",
+        zone: branch.schedule?.timeZone || "UTC",
+        location: branch.location
+          ? {
+              coordinates,
+              address: branch.location.address || "",
+              name: branch.location.name || "",
+            }
+          : undefined,
       });
       setPlaceId(branch.location?.placeId || "");
       setIsCourtVisible(branch.isVisible);

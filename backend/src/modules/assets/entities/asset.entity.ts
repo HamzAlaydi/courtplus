@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/common/base-entity';
-import { Column, Entity, Index } from 'typeorm';
+import { AfterLoad, Column, Entity, Index } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum AssetType {
@@ -68,4 +68,18 @@ export class Asset extends BaseEntity {
 
   @Column({ nullable: true, type: 'uuid' })
   uploadedBy?: string;
+
+  /**
+   * `url` is not persisted — derive the CDN URL on every load so consumers
+   * always receive a usable link regardless of which query fetched the asset.
+   */
+  @AfterLoad()
+  setCdnUrl() {
+    if (!this.url) {
+      const cdnUrl = process.env.AWS_CDN_URL;
+      if (cdnUrl && this.id) {
+        this.url = `${cdnUrl}/assets/${this.id}`;
+      }
+    }
+  }
 }
