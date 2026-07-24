@@ -197,6 +197,10 @@
     "user_alt": "User",
     "upcoming_matches": "Upcoming matches",
     "open": "Open",
+    "edit": "Edit",
+    "delete_confirm": "Delete this court?",
+    "delete_success": "Court deleted successfully",
+    "delete_failed": "Failed to delete court",
     "status": {
       "available": "available",
       "unavailable": "unavailable"

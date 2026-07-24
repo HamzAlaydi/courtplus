@@ -1,10 +1,31 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
+import { MdDeleteOutline } from "react-icons/md";
+import { Popconfirm } from "antd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { deleteCourt } from "../actions/court_actions";
+import { useNotification } from "../modules/NotificationProvider";
 
 const CourtCard = ({ name, id, image, status, court }) => {
   const { t } = useTranslation(); // ✅ Translation hook
+  const notify = useNotification();
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteCourtMutate } = useMutation({
+    mutationFn: () => deleteCourt(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["all-courts"]);
+      notify("success", t("courtCard.delete_success"));
+    },
+    onError: (err) => {
+      notify(
+        "error",
+        err?.response?.data?.code || t("courtCard.delete_failed")
+      );
+    },
+  });
 
   return (
     <div className="court-card">
@@ -56,9 +77,24 @@ const CourtCard = ({ name, id, image, status, court }) => {
         <FiExternalLink color="#777" size={24} />
       </Link>
 
-      <Link to={`${id}`} className="court-card-btn" type="text">
-        {t("courtCard.open")}
-      </Link>
+      <div className="court-card-actions">
+        <Link to={`${id}`} className="court-card-btn" type="text">
+          {t("courtCard.open")}
+        </Link>
+        <Link to={`${id}/edit`} className="court-card-btn" type="text">
+          {t("courtCard.edit")}
+        </Link>
+        <Popconfirm
+          title={t("courtCard.delete_confirm")}
+          okText={t("common.delete")}
+          cancelText={t("common.cancel")}
+          onConfirm={() => deleteCourtMutate()}
+        >
+          <button type="button" className="court-card-delete">
+            <MdDeleteOutline size={20} />
+          </button>
+        </Popconfirm>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,10 @@
 import { Platform } from "react-native";
 
-// In dev builds, hit the local backend: 10.0.2.2 is the host machine from the
-// Android emulator; use your LAN IP instead when testing on a physical device.
+// In dev builds, hit the local backend. Android uses `adb reverse tcp:3000`
+// (run once per device connection) so localhost works on both emulator and
+// physical devices; iOS simulator reaches the host directly.
 const devBaseUrl = Platform.select({
-  android: "http://10.0.2.2:3000/",
+  android: "http://localhost:3000/",
   default: "http://localhost:3000/",
 });
 

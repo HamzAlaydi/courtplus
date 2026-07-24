@@ -193,6 +193,10 @@
     "user_alt": "مستخدم",
     "upcoming_matches": "المباريات القادمة",
     "open": "فتح",
+    "edit": "تعديل",
+    "delete_confirm": "حذف هذا الملعب؟",
+    "delete_success": "تم حذف الملعب بنجاح",
+    "delete_failed": "فشل حذف الملعب",
     "status": {
       "available": "متاح",
       "unavailable": "غير متاح"

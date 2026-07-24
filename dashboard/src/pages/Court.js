@@ -48,6 +48,9 @@ export default function Court() {
     return imageAssets?.length ? imageAssets.map((a) => a.url) : [];
   };
 
+  const getVideo = (assets) =>
+    assets?.find((a) => a.type === "court_video")?.url;
+
   const tabItems = [
     {
       key: "details",
@@ -133,6 +136,13 @@ export default function Court() {
             <CourtCarousel
               images={getImages(court.assets)}
               centerSlideScale={1.2}
+            />
+          )}
+          {getVideo(court?.assets) && (
+            <video
+              className="court-video"
+              src={getVideo(court.assets)}
+              controls
             />
           )}
         </div>
