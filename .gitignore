@@ -1,0 +1,7 @@
+.DS_Store
+.claude/
+
+# Local env files (nested projects also have their own .gitignore rules)
+.env
+.env.local
+.env.*.local

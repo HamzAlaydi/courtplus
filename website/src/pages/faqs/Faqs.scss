@@ -1,0 +1,252 @@
+@use "@/assets/styles/base/index" as *;
+
+.faqs-page .hero {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  max-height: 80rem;
+  padding: 5%;
+
+  background-color: $color-black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4rem;
+
+  h1 {
+    color: white;
+  }
+
+  h5 {
+    color: $color-white-light;
+    width: 80%;
+    max-width: 80rem;
+  }
+}
+
+// FAQ.scss
+
+.faq-container {
+  max-width: 1200px;
+  margin: 6rem auto;
+
+  .faq-menu {
+    border-right: none;
+    background-color: transparent;
+
+    .ant-menu-item {
+      font-weight: 400;
+      border-radius: 6rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      padding-left: 3rem !important;
+
+      &.ant-menu-item-selected {
+        font-weight: 600;
+        background-color: $color-black;
+      }
+    }
+  }
+
+  .faq-content {
+    padding: 5% !important;
+
+    h2 {
+      margin-bottom: 16px;
+    }
+
+    .ant-collapse {
+      background-color: white;
+      border: none;
+
+      .ant-collapse-item {
+        border-bottom: 1px solid #f0f0f0;
+
+        .ant-collapse-header {
+          padding: 12px 0;
+          font-size: 16px;
+        }
+
+        .ant-collapse-content {
+          padding: 0 0 12px 0;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
+
+    .faq-menu {
+      margin-bottom: 16px;
+
+      .ant-menu-item {
+        padding: 8px 0;
+      }
+    }
+
+    .faq-content {
+      h2 {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+.contact-support {
+  padding: 6rem 5%;
+  border-radius: 6rem;
+  background-color: #000;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  margin: 7rem auto;
+  width: 90%;
+  max-width: 90rem;
+
+  .contact-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #aaa;
+      margin-bottom: 0;
+
+      .email-link {
+        color: #bfff00;
+        text-decoration: underline;
+        font-weight: 500;
+
+        &:hover {
+          color: #ccff33;
+        }
+      }
+    }
+  }
+
+  .contact-form-card {
+    width: 80%;
+    background-color: #111;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid #222;
+
+    .contact-form {
+      .ant-form-item {
+        margin-bottom: 1.2rem;
+
+        .ant-input,
+        .ant-input-affix-wrapper,
+        .ant-input-textarea {
+          background-color: #222;
+          border: 1px solid #333;
+          color: white;
+          border-radius: 0.75rem;
+          font-size: 1rem;
+          padding: 0.75rem 1rem;
+
+          &::placeholder {
+            color: #777;
+          }
+
+          &:focus,
+          &.ant-input-focused {
+            border-color: #bfff00;
+            box-shadow: 0 0 0 2px rgba(191, 255, 0, 0.2);
+          }
+        }
+      }
+
+      .submit-btn {
+        background-color: #bfff00;
+        border-color: #bfff00;
+        color: #000;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        height: 48px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+
+        &:hover,
+        &:focus {
+          background-color: #ccff33;
+          border-color: #ccff33;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // Responsive
+  @media (max-width: 992px) {
+    padding: 4rem 5%;
+
+    .contact-text {
+      h2 {
+        font-size: 2rem;
+      }
+      h4 {
+        font-size: 1.3rem;
+      }
+    }
+
+    .contact-form-card {
+      padding: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 6rem 5%;
+    text-align: center;
+
+    .contact-text {
+      margin-bottom: 2rem;
+
+      h2 {
+        font-size: 1.8rem;
+      }
+    }
+
+    .ant-row {
+      flex-direction: column;
+    }
+
+    .ant-col {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .contact-form-card {
+      padding: 1.5rem;
+    }
+
+    .submit-btn {
+      height: 44px;
+      font-size: 1rem;
+    }
+  }
+}

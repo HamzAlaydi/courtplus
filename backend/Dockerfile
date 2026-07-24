@@ -1,0 +1,23 @@
+FROM node:23-alpine
+
+RUN corepack enable
+RUN apk add --no-cache libc6-compat
+RUN apk update
+RUN npm i -g pnpm --force
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+WORKDIR /app
+
+COPY package*.json ./
+
+COPY . .
+
+RUN pnpm install
+
+RUN pnpm run build
+
+CMD ["pnpm", "run", "start:prod"]
+
+

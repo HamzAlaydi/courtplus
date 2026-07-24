@@ -1,0 +1,35 @@
+.delete-modal {
+  .modal-content {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .warning-icon {
+    width: 80px;
+    margin-bottom: 15px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    color: #333;
+  }
+
+  .modal-description {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .modal-warning {
+    font-size: 14px;
+    color: red;
+    margin-top: 10px;
+  }
+
+  .modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}

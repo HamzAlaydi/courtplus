@@ -1,0 +1,84 @@
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { CustomText, Input, Slider } from "atoms/index";
+import BottomSheetOverlay from "molecules/BottomSheetOverlay/BottomSheetOverlay.component";
+import React, { forwardRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Image, View } from "react-native";
+import { Images } from "theme";
+import { verticalScale } from "utils";
+import MapView, { Circle, PROVIDER_GOOGLE } from "react-native-maps";
+import { useThemeContext } from "contexts";
+import styles from "./FilterLocationModal.styles";
+import ButtonsRow from "molecules/ButtonsRow/ButtonsRow.component";
+import { useFilterLocationModal } from "./FilterLocationModal.logic";
+
+const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
+  const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
+  const { location, address, onValueChange, radius } = useFilterLocationModal();
+
+  return (
+    <BottomSheetOverlay isWhite ref={ref} title={t("general.location")}>
+      <View style={{ paddingTop: verticalScale(18) }}>
+        <Input
+          placeholder={t("general.search")}
+          leftComponent={<Image source={Images.search} />}
+        />
+        <View style={themedStyles.mapContainer}>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            initialRegion={{
+              latitude: location?.lat ?? 0,
+              longitude: location?.long ?? 0,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+            loadingEnabled
+            style={themedStyles.map}
+            showsMyLocationButton
+          >
+            <Circle
+              center={{
+                latitude: location?.lat ?? 0,
+                longitude: location?.long ?? 0,
+              }}
+              radius={1500}
+              strokeColor="rgba(0, 200, 83, 0.6)"
+              fillColor="rgba(0, 200, 83, 0.2)"
+            />
+          </MapView>
+        </View>
+        <View style={themedStyles.locationContainer}>
+          <Image source={Images.location} />
+          <CustomText text={`${address} ${t("filters.changeable")}`} />
+        </View>
+        <View style={themedStyles.radiusContainer}>
+          <CustomText
+            text={t("court.chooseTime")}
+            font="headline3"
+            weight="medium"
+          />
+          <CustomText
+            text={`${radius} ${t("general.km")}`}
+            font="headline3"
+            weight="medium"
+            overrideStyle={themedStyles.radiusText}
+          />
+        </View>
+        <Slider onValueChange={onValueChange} value={radius} />
+        <ButtonsRow
+          title={t("general.clear")}
+          secondaryTitle={t("general.done")}
+          onPress={() => {}}
+          onSecondaryPress={() => {}}
+          overrideStyle={themedStyles.buttonContainer}
+        />
+      </View>
+    </BottomSheetOverlay>
+  );
+});
+
+export default FilterLocationModal;

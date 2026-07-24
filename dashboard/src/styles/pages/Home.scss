@@ -1,0 +1,165 @@
+@use "../base/index" as *;
+
+.home {
+  padding: 2rem;
+  color: #444;
+  line-height: 1.6;
+
+  &.rtl {
+    direction: rtl;
+    text-align: right;
+
+    .acc-card-precentage {
+      flex-direction: row-reverse;
+    }
+
+    button svg {
+      transform: rotate(180deg);
+    }
+  }
+
+  .home-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+
+    &-left {
+      flex: 1 1 60%;
+      min-width: 300px;
+
+      h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+      }
+
+      p {
+        color: #555;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+      }
+    }
+
+    .acc-info {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      &-item {
+        flex: 1;
+        min-width: 150px;
+
+        h5 {
+          margin-top: 0.5rem;
+          color: #222;
+        }
+      }
+    }
+
+    .acc-header-right {
+      flex: 1 1 35%;
+      min-width: 280px;
+
+      .acc-card {
+        padding: 2rem;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+
+        &-top {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .acc-card-precentage {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          h4 {
+            font-weight: 700;
+            color: $primary-color;
+          }
+
+          button {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              background-color: #f5f5f5;
+            }
+          }
+        }
+
+        .check-items {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          max-height: 0;
+          opacity: 0;
+
+          li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.95rem;
+          }
+
+          .check {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #ccc;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 10px;
+          }
+
+          .checked {
+            background-color: $primary-color;
+          }
+        }
+
+        .check-items.visible {
+          padding-top: 1rem;
+          max-height: 250px;
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  hr {
+    margin: 3rem 0;
+    border: none;
+    height: 1px;
+    background-color: #eee;
+  }
+
+  @media (max-width: 768px) {
+    .home-header {
+      flex-direction: column;
+
+      &-left,
+      .acc-header-right {
+        width: 100%;
+      }
+    }
+  }
+}

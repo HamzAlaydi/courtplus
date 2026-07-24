@@ -1,0 +1,135 @@
+@use "../base/index" as *;
+
+.addbranch {
+  align-self: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  align-items: center;
+  min-width: 85rem;
+
+  .cover-container {
+    width: 100%;
+    position: relative;
+  }
+
+  .ant-upload {
+    width: 100%;
+  }
+
+  .cover {
+    min-height: 16rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: $border-radius;
+
+    .cover-overlay {
+      border-radius: $border-radius;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      color: white;
+      font-weight: bold;
+
+      h5 {
+        margin: 0;
+      }
+    }
+
+    &:hover {
+      .cover-image {
+        filter: blur(3px);
+      }
+      .cover-overlay {
+        opacity: 1;
+      }
+    }
+  }
+
+  .logo {
+    border-radius: 50%;
+    background: 50%;
+    position: absolute;
+    left: 45%;
+    bottom: -50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px #0000000c;
+    cursor: pointer;
+    background-color: white;
+  }
+
+  .custom-radio-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .ant-radio-button-wrapper {
+      border-radius: 2rem;
+      transition: all 0.3s ease-in-out;
+      border: none;
+      background: #eeffff;
+      color: #999;
+      overflow: hidden;
+
+      &:hover {
+        background: #e0e3e8; // Light hover effect
+      }
+
+      &.ant-radio-button-wrapper-checked {
+        background: $color-green !important; // Green background for selected button
+        color: #fff !important; // White text
+
+        &:hover {
+          background: #00a650 !important; // Prevent hover color change
+        }
+      }
+    }
+  }
+
+  .submit-btns {
+    margin-top: 4rem;
+  }
+}
+
+.addbranch-form {
+  display: flex;
+  gap: 4rem;
+
+  &-left {
+    min-width: 50%;
+    flex: 1;
+  }
+}
+
+.PhoneInputInput {
+  border: 1px solid #ddd;
+  font-size: 1.6rem;
+  padding: 1rem;
+  border-radius: $border-radius;
+  font-weight: 400;
+  color: #333;
+  letter-spacing: 1.1px;
+}
+
+.PhoneInputCountry {
+  font-size: 1.8rem;
+  border-radius: $border-radius;
+}
+.PhoneInputCountryIcon--border {
+  border-radius: $border-radius;
+  overflow: hidden;
+}

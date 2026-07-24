@@ -1,0 +1,452 @@
+@use "../../assets/styles/base/index" as *;
+
+.home .hero-section {
+  position: relative;
+  // Fill the viewport below the sticky header (header ≈ 7.5rem tall)
+  min-height: calc(100vh - 7.5rem);
+  min-height: calc(100svh - 7.5rem);
+  width: 100%;
+  padding: 5%;
+
+  background-color: $color-black;
+  display: flex;
+  align-items: center;
+
+  img {
+    width: 55%;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+
+    h1 {
+      color: white;
+    }
+
+    h6,
+    h5 {
+      color: $color-white;
+    }
+
+    .p-btn {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 950px) {
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 3rem;
+
+    img {
+      width: 60%;
+    }
+  }
+
+  @media (max-width: 650px) {
+    img {
+      width: 90%;
+    }
+  }
+}
+
+.home .about-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+
+  @media (max-width: 991px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* LEFT */
+.about-left {
+  flex: 1;
+
+  h2 {
+    font-size: 40px;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  p {
+    max-width: 480px;
+    opacity: 0.8;
+    line-height: 1.6;
+
+    @media (max-width: 991px) {
+      max-width: 100%;
+    }
+  }
+
+  .about-btn {
+    margin-top: 25px;
+    padding: 12px 28px;
+    font-size: 16px;
+    border: none;
+    border-radius: 50px;
+    background: #c0ff42;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+/* RIGHT background image */
+.about-right {
+  flex: 1;
+  height: 350px;
+  border-radius: 15px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+
+  @media (max-width: 991px) {
+    width: 100%; // REQUIRED
+    min-height: 32rem; // Keep image visible
+  }
+
+  @media (max-width: 600px) {
+    min-height: 260px;
+  }
+
+  .play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    background: #c0ff42;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+}
+
+/* VIDEO MODAL */
+.video-modal {
+  .video-wrapper {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
+
+.home .run {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+
+  h2 {
+    font-weight: 700;
+  }
+
+  h5 {
+    color: #111;
+    text-align: center;
+    max-width: 80rem;
+  }
+
+  .run-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); // 3 columns on desktop
+    gap: 2rem;
+    padding: 2rem;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr); // 2 columns on tablets
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr; // 1 column on mobile
+    }
+  }
+
+  .run-card {
+    border-radius: 2.4rem;
+    padding: 2rem;
+
+    h4 {
+      line-height: 2.4rem;
+      margin: 2rem 0;
+    }
+
+    .icon-container {
+      display: inline-block;
+      background-color: $color-black;
+      border-radius: 50%;
+
+      svg {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-self: center;
+        color: $color-primary;
+        font-size: 5rem;
+      }
+    }
+
+    // 👇 Even cards
+    &:nth-child(even) {
+      background: #c0ff4291;
+    }
+
+    // 👇 Odd cards
+    &:nth-child(odd) {
+      background: #f0f0f0;
+    }
+  }
+}
+
+.home .works {
+  background-color: $color-black;
+
+  &-body {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+
+    img {
+      width: 60%;
+      max-width: 65rem;
+    }
+
+    @media (max-width: 800px) {
+      flex-direction: column-reverse;
+
+      img {
+        width: 100%;
+        max-width: 65rem;
+      }
+    }
+  }
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  &-cards {
+    margin-top: 9rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+
+    @media (max-width: 950px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 550px) {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  &-card {
+    &-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      svg {
+        font-size: 4.8rem;
+        color: $color-primary;
+      }
+    }
+  }
+  h1,
+  h4 {
+    color: white;
+  }
+  h6 {
+    line-height: 2rem;
+    color: $color-white-light;
+  }
+}
+
+.home .manage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  h1 {
+    text-align: center;
+  }
+}
+
+.home .plan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+
+  h1,
+  p {
+    max-width: 80rem;
+    text-align: center;
+  }
+
+  &-cards {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.pricing-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  max-width: 45rem;
+  position: relative;
+  background: #f3f3f3;
+  border-radius: 2.5rem;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  h2 {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 3.5rem;
+    font-weight: 800;
+
+    span {
+      color: #aaa;
+      font-size: 1.5rem;
+    }
+
+    small {
+      font-size: 1.4rem;
+      margin-left: 5px;
+      color: #999;
+    }
+  }
+
+  .sub {
+    color: #999;
+    font-size: 0.9rem;
+  }
+
+  ul {
+    margin-top: 1.5rem;
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+
+    li {
+      color: #333;
+      font-size: 1.4rem;
+      border-bottom: 0.5px solid $color-primary-dark;
+      padding: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+}
+
+.pricing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+
+  img {
+    width: 5rem;
+  }
+}
+
+.pricing-header-content .badge {
+  background: #b8ff1fb2;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 1.6rem;
+}
+
+.pricing-btn {
+  margin-top: auto;
+  background: black;
+  color: white;
+  border-radius: 2rem;
+  padding: 0.9rem 2rem;
+  text-align: center;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+/* GREEN GLOW ENTERPRISE CARD */
+.pricing-card.featured {
+  background: #eaffb9c9;
+  box-shadow: 0 0 0 3px #b7ff1f inset, 0 20px 60px rgba(183, 255, 31, 0.5);
+
+  .pricing-btn {
+    background: #b7ff1f;
+    color: #111;
+  }
+}
+
+.home .power {
+  background-color: $color-black;
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+
+  h2,
+  p {
+    color: white;
+  }
+
+  p {
+    margin: 3rem 0;
+  }
+
+  img {
+    width: 40rem;
+  }
+
+  @media (max-width: 650px) {
+    flex-direction: column-reverse;
+    text-align: center;
+
+    img {
+      width: 100%;
+    }
+  }
+}

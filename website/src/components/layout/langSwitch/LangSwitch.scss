@@ -1,0 +1,31 @@
+@use "../../../assets/styles/base/index" as *;
+.lang-item {
+  width: 6.5rem;
+  display: flex;
+  align-items: center;
+
+  p {
+    font-size: 1.4rem;
+    padding: 5px;
+  }
+
+  img {
+    border-radius: 3px;
+    width: 2rem;
+  }
+}
+
+.ant-select-selection-item {
+  p {
+    color: #fff;
+  }
+}
+
+.ant-select-item,
+.ant-select-dropdown,
+.ant-select-item-option-content,
+.ant-select-dropdown,
+.ant-select-item-option-selected {
+  color: #fff;
+  background-color: $color-black !important;
+}

@@ -1,0 +1,9 @@
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { SessionUser } from 'src/modules/auth/@types/session';
+
+export const CurrentUser = createParamDecorator(
+  (data: unknown, context: ExecutionContext): SessionUser => {
+    const req = context.switchToHttp().getRequest();
+    return req.user as SessionUser;
+  },
+);

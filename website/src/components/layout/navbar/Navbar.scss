@@ -1,0 +1,165 @@
+// Navbar.scss – Regular Sass (not modular)
+@use "../../../assets/styles/base/index" as *;
+
+.header {
+  position: fixed;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: $color-black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2.5rem;
+  z-index: 1000;
+
+  @media (max-width: 950px) {
+    justify-content: space-between;
+  }
+}
+
+.logo-link {
+  @media (max-width: 950px) {
+    order: 1;
+  }
+}
+
+.logo {
+  height: 4.5rem;
+}
+
+.nav {
+  @media (max-width: 950px) {
+    display: none;
+  }
+
+  ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 0;
+    padding: 1rem 3rem;
+    background-color: $color-black-light;
+    border-radius: $border-radius-l;
+  }
+
+  li {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $color-primary;
+    }
+  }
+
+  a {
+    color: white;
+    font-weight: 500;
+    font-size: 1.4rem;
+    text-decoration: none;
+  }
+}
+
+.activeLink {
+  border-radius: 4rem;
+  transition: all 0.3s ease;
+
+  a {
+    color: $color-primary !important;
+  }
+
+  // Enhanced for mobile
+  @media (max-width: 950px) {
+    background-color: $color-black-light;
+  }
+}
+
+.actions {
+  @media (max-width: 950px) {
+    display: none;
+  }
+}
+
+.mobileMenuBtn {
+  display: none;
+  color: #fff;
+
+  @media (max-width: 950px) {
+    display: inline-flex;
+    order: 2;
+  }
+}
+
+.sideNav {
+  position: absolute;
+  @media (max-width: 950px) {
+    order: 4;
+  }
+}
+
+.mobileNav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    padding: 2rem 3rem;
+    border-bottom: 1px solid #333;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: $color-black-light;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    a {
+      text-transform: capitalize;
+      color: white;
+      font-size: 2rem;
+      font-weight: 500;
+      text-decoration: none;
+      display: block;
+    }
+  }
+}
+
+.mobileLangSwitch {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #333;
+}
+
+/* Ant Design Drawer customization */
+
+.ant-drawer {
+  color: #fff;
+
+  .ant-drawer-content {
+    background-color: $color-black;
+    color: #fff;
+  }
+
+  .ant-drawer-body {
+    color: #fff;
+    padding: 1.5rem 0;
+    background-color: $color-black;
+  }
+
+  .ant-drawer-header {
+    background-color: $color-black;
+    border-bottom: 1px solid #333;
+  }
+
+  .ant-drawer-close {
+    color: #fff;
+
+    &:hover {
+      color: $color-primary;
+    }
+  }
+}

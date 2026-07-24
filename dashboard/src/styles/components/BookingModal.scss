@@ -1,0 +1,55 @@
+.selectors {
+  display: flex;
+  gap: 4%;
+  margin-bottom: 16px;
+}
+.times {
+  display: flex;
+  flex-wrap: wrap;
+}
+.user-confirm {
+  display: flex;
+  align-items: center;
+}
+
+.react-calendar {
+  width: 100% !important;
+  border: none !important;
+  .react-calendar__month-view__days {
+    display: grid !important;
+    justify-items: center;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .booking-modal .react-calendar__tile.available-day {
+    color: #00c46c !important;
+  }
+
+  .react-calendar__tile {
+    height: 3.5rem;
+    width: 3.5rem;
+    font-size: 1.4rem;
+    padding: 6px;
+    border-radius: 50%;
+    text-align: center;
+    transition: 0.2s ease;
+
+    // &.available-day {
+    // }
+
+    &.unavailable-day {
+      background-color: #e0e0e0 !important;
+      color: #999 !important;
+    }
+
+    &:hover {
+      background-color: #00c46c !important;
+      color: #333 !important;
+    }
+  }
+}
+
+.step-1 {
+  height: 50rem;
+  overflow-y: scroll;
+}

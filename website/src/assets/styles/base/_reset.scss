@@ -1,0 +1,101 @@
+@use "variables" as *;
+@use "fonts";
+
+html {
+  font-size: 62.5%;
+
+  @media (max-width: 1000px) {
+    font-size: 55%;
+  }
+  @media (max-width: 500px) {
+    font-size: 47%;
+  }
+
+  @media (max-width: 450px) {
+    font-size: 40%;
+  }
+}
+
+.ant-layout {
+  font-family: "Inter", sans-serif !important;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif !important;
+  color: $color-text;
+  overflow-x: hidden;
+  margin: 0 auto;
+  letter-spacing: 0.4px;
+  // background-color: $color-black;
+}
+
+body[dir="rtl"] {
+  direction: rtl;
+}
+
+.app {
+  margin: 0 auto;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  color: $color-text;
+  cursor: pointer;
+  transition: ease-in-out 0.2s;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  transition: ease-in-out 0.3s;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+ul {
+  list-style: none;
+}
+
+.ant-btn {
+  padding: 2rem 3rem;
+}
+
+.ant-btn-color-primary,
+.ant-btn-color-primary:hover {
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+.ant-radio-button-wrapper {
+  font-weight: 500 !important;
+}
+
+.ant-switch.ant-switch-checked {
+  background: $color-green-dark;
+
+  &:hover {
+    background: $color-green-dark !important;
+  }
+
+  .ant-switch-handle::before {
+    background-color: $color-primary;
+  }
+}

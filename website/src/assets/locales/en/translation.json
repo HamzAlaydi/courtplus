@@ -1,0 +1,741 @@
+{
+  "home": "Home",
+  "players": "Players",
+  "journal": "Journal",
+  "faqs": "FAQs",
+  "contacts": "Contacts",
+  "contact_us": "Contact us",
+  "terms_conditions": "Terms and Conditions",
+  "privacy_policy": "Privacy Policy",
+  "got_questions": "Got questions?",
+  "faqs_subtitle": "Everything court owners and players need to know about using Court+.",
+  "sports_facility_owners": "Sports Facility Owners",
+  "load_more": "Load more",
+
+  "seo": {
+    "home_title": "Court+ | Sports Facility Management & Court Booking in Saudi Arabia",
+    "home_description": "Court+ is the ultimate platform to manage and grow your sports facility in Saudi Arabia. Online court booking, payments, scheduling and analytics — all in one dashboard.",
+    "players_title": "Court+ for Players | Book Padel, Football & Tennis Courts in Seconds",
+    "players_description": "Discover and book top-rated sports courts near you in Saudi Arabia. Padel, football, tennis, basketball and more — book instantly with Court+.",
+    "journal_title": "Court+ Journal | Insights on Sports Facility Management",
+    "journal_description": "Tips, stories and insights from the world of sports and court management in Saudi Arabia — booking strategies, player experience, revenue growth and more.",
+    "faqs_title": "Court+ FAQs | Frequently Asked Questions",
+    "faqs_description": "Answers to the most common questions about Court+ for court owners and players: bookings, payments, accounts and support.",
+    "contact_title": "Contact Court+ | Grow Your Sports Facility",
+    "contact_description": "Get in touch with the Court+ team. Leave your details and we will help you digitize and grow your sports facility in Saudi Arabia.",
+    "terms_title": "Court+ | Terms and Conditions",
+    "privacy_title": "Court+ | Privacy Policy",
+    "privacy_description": "Learn how Court+ collects, uses, stores, and protects your personal data in line with Saudi Arabia's Personal Data Protection Law (PDPL)."
+  },
+
+  "hero": {
+    "title_active": "The ultimate platform",
+    "title_rest": "to manage and grow your sports facility",
+    "subtitle": "From online bookings to real-time management, Court+ helps business owners run every court efficiently, attract more players, and increase revenue with ease.",
+    "owner_question": "Sports Facility Owner?",
+    "subscribe_now": "Subscribe Now"
+  },
+
+  "about": {
+    "title": "About Court+",
+    "text": "Court+ is a smart booking and management platform built for businesses that operate sports courts. Simplify operations, attract players and manage every court from one intuitive dashboard.",
+    "learn_more": "Learn More"
+  },
+
+  "run": {
+    "title": "Run your courts. Grow your business.",
+    "subtitle": "Court+ gives sports business owners full control over bookings, schedules, payments, and customer engagement — all from one dashboard.",
+    "cards": [
+      {
+        "title": "Smart Booking System",
+        "text": "Accept and manage online reservations instantly with real-time availability."
+      },
+      {
+        "title": "Court Management",
+        "text": "Organize courts, timeslots, and availability with minimal effort."
+      },
+      {
+        "title": "Secure Payments",
+        "text": "Support multiple payment methods and secure gateway integration."
+      },
+      {
+        "title": "Customer Management",
+        "text": "Track players, membership, and booking history in one place."
+      },
+      {
+        "title": "Automation",
+        "text": "Automate notifications, cancellations and reminders."
+      },
+      {
+        "title": "Promotions & Announcements",
+        "text": "Send offers and manage news to players."
+      }
+    ]
+  },
+
+  "works": {
+    "tag": "Set up your courts",
+    "title": "How Court+ Works for You",
+    "subtitle": "Set up your courts, go live, and start receiving bookings in just a few steps.",
+    "cards": [
+      {
+        "title": "Create Your Account",
+        "text": "Sign up as a Sports Facility owner and set up your court/s profile in minutes."
+      },
+      {
+        "title": "Add Courts & Schedule",
+        "text": "Enter details, pricing and available time slots in seconds."
+      },
+      {
+        "title": "Start Accepting Bookings",
+        "text": "Players can find, book and pay securely through the app."
+      },
+      {
+        "title": "Track & Grow",
+        "text": "Use insights to boost utilization and revenue."
+      }
+    ]
+  },
+
+  "manage": {
+    "title": "Manage everything from one powerful dashboard",
+    "subtitle": "Simple, smart, and built for growth."
+  },
+
+  "plans": {
+    "title": "Choose the plan that fits your Sports Facility.",
+    "subtitle": "Whether you manage a single court or operate multiple locations, Court+ offers flexible plans to help your sports business grow with confidence.",
+    "basic_tag": "Basic",
+    "basic_per": "/court",
+    "basic_sub": "per month (VAT excl.)",
+    "basic_btn": "Subscribe now",
+    "enterprise_tag": "Enterprise",
+    "enterprise_currency": "more than",
+    "enterprise_per": "courts",
+    "enterprise_btn": "Contact us for pricing",
+    "basic_features": [
+      "Court information display",
+      "Matches Reservation",
+      "Fully Dashboard",
+      "POS system",
+      "Payments",
+      "Invoices",
+      "48h response time"
+    ],
+    "enterprise_features": [
+      "Everything in Basic",
+      "Money wallet",
+      "Tournaments",
+      "Highest priority with chat",
+      "Leagues",
+      "Coaches"
+    ]
+  },
+
+  "power": {
+    "title_pre": "Power your sports business with",
+    "title_highlight": "Court+.",
+    "text": "Simplify management, attract more players, and grow your business, all from one platform."
+  },
+
+  "contact_form": {
+    "title": "Ready to grow your business with Court+",
+    "subtitle": "Leave your details and our team will get in touch to expand your facility.",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "facility_name": "Facility Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "city": "City",
+    "submit": "Submit",
+    "success": "Thank you! Our team will contact you soon.",
+    "error": "Something went wrong. Please try again later.",
+    "required": "This field is required",
+    "invalid_email": "Please enter a valid email",
+    "quote": "I had a dream that someday, I could help the finest organization in professional sports, and now...",
+    "quote_author": "- Mike Brown"
+  },
+
+  "journal_page": {
+    "hero_title": "Our Journal",
+    "hero_subtitle": "Insights, stories, and tips from the world of sports and court management.",
+    "read_more": "Learn more",
+    "close": "Close",
+    "articles": [
+      {
+        "title": "How to Boost Court Bookings During Off-Peak Hours",
+        "excerpt": "Empty courts at noon don't have to stay empty. Here are practical pricing and promotion tactics that fill quiet hours.",
+        "body": [
+          "Every sports facility has them: the quiet hours between the morning rush and the evening peak, when courts sit empty and revenue flatlines. The good news is that off-peak demand exists — it just needs the right incentive to show up.",
+          "Start with dynamic pricing. Offering 20–40% discounts on midday and early-afternoon slots attracts students, shift workers, and remote employees who have flexible schedules. With Court+, you can configure time-based pricing rules once and let the platform apply them automatically.",
+          "Next, bundle quiet hours into memberships and corporate packages. Companies increasingly look for team-building activities, and a weekly reserved slot at a discounted rate is an easy sell. Academies and coaches also love consistent off-peak blocks for training sessions.",
+          "Finally, promote the slots where players already are: push notifications and in-app offers convert far better than social media posts. A well-timed 'afternoon deal' notification sent through Court+ reaches players who have already booked with you before — the audience most likely to book again."
+        ]
+      },
+      {
+        "title": "5 Ways to Improve Player Experience at Your Venue",
+        "excerpt": "Winning venues aren't just about great courts — the whole journey from booking to post-match matters.",
+        "body": [
+          "Player experience is the strongest driver of repeat bookings. A player who enjoys the full journey — from finding your venue to leaving after a match — becomes a regular, and regulars are the backbone of facility revenue.",
+          "First, make booking effortless. If reserving a court takes a phone call, you are losing the generation of players who expect to book in three taps. Second, keep your schedule accurate: nothing damages trust like arriving to a double-booked court.",
+          "Third, invest in the small details on site — clean changing rooms, working lights, water availability, and clear signage. Fourth, close the payment loop digitally so players never fumble with cash or bank transfers after a match.",
+          "Fifth, listen. Collect ratings and reviews after each booking, respond to complaints quickly, and let players see that feedback changes things. Court+ gives you reviews, notifications, and customer history in one place, so every visit can be a little better than the last."
+        ]
+      },
+      {
+        "title": "A New Way to Manage Courts",
+        "excerpt": "Spreadsheets and phone bookings got you this far. Here's what a modern operating system for your facility looks like.",
+        "body": [
+          "For years, running a sports facility meant a notebook by the phone, a wall calendar, and a lot of patience. Those tools worked when demand was local and predictable. They break down the moment your facility grows beyond a single court and a single employee.",
+          "A modern court management platform replaces scattered tools with one source of truth. Availability, pricing, bookings, payments, staff roles, and customer records live in a single dashboard that is always in sync with what players see in the app.",
+          "The impact is immediate: no more double bookings, no more end-of-month revenue mysteries, and no more depending on one person who 'knows the schedule'. Owners see occupancy and revenue in real time, and staff spend their time serving players instead of answering booking calls.",
+          "Court+ was built exactly for this transition — bringing facilities in Saudi Arabia from paper to platform without disrupting daily operations. Onboarding takes minutes, not weeks."
+        ]
+      },
+      {
+        "title": "Why Online Payments Are a Game-Changer for Facilities",
+        "excerpt": "Cash no-shows and unpaid reservations quietly drain revenue. Digital payments fix both — and unlock new insights.",
+        "body": [
+          "Ask any facility owner about their biggest frustration and 'no-shows' comes up quickly. A player who reserves by phone and never arrives costs you the slot and the revenue. Online prepayment changes the economics completely.",
+          "When players pay at booking time, no-show rates collapse. Even a partial deposit makes players dramatically more committed to showing up — and if they cancel early enough, the slot can be resold automatically.",
+          "Digital payments also clean up your accounting. Every riyal is tracked, reconciled, and reported automatically. Refunds, wallet credits, and invoices stop being manual chores and become one-click operations.",
+          "With Court+, facilities get secure payment processing, automatic invoicing, and real-time revenue dashboards out of the box — fully aligned with the way players in Saudi Arabia already expect to pay: from their phone."
+        ]
+      },
+      {
+        "title": "The Padel Boom in Saudi Arabia — and How to Ride It",
+        "excerpt": "Padel is the fastest-growing sport in the Kingdom. Here's how facility owners can capture the opportunity.",
+        "body": [
+          "Few sports have grown in Saudi Arabia like padel. In just a few years, courts have multiplied across Riyadh, Jeddah, and the Eastern Province, and prime-time slots in major cities sell out days in advance.",
+          "For facility owners, the boom is both an opportunity and a challenge. Demand is high, but so is competition — new courts open every month. The venues that win are the ones that are easiest to find, easiest to book, and most consistent in quality.",
+          "Visibility starts with being where players search. A facility listed on a booking platform gets discovered by players who have never driven past it. Instant booking and transparent pricing then convert that discovery into a reservation.",
+          "Court+ helps padel venues manage the full cycle: real-time availability across multiple courts, prime-time pricing rules, memberships for regulars, and analytics that show exactly which hours and courts earn the most."
+        ]
+      },
+      {
+        "title": "Using Data to Increase Facility Revenue",
+        "excerpt": "Your booking history is a goldmine. Learn how occupancy and revenue analytics turn guesses into decisions.",
+        "body": [
+          "Most facility owners can tell you their busiest evening. Far fewer can tell you their occupancy rate by hour, their revenue per court, or which customer segment books the most. That gap between intuition and data is where revenue hides.",
+          "Occupancy analytics reveal underused capacity — the specific hours, days, and courts that need promotion or repricing. Revenue analytics reveal what is actually working: which offers convert, which courts justify premium pricing, and how seasonal demand shifts.",
+          "Customer analytics might be the most valuable of all. Identifying your top 50 players by booking volume lets you protect that loyalty with memberships and perks. Spotting players who stopped booking lets you win them back before a competitor does.",
+          "Court+ turns every booking into a data point, and every data point into a decision you can act on — occupancy, revenue, and customer trends, updated in real time on your dashboard."
+        ]
+      }
+    ]
+  },
+
+  "faqs_page": {
+    "hero_title_active": "Find answers to the most",
+    "hero_title_rest": "common questions about using Court+.",
+    "hero_subtitle": "Whether you're a player looking to book your next game or a court owner managing your facility, this page covers everything you need to know.",
+    "not_found_title": "Didn't find what you're looking for?",
+    "still_questions": "Still have questions? We're here to help.",
+    "leave_details": "Leave your details and we'll get back to you within 24 hours.",
+    "team_contact": "Our team will contact you soon",
+    "prefer_direct": "Prefer direct contact? Email us at",
+    "full_name": "Full Name",
+    "email_address": "Email Address",
+    "phone_optional": "Phone Number (Optional)",
+    "message_placeholder": "Message / Support Request",
+    "submit": "Submit",
+    "name_required": "Please enter your name",
+    "email_required": "Please enter your email",
+    "email_invalid": "Please enter a valid email",
+    "message_required": "Please tell us how we can help",
+    "categories": [
+      {
+        "key": "getting-started",
+        "category": "Getting Started",
+        "items": [
+          {
+            "question": "What is Court+?",
+            "answer": "Court+ is a smart platform for booking and managing sports courts. Players discover and book courts instantly, and facility owners manage bookings, payments, and operations from one dashboard."
+          },
+          {
+            "question": "How do I create an account?",
+            "answer": "Download the Court+ app or visit our website, click Sign Up, and follow the instructions to enter your details."
+          },
+          {
+            "question": "Is the app free to use?",
+            "answer": "Yes, the Court+ app is free to download and use for browsing and booking sports facilities."
+          },
+          {
+            "question": "Which sports are supported?",
+            "answer": "Court+ supports a variety of sports including padel, football, tennis, basketball, and more. Check the app for full details."
+          },
+          {
+            "question": "Is Court+ available in my city?",
+            "answer": "Court+ is launching across Saudi Arabia, starting with major cities. Enter your location in the app to see nearby facilities."
+          }
+        ]
+      },
+      {
+        "key": "for-sports-facility-owners",
+        "category": "For Sports Facility Owners",
+        "items": [
+          {
+            "question": "How do I list my facility?",
+            "answer": "Sign up as an owner and follow the onboarding process to add your facility details, courts, pricing, and schedule."
+          },
+          {
+            "question": "Can I manage multiple branches under one account?",
+            "answer": "Yes, Court+ allows owners to manage several branches and all their courts from one dashboard."
+          },
+          {
+            "question": "How do I track payments and bookings?",
+            "answer": "The dashboard provides detailed analytics, payment logs, and booking history in real time."
+          }
+        ]
+      },
+      {
+        "key": "for-players",
+        "category": "For Players",
+        "items": [
+          {
+            "question": "How do I book a court?",
+            "answer": "Search for facilities in the app, select a time slot, and complete the booking with secure in-app payment."
+          },
+          {
+            "question": "Can I join matches with other players?",
+            "answer": "Yes — you can create your own matches and invite friends, or join public matches near you."
+          }
+        ]
+      },
+      {
+        "key": "payments-security",
+        "category": "Payments & Security",
+        "items": [
+          {
+            "question": "What payment methods are accepted?",
+            "answer": "We accept mada, credit and debit cards, Apple Pay, and select digital wallets."
+          },
+          {
+            "question": "Is my payment information secure?",
+            "answer": "Yes. Payments are processed through secure, certified payment gateways — Court+ never stores your full card details."
+          }
+        ]
+      },
+      {
+        "key": "technical-support",
+        "category": "Technical Support",
+        "items": [
+          {
+            "question": "How do I contact support?",
+            "answer": "Use the in-app chat or email support@courtplusapp.com — our team responds within 24 hours."
+          }
+        ]
+      }
+    ]
+  },
+
+    "terms_page": {
+      "hero_title": "Terms and Conditions",
+      "hero_subtitle": "These Terms and Conditions (“Terms”) govern your access to and use of the Court+ website, mobile application, and all related services. By using Court+, you agree to these Terms. Please read them carefully before continuing.",
+      "sections": [
+        {
+          "key": "getting-started",
+          "category": "Getting Started",
+          "items": [
+            {
+              "question": "What is Court+?",
+              "answer": "Court+ is a sports booking platform that helps players find, book, and manage courts across multiple cities."
+            },
+            {
+              "question": "How do I create an account?",
+              "answer": "Download the Court+ app or visit our website. Click Sign Up and complete your profile information."
+            },
+            {
+              "question": "Is the app free to use?",
+              "answer": "Yes, it’s completely free to download and browse available courts."
+            },
+            {
+              "question": "Which sports are supported?",
+              "answer": "We support tennis, basketball, football, padel, volleyball, and more. Availability varies by region."
+            },
+            {
+              "question": "Is Court+ available in my city?",
+              "answer": "Court+ continues to expand. Enter your location in the app to see nearby venues."
+            },
+            {
+              "question": "Can I use Court+ without creating an account?",
+              "answer": "You can browse facilities without an account, but booking requires signing up."
+            },
+            {
+              "question": "How do I update my profile information?",
+              "answer": "Go to the Profile tab in the app and tap Edit Profile to update your details."
+            },
+            {
+              "question": "How do I list my facility?",
+              "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
+            },
+            {
+              "question": "Is there a fee for listing my facility?",
+              "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
+            },
+            {
+              "question": "How do I manage bookings?",
+              "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
+            },
+            {
+              "question": "Can I disable or block certain time slots?",
+              "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
+            }
+          ]
+        },
+        {
+          "key": "for-sports-facility-owners",
+          "category": "For Sports Facility Owners",
+          "items": [
+            {
+              "question": "How do I list my facility?",
+              "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
+            },
+            {
+              "question": "Is there a fee for listing my facility?",
+              "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
+            },
+            {
+              "question": "How do I manage bookings?",
+              "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
+            },
+            {
+              "question": "Can I disable or block certain time slots?",
+              "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
+            },
+            {
+              "question": "How do I receive payouts?",
+              "answer": "Payouts are automatically transferred to your registered bank account every week."
+            },
+            {
+              "question": "Can multiple staff manage the same facility?",
+              "answer": "Yes, the owner can add staff accounts with custom permissions."
+            }
+          ]
+        },
+        {
+          "key": "for-players",
+          "category": "For Players",
+          "items": [
+            {
+              "question": "How do I book a court?",
+              "answer": "Search for a venue, choose a court and time slot, then confirm your booking."
+            },
+            {
+              "question": "Can I cancel a booking?",
+              "answer": "Yes, cancellation is allowed depending on the venue’s policy. Refunds may vary."
+            },
+            {
+              "question": "Can I reschedule my booking?",
+              "answer": "Many courts allow rescheduling before the session starts. Check the venue’s rules."
+            },
+            {
+              "question": "Do I need to bring my own equipment?",
+              "answer": "Some facilities offer equipment rentals. Check details on the court's page."
+            },
+            {
+              "question": "Can I book multiple courts at once?",
+              "answer": "Yes, depending on availability and the venue’s rules."
+            },
+            {
+              "question": "Can I invite other players to my booking?",
+              "answer": "You can share booking details with your friends or team members."
+            },
+            {
+              "question": "Do I need to pay in advance?",
+              "answer": "Most facilities require online payment when confirming your booking."
+            }
+          ]
+        },
+        {
+          "key": "payments-security",
+          "category": "Payments & Security",
+          "items": [
+            {
+              "question": "What payment methods are accepted?",
+              "answer": "Credit cards, debit cards, Apple Pay, Google Pay, and select digital wallets."
+            },
+            {
+              "question": "Is my payment information safe?",
+              "answer": "Yes. Court+ uses bank-level encryption and certified payment gateways."
+            },
+            {
+              "question": "Can I request a refund?",
+              "answer": "Refunds depend on the venue’s cancellation policy. Most refunds are processed within 5–7 business days."
+            },
+            {
+              "question": "Do you store my card information?",
+              "answer": "We do not store card details. All payments are processed by secure third-party providers."
+            },
+            {
+              "question": "Why was my payment declined?",
+              "answer": "This could be due to insufficient funds, incorrect card information, or a bank restriction."
+            },
+            {
+              "question": "Is there a service fee?",
+              "answer": "Some bookings may include a small platform service fee."
+            }
+          ]
+        },
+        {
+          "key": "technical-support",
+          "category": "Technical Support",
+          "items": [
+            {
+              "question": "How do I contact support?",
+              "answer": "Use in-app chat or email support@courtplusapp.com for assistance."
+            },
+            {
+              "question": "My app is not loading. What should I do?",
+              "answer": "Try restarting the app, updating it, or checking your internet connection."
+            },
+            {
+              "question": "I didn’t receive a confirmation email or SMS.",
+              "answer": "Check your spam folder or update your phone number/email in your profile."
+            },
+            {
+              "question": "The app keeps crashing. How do I fix it?",
+              "answer": "Clear cache, reinstall the app, or ensure your device software is up to date."
+            },
+            {
+              "question": "My booking is not showing in the app.",
+              "answer": "Log out and log back in, or contact support if the issue persists."
+            },
+            {
+              "question": "I’m having trouble with payments.",
+              "answer": "Make sure your card is valid and try again. If the issue continues, contact support."
+            }
+          ]
+        }
+      ]
+    },
+  "privacy_page": {
+    "hero_title": "Privacy Policy",
+    "hero_subtitle": "Court+ (“we”, “our”, or “us”) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our website, mobile app, and related services, in line with Saudi Arabia's Personal Data Protection Law (PDPL). By using Court+, you agree to this Privacy Policy.",
+    "sections": [
+      {
+        "key": "data-collected",
+        "category": "Information We Collect",
+        "items": [
+          {
+            "question": "Account information",
+            "answer": "When you create an account, we collect your name, email address, phone number, and password, along with optional profile details such as your photo and preferred sports."
+          },
+          {
+            "question": "Booking information",
+            "answer": "We keep records of your reservations, including the facility, court, date and time, payment status, and your cancellation and refund history."
+          },
+          {
+            "question": "Payment information",
+            "answer": "Payments are processed by licensed third-party payment providers. We receive confirmation of the transaction and the payment method used, but we never store your full card number or security code."
+          },
+          {
+            "question": "Location data",
+            "answer": "With your permission, we use your device's location to show sports facilities near you. You can disable location access at any time from your device settings."
+          },
+          {
+            "question": "Device and usage data",
+            "answer": "We automatically collect technical data such as your device type, operating system, app version, IP address, and how you interact with the app and website, using cookies and similar technologies."
+          },
+          {
+            "question": "Facility owner information",
+            "answer": "If you register as a facility owner, we also collect business details such as the facility name, commercial registration information, and bank account details used for payouts."
+          }
+        ]
+      },
+      {
+        "key": "how-we-use",
+        "category": "How We Use Your Data",
+        "items": [
+          {
+            "question": "Providing our services",
+            "answer": "We use your data to create and manage your account, process bookings and payments, and connect you with sports facilities."
+          },
+          {
+            "question": "Communication",
+            "answer": "We send booking confirmations, reminders, and service updates, and we use your contact details to respond to your support requests."
+          },
+          {
+            "question": "Improving Court+",
+            "answer": "We analyze how the platform is used to improve performance, fix issues, and develop new features that make booking and managing courts easier."
+          },
+          {
+            "question": "Marketing",
+            "answer": "With your consent, we may send you offers and news about Court+. You can opt out of marketing messages at any time from your account settings or the unsubscribe link."
+          },
+          {
+            "question": "Safety and legal compliance",
+            "answer": "We use your data to verify identity, prevent fraud and misuse of the platform, and comply with applicable laws and requests from competent authorities in Saudi Arabia."
+          }
+        ]
+      },
+      {
+        "key": "storage-security",
+        "category": "Data Storage & Security",
+        "items": [
+          {
+            "question": "Where your data is stored",
+            "answer": "Your data is stored on secure cloud servers. Where data is transferred or stored outside Saudi Arabia, we do so only in accordance with the requirements of the Personal Data Protection Law (PDPL)."
+          },
+          {
+            "question": "How we protect your data",
+            "answer": "We use industry-standard safeguards, including encryption of data in transit and at rest, strict access controls, and continuous monitoring. No method of transmission or storage is completely secure, but we work to protect your data at all times."
+          },
+          {
+            "question": "How long we keep your data",
+            "answer": "We keep your personal data for as long as your account is active or as needed to provide our services, and afterwards only for the period required by applicable laws, such as tax and accounting regulations. Data that is no longer needed is deleted or anonymized."
+          },
+          {
+            "question": "Account deletion",
+            "answer": "You can request deletion of your account through the app or by contacting support. We will delete or anonymize your personal data unless we are legally required to keep certain records."
+          }
+        ]
+      },
+      {
+        "key": "third-parties",
+        "category": "Third-Party Services",
+        "items": [
+          {
+            "question": "Payment providers",
+            "answer": "Payments are handled by licensed payment gateways that process your payment details under their own privacy policies and security standards."
+          },
+          {
+            "question": "Service providers",
+            "answer": "We work with trusted providers for cloud hosting, analytics, and communications such as SMS and email. They may only process your data on our instructions and are bound by confidentiality obligations."
+          },
+          {
+            "question": "Sports facilities",
+            "answer": "When you book a court, we share with the facility the details needed to fulfill your booking, such as your name and the booking time. Facilities may not use this information for any other purpose."
+          },
+          {
+            "question": "We do not sell your data",
+            "answer": "Court+ never sells or rents your personal information to third parties."
+          },
+          {
+            "question": "External links",
+            "answer": "Our website and app may contain links to third-party websites. We are not responsible for their content or privacy practices, so we encourage you to review their policies."
+          }
+        ]
+      },
+      {
+        "key": "user-rights",
+        "category": "Your Rights",
+        "items": [
+          {
+            "question": "Your rights under Saudi law",
+            "answer": "Under the Personal Data Protection Law (PDPL), you have the right to know how your data is processed, to access it, to request its correction, and to request its deletion when it is no longer needed."
+          },
+          {
+            "question": "Access and correction",
+            "answer": "You can view and update most of your information directly from your profile in the app, or ask us for a copy of the personal data we hold about you."
+          },
+          {
+            "question": "Deletion",
+            "answer": "You can ask us to delete your personal data. We will honor your request unless we are required to keep certain data by law."
+          },
+          {
+            "question": "Withdrawing consent",
+            "answer": "Where processing is based on your consent — such as marketing messages or location access — you can withdraw it at any time without affecting your use of the core service."
+          },
+          {
+            "question": "How to exercise your rights",
+            "answer": "Contact us at support@courtplusapp.com. We may need to verify your identity before acting on your request, and we will respond within the timeframes required by law."
+          },
+          {
+            "question": "Complaints",
+            "answer": "If you believe your data has been mishandled, you can contact us first, and you also have the right to file a complaint with the competent data protection authority in Saudi Arabia."
+          }
+        ]
+      },
+      {
+        "key": "contact",
+        "category": "Contact Us",
+        "items": [
+          {
+            "question": "How to reach us",
+            "answer": "For any questions about this Privacy Policy or your personal data, email us at support@courtplusapp.com or use the in-app support chat — our team responds within 24 hours."
+          },
+          {
+            "question": "Changes to this policy",
+            "answer": "We may update this Privacy Policy from time to time. If we make material changes, we will notify you through the app, website, or email before the changes take effect."
+          },
+          {
+            "question": "Effective date",
+            "answer": "This Privacy Policy was last updated in July 2026 and applies to all users of the Court+ website, mobile app, and related services."
+          }
+        ]
+      }
+    ]
+  },
+
+  "player_hero_title_active": "Book your next",
+  "player_hero_title_rest": "game in seconds.",
+  "player_hero_subtitle": "Discover and book top-rated courts…",
+
+  "player_how_title": "How It Works",
+  "player_how_subtitle": "Discover nearby courts, book instantly…",
+
+  "player_step1_title": "Download & Sign Up",
+  "player_step1_text": "Search by location, sport, or available slots.",
+
+  "player_step2_title": "Find Courts Near You",
+  "player_step2_text": "Create your player profile…",
+
+  "player_step3_title": "Book Instantly",
+  "player_step3_text": "Confirm your preferred court…",
+
+  "player_step4_title": "Join or Create Matches",
+  "player_step4_text": "Invite friends or join public games.",
+
+  "player_step5_title": "Track Your Activity",
+  "player_step5_text": "View bookings, history, and upcoming matches.",
+
+  "player_why_title": "Playing your favorite sport should be easy,",
+  "player_why_highlight1": "that’s why",
+  "player_why_highlight2": "puts every step of the game in your hands.",
+  "player_why_p1": "Discover nearby courts, book quickly…",
+  "player_why_p2": "No calls or delays…",
+
+  "faq_q1": "How can I find and book a court?",
+  "faq_a1": "You can browse nearby courts, check availability, and book instantly through the app.",
+
+  "faq_q2": "Can I manage multiple locations under one account?",
+  "faq_a2": "Yes, Court+ allows owners to manage several branches in one dashboard.",
+
+  "faq_q3": "How do I track payments and bookings?",
+  "faq_a3": "We provide detailed analytics, payment logs, and booking history in real time.",
+
+  "faq_q4": "Is there a commission on each booking?",
+  "faq_a4": "Court+ charges a small service fee per completed booking.",
+
+  "faq_q5": "Can I promote offers or discounts?",
+  "faq_a5": "Yes, you can create promo campaigns and seasonal offers for your customers.",
+
+  "pricing": {
+    "basic": "Basic",
+    "enterprise": "Enterprise",
+    "perCourt": "/court",
+    "perMonth": "per month (VAT excl.)",
+    "subscribe": "Subscribe now",
+    "contact": "Contact us for pricing",
+
+    "basic_features": [
+      "Court information display",
+      "Matches Reservation",
+      "Fully Dashboard",
+      "POS system",
+      "Payments",
+      "Invoices",
+      "48h response time"
+    ],
+
+    "enterprise_features": [
+      "Everything in Basic",
+      "Money wallet",
+      "Tournaments",
+      "Highest priority with chat",
+      "Leagues",
+      "Coaches"
+    ]
+  }
+}

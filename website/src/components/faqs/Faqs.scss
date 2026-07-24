@@ -1,0 +1,86 @@
+.faqs {
+  position: relative;
+  text-align: center;
+  max-width: 700px;
+  margin: 9.6rem auto !important;
+  padding: 40px 20px;
+
+  &.rtl {
+    direction: rtl;
+
+    .ant-collapse-header {
+      text-align: right;
+    }
+
+    .ant-collapse-content-box {
+      text-align: right;
+    }
+  }
+
+  h2 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  h5 {
+    font-size: 18px;
+    color: #666;
+    font-weight: 400;
+    margin-bottom: 40px;
+  }
+
+  .faqs-collapse {
+    background: transparent;
+
+    .ant-collapse-item {
+      background: #fff;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+
+      .ant-collapse-header {
+        font-size: 17px;
+        font-weight: 500;
+        padding: 18px 22px !important;
+      }
+
+      .ant-collapse-content-box {
+        padding: 16px 22px;
+        font-size: 15px;
+        color: #555;
+      }
+    }
+  }
+
+  .category-label {
+    margin-top: 3rem;
+    font-size: 14px;
+    color: #7d7d7d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn.load-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 3rem;
+    border-radius: 90px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border: 1px dashed #ccc;
+    color: #222;
+    transition: 0.3s;
+    text-decoration: none;
+
+    .anticon {
+      color: #a9e23c !important;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+}

@@ -1,0 +1,115 @@
+# Render Blueprint — Court+ backend API
+# Dashboard: New → Blueprint → point at this repo (backend/ as root directory is set below).
+# After first deploy, fill the env vars marked sync: false in the Render dashboard
+# (copy values from your local backend/.env), then run migrations once from the
+# Render Shell: pnpm run migration:run
+services:
+  - type: web
+    name: courtplus-api
+    runtime: docker
+    plan: starter
+    healthCheckPath: /reference/api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: courtplus-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: courtplus-db
+          property: port
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: courtplus-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: courtplus-db
+          property: password
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: courtplus-db
+          property: database
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: courtplus-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: courtplus-redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      # --- fill these in the Render dashboard (sync: false = never stored here) ---
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_BUCKET
+        sync: false
+      - key: AWS_CDN_URL
+        sync: false
+      - key: CLOUDFRONT_DISTRIBUTION_ID
+        sync: false
+      - key: SES_FROM_EMAIL
+        sync: false
+      - key: CONTACT_INBOX_EMAIL
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_SUBSCRIPTIONS_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_CONNECT_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_BRANCH_PRODUCT_ID
+        sync: false
+      - key: STRIPE_BRANCH_PRICE_ID
+        sync: false
+      - key: APP_NAME
+        value: Court+
+      - key: APP_LOGO_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: COURT_PLUS_PERCENTAGE
+        value: "0.2"
+
+  - type: keyvalue
+    name: courtplus-redis
+    plan: free
+    ipAllowList: [] # Render services only
+
+databases:
+  - name: courtplus-db
+    plan: free
+    # After creation, enable PostGIS once from the Render Shell / psql:
+    #   CREATE EXTENSION IF NOT EXISTS postgis;
+    #   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

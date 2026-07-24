@@ -1,0 +1,119 @@
+@use "../base/index" as *;
+
+.navbar {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem !important;
+
+  &-btns {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+  }
+}
+
+.sidebar {
+  padding: 1.6rem;
+
+  .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .logo-container {
+    direction: ltr;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-collapse {
+    margin: 16px 10px;
+    border-radius: 50%;
+    z-index: 1;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #28483e;
+  }
+
+  .ant-menu-item {
+    font-size: 1.2rem;
+    height: 3.2rem !important;
+
+    &-selected {
+      color: black;
+      background: linear-gradient(
+        92.77deg,
+        #c0ff42 2.31%,
+        #c0ff42 42.36%,
+        #0a1517 95.09%
+      );
+    }
+  }
+
+  .btn-msg {
+    width: 100%; // Make the button take the full width of the Sider
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1.2rem 3px;
+    border: 1px solid #1e3b41;
+    color: #fff;
+
+    span {
+      font-size: 1rem;
+      margin-top: 5px;
+      color: #aaa;
+      font-weight: 400;
+    }
+  }
+}
+
+.lang-item {
+  width: 6.5rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  p {
+    font-size: 1.4rem;
+  }
+
+  img {
+    border-radius: 4px;
+    width: 2rem;
+  }
+}
+
+.nav-prof-btn {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  span {
+    font-size: 1rem;
+    margin-top: 2px;
+    color: #777;
+  }
+}
+
+.content-container {
+  margin: 1.6rem;
+  padding: 2.4rem;
+  background: #fff; // Assuming you have a SCSS variable for this value
+  border-radius: $border-radius; // Assuming you have a SCSS variable for this value
+  overflow-y: scroll;
+}
+
+/// /* RTL-specific adjustments */
+.App[dir="rtl"] .sidebar .ant-menu-item-selected {
+  background: linear-gradient(
+    92.77deg,
+    #0a1517 1.31%,
+    #0a1517 1.36%,
+    #c0ff42 97.09%
+  ) !important;
+}

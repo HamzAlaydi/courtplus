@@ -1,0 +1,33 @@
+@use "../base/index" as *;
+
+.working-hours {
+  padding: 1rem;
+  border: $border;
+  border-radius: $border-radius;
+
+  &-inputs {
+    padding: 2rem;
+    border: 1px solid #ddd;
+    border-radius: $border-radius;
+  }
+
+  .description {
+    color: #888;
+    margin-bottom: 15px;
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: 5rem 1fr 12rem 3rem 12rem; // Ensures uniform column spacing
+    gap: 1.2rem;
+    align-items: center;
+  }
+
+  .day-row {
+    display: contents; // Keeps grid structure without affecting row styling
+  }
+}
+
+.ant-picker-footer button {
+  padding: 1.4rem;
+}

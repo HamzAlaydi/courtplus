@@ -1,0 +1,97 @@
+@use "../base/index" as *;
+
+.court-card {
+  position: relative;
+  border: $border;
+  padding: 1rem 8rem 1rem 1rem;
+  display: flex;
+  align-items: center;
+  border-radius: $border-radius;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  gap: 2rem;
+
+  [dir="rtl"] &,
+  .rtl & {
+    flex-direction: row-reverse;
+  }
+
+  .court-image {
+    width: 25rem;
+    height: 20rem;
+    border-radius: $border-radius;
+    object-fit: cover;
+  }
+
+  .court-info {
+    .rating {
+      color: #666;
+      margin: 2rem 0;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      color: green;
+
+      .dot {
+        width: 0.8rem;
+        height: 0.8rem;
+        background: green;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  .court-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 2rem;
+    row-gap: 4rem;
+    .stat {
+      span {
+        font-size: 1.4rem;
+        color: #777;
+      }
+
+      h3 {
+        font-weight: 500;
+      }
+    }
+  }
+
+  .reviews {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    span {
+      font-size: 1.4rem;
+      color: #777;
+    }
+  }
+
+  &-link {
+    position: absolute;
+    top: 10%;
+    right: 3%;
+  }
+
+  &-btn {
+    border: 1px solid #12b76a;
+    color: #12b76a;
+    background-color: #ecfdf3;
+    border-radius: 2rem;
+    position: absolute;
+    bottom: 10%;
+    right: 3%;
+    transition: all 0.3s;
+    font-weight: 700;
+    padding: 5px 2rem;
+
+    &:hover {
+      background-color: #12b76a !important;
+      color: white !important;
+    }
+  }
+}

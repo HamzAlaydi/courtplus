@@ -1,0 +1,28 @@
+/* BookingTab.scss */
+.available-day {
+  background-color: #00c853 !important;
+  color: white !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-availability-container {
+  display: flex;
+
+  .calendar {
+    min-width: 40rem;
+  }
+
+  .time-slot {
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: default;
+  }
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+  }
+}

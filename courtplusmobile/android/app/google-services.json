@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "467162134338",
+    "project_id": "courtplus-f9379",
+    "storage_bucket": "courtplus-f9379.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467162134338:android:162190acee1cffb10bfadb",
+        "android_client_info": {
+          "package_name": "net.courtplus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "467162134338-vgog67n2qnonjmupp9n40hoed75kc8fl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.courtplus",
+            "certificate_hash": "59f34afd5676ee6129b52114488f5cf10c0d5e7e"
+          }
+        },
+        {
+          "client_id": "467162134338-e2jig4bavpcrr4cal6bvp7sr23tjcc45.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPJCSij_BpHwP_dtxAzm7ePHbqB88GrT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "467162134338-e2jig4bavpcrr4cal6bvp7sr23tjcc45.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "467162134338-b1c19biapeh5869uhqre18bpgd90bmpo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.courtplus"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

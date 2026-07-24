@@ -1,0 +1,82 @@
+// Colors
+$primary-color: #c0ff42;
+$primary-color-dark: #54c39e;
+$primary-color-light: #caf86d;
+$color-green: #00a650;
+$color-green-dark: #28483e;
+$color-white: #fff;
+$color-text: #171717;
+$color-text-light: #717588;
+
+// Font Sizes and Related Line Heights
+$font-size-xxxl: 6.4rem; // 64px
+$line-height-xxxl: 1.1;
+
+$font-size-xxl: 4.8rem; // 48px
+$line-height-xxl: 1.2;
+
+$font-size-xl: 3.6rem; // 32px
+$line-height-xl: 1.4;
+
+$font-size-l: 2.8rem; // 24px
+$line-height-l: 1.5;
+
+$font-size-m: 2.4rem; // 18px
+$line-height-m: 1.6;
+
+$font-size-s: 1.6rem; // 16px
+$line-height-s: 1.6;
+
+$font-size-xs: 1.2rem; // 14px
+$line-height-xs: 1.6;
+
+// Font Weights
+$font-weight-bold: 700;
+$font-weight-meduim: 500;
+$font-weight-light: 400;
+
+// Spacing and Dimensions
+$spacing-xxxl: 6.4rem; // 64px
+$spacing-xxl: 4.8rem; // 48px
+$spacing-xl: 3.2rem; // 32px
+$spacing-l: 2.4rem; // 24px
+$spacing-m: 1.6rem; // 16px
+$spacing-s: 0.8rem; // 8px
+$spacing-xs: 0.4rem; // 4px
+
+// Borders and Border Radius
+$border-radius: 6px;
+
+// Shadows
+$box-shadow: 0px 0px 5rem rgba(0, 0, 0, 0.1); // 50px
+$bg-box-shadow: 0px 0.4rem 0.4rem rgba(0, 0, 0, 0.25); // 4px 4px
+
+$border: 1px solid #eee;
+
+$bg-backdrop-filter: blur(20rem); // 200px
+
+// Utility Classes
+$transition-duration: 0.3s;
+
+@media (max-width: 1050px) {
+  $font-size-xxxl: 8rem; // 64px
+  $line-height-xxxl: 1.1;
+
+  $font-size-xxl: 6.4rem; // 48px
+  $line-height-xxl: 1.2;
+
+  $font-size-xl: 3.2rem; // 32px
+  $line-height-xl: 1.4;
+
+  $font-size-l: 2.4rem; // 24px
+  $line-height-l: 1.5;
+
+  $font-size-m: 1.8rem; // 18px
+  $line-height-m: 1.6;
+
+  $font-size-s: 1.4rem; // 16px
+  $line-height-s: 1.6;
+
+  $font-size-xs: 1.2rem; // 14px
+  $line-height-xs: 1.6;
+}
