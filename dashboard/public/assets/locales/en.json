@@ -122,6 +122,7 @@
     "name": "Branch Name",
     "name_required": "Branch name is required",
     "phone_number": "Phone Number",
+    "phone_invalid": "Enter a valid phone number",
     "place_name": "Place Name",
     "btn_submit": "Submit",
     "btn_delete": "Delete Branch",
@@ -138,6 +139,15 @@
     "working_hours": "Branch working days & hours",
     "submit": "Submit",
     "cancel": "Cancel",
+    "notifications": {
+      "cover_uploaded": "Cover image uploaded successfully",
+      "logo_uploaded": "Logo uploaded successfully",
+      "upload_failed": "Image upload failed",
+      "created": "Branch created successfully",
+      "create_failed": "Failed to create branch",
+      "updated": "Branch updated successfully",
+      "update_failed": "Failed to update branch"
+    },
     "delete_modal": {
       "title": "Are you sure?",
       "description": "All specifications & courts inside this branch will be deleted permanently. Are you sure to",
@@ -241,7 +251,9 @@
     "football": "Football",
     "paddle": "Padel",
     "volleyball": "Volleyball",
-    "hourlyRate": "Hourly Rate"
+    "hourlyRate": "Hourly Rate",
+    "unit_length": "m",
+    "unit_rate": "SAR"
   },
   "court": {
     "hourly_rate": "Hourly Rate",

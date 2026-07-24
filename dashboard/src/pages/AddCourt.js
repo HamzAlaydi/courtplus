@@ -102,7 +102,6 @@ export default function CourtForm() {
         setImageIds(extractedImages.map((img) => img.id));
 
         if (extractedVideos) {
-          console.log(extractedVideos);
           setVideo(extractedVideos.url);
           setVideoId(extractedVideos.id);
         }
@@ -165,7 +164,6 @@ export default function CourtForm() {
     if (id) {
       // ✅ EDIT EXISTING COURT
       updateCourtMutate(finalData);
-      console.log(finalData);
     } else {
       // ✅ CREATE NEW COURT
 
@@ -198,7 +196,7 @@ export default function CourtForm() {
         "success",
         `${isVideo ? "Video" : "Image"} uploaded successfully!`
       );
-      onSuccess?.("ok");
+      onSuccess?.(assetUrl);
     } catch (err) {
       console.log("Upload error:", err);
       notify("error", `${isVideo ? "Video" : "Image"} upload failed.`);
@@ -328,6 +326,7 @@ export default function CourtForm() {
               <InputNumber
                 min={1}
                 step={0.1}
+                addonAfter={t("courtForm.unit_length")}
                 placeholder={t("courtForm.placeholder_length")}
               />
             </Form.Item>
@@ -339,6 +338,7 @@ export default function CourtForm() {
               <InputNumber
                 min={1}
                 step={0.1}
+                addonAfter={t("courtForm.unit_length")}
                 placeholder={t("courtForm.placeholder_width")}
               />
             </Form.Item>
@@ -348,7 +348,11 @@ export default function CourtForm() {
               name="hourlyRate"
               label={t("courtForm.hourlyRate")}
             >
-              <InputNumber min={1} step={0.1} />
+              <InputNumber
+                min={1}
+                step={0.1}
+                addonAfter={t("courtForm.unit_rate")}
+              />
             </Form.Item>
             <Form.Item
               rules={[{ required: true }]}
@@ -408,9 +412,8 @@ export default function CourtForm() {
           {/* 🔹 Uploaded Images Preview */}
           <div className="image-gallery">
             {images.map((img, index) => (
-              <div className="img-container">
+              <div className="img-container" key={img.id || index}>
                 <img
-                  key={index}
                   src={img.url}
                   alt={`court-${index}`}
                   className="preview-image"

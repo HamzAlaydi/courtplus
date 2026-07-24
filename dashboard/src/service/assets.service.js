@@ -12,7 +12,6 @@ class AssetsService {
   //   });
   // }
   uploadAssets(assetsData) {
-    console.log(assetsData);
     return apiRequest({
       method: "post",
       url: `${API_URL}/signed-url`,

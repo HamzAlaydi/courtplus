@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Image } from "antd";
 import ImgCrop from "antd-img-crop";
 
@@ -15,7 +15,7 @@ const ImageUploader = ({
   children,
   className,
   shape,
-  fieldName,
+  initialUrl,
   maxFiles = 1,
   onFileChange,
 }) => {
@@ -23,14 +23,28 @@ const ImageUploader = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
-  console.log(fileList);
+  // Seed existing image (edit mode) so its preview renders as a done item
+  useEffect(() => {
+    if (initialUrl) {
+      setFileList((prev) =>
+        prev.length
+          ? prev
+          : [{ uid: "-1", name: "image", status: "done", url: initialUrl }]
+      );
+    }
+  }, [initialUrl]);
 
   const onChange = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-    if (newFileList && newFileList[0]) {
-      onFileChange(fieldName, newFileList[0]);
-    } else {
-      onFileChange(fieldName, null);
+    // Point previews of freshly uploaded items at the real asset URL
+    // (the parent passes the CloudFront assetUrl to onSuccess)
+    const patchedList = newFileList.map((file) =>
+      file.status === "done" && !file.url && typeof file.response === "string"
+        ? { ...file, url: file.response }
+        : file
+    );
+    setFileList(patchedList);
+    if (!newFileList.length) {
+      onFileChange(null, {});
     }
   };
 
@@ -43,8 +57,7 @@ const ImageUploader = ({
   };
 
   const customRequest = ({ file, onSuccess, onError }) => {
-    // onSuccess("ok");
-    onFileChange(fileList, { onSuccess, onError });
+    onFileChange(file, { onSuccess, onError });
   };
 
   return (

@@ -118,6 +118,7 @@
     "name": "اسم الفرع",
     "name_required": "اسم الفرع مطلوب",
     "phone_number": "رقم الهاتف",
+    "phone_invalid": "يرجى إدخال رقم هاتف صالح",
     "place_name": "اسم المكان",
     "btn_submit": "إرسال",
     "btn_delete": "حذف الفرع",
@@ -134,6 +135,15 @@
     "working_hours": "أيام وساعات العمل للفرع",
     "submit": "إرسال",
     "cancel": "إلغاء",
+    "notifications": {
+      "cover_uploaded": "تم رفع صورة الغلاف بنجاح",
+      "logo_uploaded": "تم رفع الشعار بنجاح",
+      "upload_failed": "فشل رفع الصورة",
+      "created": "تم إنشاء الفرع بنجاح",
+      "create_failed": "فشل إنشاء الفرع",
+      "updated": "تم تحديث الفرع بنجاح",
+      "update_failed": "فشل تحديث الفرع"
+    },
     "delete_modal": {
       "title": "هل أنت متأكد؟",
       "description": "سيتم حذف جميع المواصفات وجميع الملاعب داخل هذا الفرع بشكل دائم. هل أنت متأكد من أنك تريد",
@@ -235,7 +245,9 @@
     "football": "كرة قدم",
     "paddle": "بادل",
     "volleyball": "كرة طائرة",
-    "hourlyRate": "سعر الساعة"
+    "hourlyRate": "سعر الساعة",
+    "unit_length": "م",
+    "unit_rate": "ر.س"
   },
   "court": {
     "hourly_rate": "السعر بالساعة",

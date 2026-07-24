@@ -15,7 +15,7 @@ import { IoImageOutline } from "react-icons/io5";
 import { useNotification } from "../modules/NotificationProvider";
 import ImageUploader from "../components/ImageUploader";
 import "react-phone-number-input/style.css";
-import PhoneInput from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 // import GooglePlacesInput from "../components/GooglePlaceses";
 import {
@@ -58,13 +58,10 @@ export default function AddBranch() {
     enabled: !!id, // 🔹 Only run query if `id` exists
   });
 
-  console.log("Fetched branch data:", branch);
-
   const [coverImageUrl, setCoverImageUrl] = useState(null);
   const [coverImageId, setCoverImageId] = useState(null);
   const [logoImageUrl, setLogoImageUrl] = useState(null);
   const [logoImageId, setLogoImageId] = useState(null);
-  const [phoneValue, setPhoneValue] = useState();
   const [placeId, setPlaceId] = useState();
   const [isCourtVisible, setIsCourtVisible] = useState(true); // Default value
   const [availabilities, setAvailabilities] = useState([]);
@@ -75,8 +72,8 @@ export default function AddBranch() {
       form.setFieldsValue({
         name: branch.name || "",
         status: branch.status || "open",
+        phoneNumber: branch.phoneNumber || "",
       });
-      setPhoneValue(branch.phoneNumber || "");
       setPlaceId(branch.location?.placeId || "");
       setIsCourtVisible(branch.isVisible);
       setCoverImageUrl(branch.coverUrl || null);
@@ -88,7 +85,7 @@ export default function AddBranch() {
 
   const handleUploadCover = async (info) => {
     const file = info?.file?.originFileObj || info?.file;
-    if (!file) return;
+    if (!(file instanceof Blob)) return;
 
     try {
       const { assetId, assetUrl } = await uploadImageToS3(file, "branch_cover");
@@ -101,15 +98,15 @@ export default function AddBranch() {
     }
   };
 
-  const handleUploadLogo = async (files, callbackOptions = {}) => {
+  const handleUploadLogo = async (file, callbackOptions = {}) => {
     const { onSuccess, onError } = callbackOptions || {};
-    const file = files?.[0]?.originFileObj;
     if (!file) return;
 
     try {
-      const { assetId } = await uploadImageToS3(file, "branch_logo");
+      const { assetId, assetUrl } = await uploadImageToS3(file, "branch_logo");
       setLogoImageId(assetId);
-      onSuccess?.("ok");
+      setLogoImageUrl(assetUrl);
+      onSuccess?.(assetUrl);
       notify("success", t("branchForm.notifications.logo_uploaded"));
     } catch (err) {
       console.error("Upload failed:", err);
@@ -137,7 +134,7 @@ export default function AddBranch() {
       ...filteredValues,
       isVisible: isCourtVisible,
       placeId: placeId,
-      phoneNumber: phoneValue,
+      phoneNumber: values.phoneNumber,
       coordinates: {
         lat: coordinates.lat,
         lng: coordinates.lng,
@@ -156,7 +153,6 @@ export default function AddBranch() {
     if (logoImageId) {
       formData.logoAssetId = logoImageId;
     }
-    console.log("🔥 FINAL FORM DATA SENT TO BACKEND →", formData);
 
     if (id) {
       updateBranch(id, formData)
@@ -168,19 +164,28 @@ export default function AddBranch() {
         })
         .catch((err) => {
           console.log(err);
-          notify("error", t("branchForm.notifications.update_failed"));
+          notify(
+            "error",
+            err?.response?.data?.code ||
+              err?.response?.data?.message ||
+              t("branchForm.notifications.update_failed")
+          );
         });
     } else {
       createBranch(formData)
         .then(() => {
           refetchBranches();
           navigate("/branches");
-          notify("success", "Branch created succesfully");
-          // notify("success", t("branchForm.notifications.created"));
+          notify("success", t("branchForm.notifications.created"));
         })
         .catch((err) => {
           console.log(err);
-          notify("error", err?.response?.data?.code || "somthing went wrong!!");
+          notify(
+            "error",
+            err?.response?.data?.code ||
+              err?.response?.data?.message ||
+              t("branchForm.notifications.create_failed")
+          );
         });
     }
   };
@@ -222,7 +227,7 @@ export default function AddBranch() {
                   className="cover"
                   style={{
                     background: coverImageUrl
-                      ? `url(${coverImageUrl}) center/cover no-repeat`
+                      ? `url("${coverImageUrl}") center/cover no-repeat`
                       : "linear-gradient(to right, #b3e5fc, #d4fc79)",
                   }}
                 >
@@ -242,7 +247,7 @@ export default function AddBranch() {
 
             {/* Logo Upload */}
             <ImageUploader
-              fieldName="file"
+              initialUrl={logoImageUrl}
               onFileChange={handleUploadLogo}
               className="logo"
               shape="circle"
@@ -277,12 +282,21 @@ export default function AddBranch() {
                 >
                   <Input />
                 </Form.Item>
-                <Form.Item label={t("branchForm.phone_number")}>
-                  <PhoneInput
-                    value={phoneValue}
-                    onChange={setPhoneValue}
-                    defaultCountry="EG"
-                  />
+                <Form.Item
+                  name="phoneNumber"
+                  label={t("branchForm.phone_number")}
+                  rules={[
+                    {
+                      validator: (_, value) =>
+                        !value || isValidPhoneNumber(value)
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              new Error(t("branchForm.phone_invalid"))
+                            ),
+                    },
+                  ]}
+                >
+                  <PhoneInput defaultCountry="EG" />
                 </Form.Item>
 
                 <Form.Item

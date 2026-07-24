@@ -11,9 +11,13 @@ export const uploadImageToS3 = async (file, type) => {
     formData.append(key, value?.toString().trim());
   });
 
-  // Append Content-Type if not already present
+  // Append Content-Type if not already present (required by the S3 policy:
+  // backend signs a `starts-with` condition on Content-Type, e.g. "video/").
+  // Some browsers can't sniff a MIME for certain video containers, so fall
+  // back to the family wildcard base instead of sending an empty value.
   if (!formData.has("Content-Type")) {
-    formData.append("Content-Type", file.type);
+    const fallback = type?.includes("video") ? "video/mp4" : "image/jpeg";
+    formData.append("Content-Type", file.type || fallback);
   }
 
   formData.append("file", file); // must be last
@@ -22,8 +26,6 @@ export const uploadImageToS3 = async (file, type) => {
     method: "POST",
     body: formData,
   });
-
-  console.log(uploadResponse);
 
   if (!uploadResponse.ok) {
     throw new Error("Upload failed");
