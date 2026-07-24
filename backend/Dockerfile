@@ -3,7 +3,7 @@ FROM node:23-alpine
 RUN corepack enable
 RUN apk add --no-cache libc6-compat
 RUN apk update
-RUN npm i -g pnpm --force
+RUN npm i -g pnpm@9 --force
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
