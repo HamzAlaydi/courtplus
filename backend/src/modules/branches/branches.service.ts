@@ -182,7 +182,7 @@ export class BranchesService {
         tenantId: user.tenantId,
       });
 
-      if (user.role !== StaffRole.SUPER_ADMIN) {
+      if (user.role !== StaffRole.SUPER_ADMIN && user.role !== StaffRole.OWNER) {
         queryBuilder
           .innerJoin('branch.staff', 'staffMember')
           .andWhere('staffMember.stafferId = :stafferId', {
@@ -292,7 +292,7 @@ export class BranchesService {
     if (user?.type === UserType.Staff) {
       where.tenantId = user.tenantId;
 
-      if (user.role !== StaffRole.SUPER_ADMIN) {
+      if (user.role !== StaffRole.SUPER_ADMIN && user.role !== StaffRole.OWNER) {
         where.staff = { id: user.id };
       }
     }
