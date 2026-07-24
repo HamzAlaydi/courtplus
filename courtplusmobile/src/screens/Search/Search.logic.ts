@@ -40,7 +40,8 @@ export const useSearch = () => {
     useGetCourts(
       {
         page: 1,
-        currentLocation: `${location?.lat ?? ""},${location?.long}`,
+        lat: location?.lat,
+        lng: location?.long,
         sport: sportQuery,
         search: debouncedSearchValue,
       },

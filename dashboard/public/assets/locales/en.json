@@ -154,6 +154,16 @@
       "confirm_text": "Yes, Delete this branch"
     }
   },
+  "business_profile": {
+    "title": "Business Profile",
+    "name": "Business Name",
+    "phone": "Business Phone",
+    "logo": "Business Logo",
+    "save": "Save",
+    "saved": "Business profile updated successfully",
+    "save_failed": "Failed to update business profile",
+    "phone_invalid": "Enter a valid phone number"
+  },
   "working_hours": {
     "select_days_hours": "Select Working Days and Hours",
     "timezone": "Time zone",

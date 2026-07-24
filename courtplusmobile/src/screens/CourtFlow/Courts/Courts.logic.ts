@@ -43,7 +43,8 @@ export const useCourts = () => {
   } = useGetCourts(
     {
       page: 1,
-      currentLocation: `${location?.lat ?? ""},${location?.long}`,
+      lat: location?.lat,
+      lng: location?.long,
       sport: sportQuery,
       sortBy: sortQuery[0],
       sortDirection: sortQuery[1],

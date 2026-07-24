@@ -56,7 +56,7 @@ export default function Home() {
         className="home-section home-bottom"
         style={{ animationDelay: "240ms" }}
       >
-        <ProfileCompletionCard tenant={tenant} />
+        <ProfileCompletionCard tenant={tenant} branches={branches} />
         <BranchesSummary branches={branches} />
         <QuickActions />
       </section>

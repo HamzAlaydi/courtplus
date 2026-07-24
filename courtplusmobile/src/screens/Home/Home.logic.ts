@@ -30,7 +30,8 @@ export const useHome = () => {
     {
       page: 1,
       pageSize: 9,
-      currentLocation: `${location?.lat ?? ""},${location?.long}`,
+      lat: location?.lat,
+      lng: location?.long,
       sport: sportQuery,
     },
     !!location

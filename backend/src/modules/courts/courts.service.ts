@@ -258,7 +258,7 @@ export class CourtsService {
     if (lng && lat) {
       queryBuilder.andWhere(
         `ST_DWithin(
-          location.coordinates::geography,
+          COALESCE(location.coordinates, branchLocation.coordinates)::geography,
           ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
           :radius
         )`,

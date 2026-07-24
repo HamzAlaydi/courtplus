@@ -97,6 +97,7 @@ export class User extends BaseEntity {
     example: 'https://example.com/covers/johndoe.jpg',
     nullable: true,
   })
+  @Column({ nullable: true })
   coverUrl?: string;
 
   @ApiProperty({

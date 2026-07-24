@@ -10,6 +10,15 @@ class TenantService {
       customHeaders: authHeader(),
     });
   }
+
+  updateTenant(tenantData) {
+    return apiRequest({
+      method: "patch",
+      url: API_URL,
+      data: tenantData,
+      customHeaders: authHeader(),
+    });
+  }
 }
 
 const tenantService = new TenantService();

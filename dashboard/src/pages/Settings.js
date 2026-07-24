@@ -1,5 +1,8 @@
 import { Card, Form, Input, Button, Modal, Typography } from "antd";
 import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import "react-phone-number-input/style.css";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import {
   changePassword,
   changeEmail,
@@ -8,6 +11,9 @@ import {
   deleteAcc,
   deleteAccVerify,
 } from "../actions/staff.action";
+import { getTenant, updateTenant } from "../actions/tenant_action";
+import { uploadImageToS3 } from "../utils/functions";
+import ImageUploader from "../components/ImageUploader";
 import { useNotification } from "../modules/NotificationProvider";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +23,66 @@ export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.dir() === "rtl";
   const notify = useNotification();
+  const queryClient = useQueryClient();
+
+  /* ================= BUSINESS PROFILE ================= */
+  const [businessForm] = Form.useForm();
+  const [loadingBusiness, setLoadingBusiness] = useState(false);
+  const [logoAssetId, setLogoAssetId] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null);
+
+  const { data: tenant } = useQuery({
+    queryKey: ["tenant"],
+    queryFn: getTenant,
+  });
+
+  useEffect(() => {
+    if (tenant) {
+      businessForm.setFieldsValue({
+        name: tenant.name || "",
+        phoneNumber: tenant.phoneNumber || "",
+      });
+      setLogoUrl(tenant.logoURL || null);
+    }
+  }, [tenant, businessForm]);
+
+  const handleUploadLogo = async (file, callbackOptions = {}) => {
+    const { onSuccess, onError } = callbackOptions || {};
+    if (!file) return;
+
+    try {
+      const { assetId, assetUrl } = await uploadImageToS3(file, "tenant_logo");
+      setLogoAssetId(assetId);
+      setLogoUrl(assetUrl);
+      onSuccess?.(assetUrl);
+      notify("success", t("branchForm.notifications.logo_uploaded"));
+    } catch (err) {
+      console.error("Upload failed:", err);
+      onError?.(err);
+      notify("error", t("branchForm.notifications.upload_failed"));
+    }
+  };
+
+  const handleSaveBusiness = async (values) => {
+    setLoadingBusiness(true);
+    try {
+      await updateTenant({
+        name: values.name,
+        phoneNumber: values.phoneNumber,
+        ...(logoAssetId ? { logoAssetId } : {}),
+      });
+      queryClient.invalidateQueries({ queryKey: ["tenant"] });
+      notify("success", t("business_profile.saved"));
+    } catch (err) {
+      console.log(err);
+      notify(
+        "error",
+        err?.response?.data?.code || t("business_profile.save_failed")
+      );
+    } finally {
+      setLoadingBusiness(false);
+    }
+  };
 
   /* ================= FORMS ================= */
   const [passwordForm] = Form.useForm();
@@ -232,6 +298,52 @@ export default function SettingsPage() {
       }}
     >
       <h2>{t("settings.title")}</h2>
+
+      {/* BUSINESS PROFILE */}
+      <Card
+        title={t("business_profile.title")}
+        style={{ marginBottom: 24 }}
+      >
+        <Form
+          form={businessForm}
+          layout="vertical"
+          onFinish={handleSaveBusiness}
+        >
+          <Form.Item
+            name="name"
+            label={t("business_profile.name")}
+            rules={[{ required: true, min: 3 }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="phoneNumber"
+            label={t("business_profile.phone")}
+            rules={[
+              {
+                validator: (_, value) =>
+                  !value || isValidPhoneNumber(value)
+                    ? Promise.resolve()
+                    : Promise.reject(
+                        new Error(t("business_profile.phone_invalid"))
+                      ),
+              },
+            ]}
+          >
+            <PhoneInput defaultCountry="EG" />
+          </Form.Item>
+          <Form.Item label={t("business_profile.logo")}>
+            <ImageUploader
+              initialUrl={logoUrl}
+              onFileChange={handleUploadLogo}
+              shape="circle"
+            />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={loadingBusiness}>
+            {t("business_profile.save")}
+          </Button>
+        </Form>
+      </Card>
 
       {/* CHANGE PASSWORD */}
       <Card title={t("settings.passwordSection")} style={{ marginBottom: 24 }}>

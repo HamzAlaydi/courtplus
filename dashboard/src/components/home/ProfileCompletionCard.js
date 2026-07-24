@@ -4,39 +4,39 @@ import { Progress } from "antd";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-export default function ProfileCompletionCard({ tenant }) {
+export default function ProfileCompletionCard({ tenant, branches = [] }) {
   const { t } = useTranslation();
 
-  const completion = tenant?.profileCompletion || {};
+  // Computed from live data (backend profileCompletion flags are stale)
   const items = [
     {
       id: "name",
       label: t("home.completion.name"),
-      done: !!completion.name,
+      done: !!tenant?.name?.trim(),
       to: "/settings",
     },
     {
       id: "phoneNumber",
       label: t("home.completion.phoneNumber"),
-      done: !!completion.phoneNumber,
+      done: !!tenant?.phoneNumber?.trim(),
       to: "/settings",
     },
     {
       id: "logo",
       label: t("home.completion.logo"),
-      done: !!completion.logo,
+      done: !!tenant?.logoURL,
       to: "/settings",
     },
     {
       id: "branches",
       label: t("home.completion.branches"),
-      done: !!completion.branches,
+      done: branches.length > 0,
       to: "/branches/add",
     },
     {
       id: "courts",
       label: t("home.completion.courts"),
-      done: !!completion.courts,
+      done: (tenant?.totalCourts ?? 0) > 0,
       to: "/courts/add",
     },
   ];

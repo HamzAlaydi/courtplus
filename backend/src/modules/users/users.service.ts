@@ -202,7 +202,9 @@ export class UsersService {
     await this.usersRepository.update(id, update);
 
     this.invalidateUser(id);
-    return this.getById(id, { cached: false });
+    // Fetch with relations so the re-cached user is complete — caching a
+    // sport-less user here would hide sports from subsequent GET /users/me.
+    return this.getById(id, { cached: false, relations: ['sports'] });
   }
 
   async get(where: FindOptionsWhere<User> | FindOptionsWhere<User>[]) {

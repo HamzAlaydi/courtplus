@@ -3,6 +3,7 @@ import {
   BranchRequestIdRequest,
   CourtRequestIdRequest,
   CourtsRequest,
+  DEFAULT_COURTS_RADIUS,
   GetCourtAvailabilityRequest,
   GetCourtAvailabilityResponse,
 } from "./court.types";

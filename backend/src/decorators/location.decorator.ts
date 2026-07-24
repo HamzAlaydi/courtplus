@@ -19,14 +19,15 @@ export class UserLocation {
   @IsLongitude()
   longitude: number;
 
-  static fromString(value: string): UserLocation {
+  static fromString(value: string): UserLocation | null {
     if (typeof value === 'string') {
       const [lat, lng] = value.split(',').map(Number);
       const locationObj = { latitude: lat, longitude: lng };
       const location = plainToInstance(UserLocation, locationObj);
       const errors = validateSync(location);
       if (errors.length > 0) {
-        throw new Error('Invalid location format');
+        // Tolerate malformed headers instead of failing the whole request
+        return null;
       }
       return location;
     }

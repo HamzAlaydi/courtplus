@@ -20,7 +20,8 @@ export const useChooseCourt = () => {
   } = useGetCourts(
     {
       page: 1,
-      currentLocation: `${location?.lat ?? ""},${location?.long}`,
+      lat: location?.lat,
+      lng: location?.long,
     },
     !!location
   );
