@@ -14,7 +14,7 @@ const VerifyPhoneScreen = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
-  const { onFilled } = useVerifyPhone();
+  const { onFilled, onResendCode } = useVerifyPhone();
   return (
     <MainWrapper whiteBackground>
       <Header whiteColor title={t("changePhone.verifyPhone")} />
@@ -26,7 +26,7 @@ const VerifyPhoneScreen = () => {
         />
         <OTPView
           onFilled={onFilled}
-          onResendCode={() => {}}
+          onResendCode={onResendCode}
           overrideStyle={themedStyles.otpView}
           showButton={false}
           isDark
