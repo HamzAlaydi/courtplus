@@ -8,7 +8,7 @@ const devBaseUrl = Platform.select({
 });
 
 export const endPoints = {
-  baseUrl: __DEV__ ? devBaseUrl : "https://api-dev.courtplusapp.com/",
+  baseUrl: __DEV__ ? devBaseUrl : "https://api.courtplusapp.com/",
   login: "auth/customers/login/phone",
   sendCode: "auth/customers/send-code",
   signup: "auth/customers/signup/phone",
