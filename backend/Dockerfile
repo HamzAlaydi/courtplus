@@ -16,7 +16,7 @@ COPY . .
 
 RUN pnpm install
 
-RUN pnpm run build
+RUN NODE_OPTIONS="--max-old-space-size=3072" pnpm run build
 
 CMD ["pnpm", "run", "start:prod"]
 
