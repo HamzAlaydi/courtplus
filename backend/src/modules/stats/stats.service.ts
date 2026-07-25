@@ -207,8 +207,9 @@ export class StatsService {
   ): Promise<ChartStatsResponseDto> {
     const result = await this.reviewsRepository
       .createQueryBuilder('review')
+      .innerJoin('bookings', 'booking', 'booking.id = review."bookingId"')
       .select(['DATE(review.createdAt) as date', 'COUNT(review.id) as count'])
-      .where('review.courtId IN (:...courtIds)', { courtIds })
+      .where('booking."courtId" IN (:...courtIds)', { courtIds })
       .andWhere('review.createdAt >= :startDate', { startDate })
       .andWhere('review.createdAt <= :endDate', { endDate })
       .groupBy('DATE(review.createdAt)')

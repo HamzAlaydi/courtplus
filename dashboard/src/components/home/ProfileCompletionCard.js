@@ -4,7 +4,11 @@ import { Progress } from "antd";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-export default function ProfileCompletionCard({ tenant, branches = [] }) {
+export default function ProfileCompletionCard({
+  tenant,
+  branches = [],
+  hasSubscription = false,
+}) {
   const { t } = useTranslation();
 
   // Computed from live data (backend profileCompletion flags are stale)
@@ -38,6 +42,12 @@ export default function ProfileCompletionCard({ tenant, branches = [] }) {
       label: t("home.completion.courts"),
       done: (tenant?.totalCourts ?? 0) > 0,
       to: "/courts/add",
+    },
+    {
+      id: "subscription",
+      label: t("home.completion.subscription"),
+      done: hasSubscription,
+      to: "/billing",
     },
   ];
 
