@@ -1,6 +1,12 @@
 import axios from "axios";
 import { useAppStore } from "store";
-import { ApiResponse, clearCache, endPoints, getErrorMessage } from "utils";
+import {
+  ApiResponse,
+  clearCache,
+  endPoints,
+  getApiErrorMessage,
+  getNetworkErrorMessage,
+} from "utils";
 import { navigationRef } from "navigation/types";
 import { CommonActions } from "@react-navigation/native";
 
@@ -26,13 +32,18 @@ instance.interceptors.request.use((config) => {
 });
 
 const handleError = (error: any) => {
-  const errorMessage = error?.response?.data?.code ?? "";
+  // Backend errors arrive as `{ statusCode, code }`; network/timeout errors
+  // have no response at all. Both must become a clear localized message —
+  // never a raw code, never "Internal Server Error".
+  const code = error?.response?.data?.code ?? null;
   return {
     status: error?.response?.status,
     data: {
       OK: false,
     },
-    message: getErrorMessage(errorMessage),
+    message: error?.response
+      ? getApiErrorMessage(code)
+      : getNetworkErrorMessage(),
   };
 };
 
@@ -85,7 +96,7 @@ instance.interceptors.response.use(
     const { setUserTokens, userTokens } = useAppStore.getState();
     const errorResponse = handleError(error);
 
-    if (error.response.status === 401 && userTokens.accessToken) {
+    if (error.response?.status === 401 && userTokens.accessToken) {
       const originalRequest = error.response.config;
       if (!originalRequest) {
         return handleError(error);

@@ -8,7 +8,7 @@ import {
 import { CreateReviewDto } from './dto/create-review.dto';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Review } from './entities/review.entity';
-import { FindOptionsSelect, In, Repository } from 'typeorm';
+import { DataSource, FindOptionsSelect, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ListReviewsDto } from './dto/list-reviews.dto';
 import { BookingsService } from 'src/modules/bookings/bookings.service';
@@ -35,6 +35,7 @@ export class ReviewsService {
   constructor(
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    private readonly dataSource: DataSource,
     @Inject(forwardRef(() => BookingsService))
     private readonly bookingsService: BookingsService,
     private readonly eventEmitter: EventEmitter2,
@@ -48,6 +49,7 @@ export class ReviewsService {
     private readonly branchesService: BranchesService,
     @Inject(forwardRef(() => ParticipantsService))
     private readonly participantsService: ParticipantsService,
+    private readonly dataSource: DataSource,
   ) { }
 
   async findByIds(
@@ -209,14 +211,29 @@ export class ReviewsService {
   }
 
   @OnEvent(ReviewEvent.REVIEW_CREATED)
-  @Transactional()
   private async handleReviewCreatedEvent({
     review,
     booking,
   }: ReviewEventPayload) {
-    await this.courtsService.updateRating(booking.courtId, review.rating, true);
-    await this.branchesService.updateRating(booking.court.branch.id, review.rating, true);
-    await this.usersService.incrementCount(review.userId, 1, 'reviewsCount');
+    // Explicit transaction: this handler runs from a commit hook where the
+    // @Transactional() decorator has no usable context and silently no-ops.
+    await this.dataSource.transaction(async () => {
+      await this.courtsService.updateRating(
+        booking.courtId,
+        review.rating,
+        true,
+      );
+      await this.branchesService.updateRating(
+        booking.court.branch.id,
+        review.rating,
+        true,
+      );
+      await this.usersService.incrementCount(
+        review.userId,
+        1,
+        'reviewsCount',
+      );
+    });
 
     const court = await this.courtsService.findOne(booking.courtId, {
       branch: true,
@@ -251,17 +268,26 @@ export class ReviewsService {
   }
 
   @OnEvent(ReviewEvent.REVIEW_DELETED)
-  @Transactional()
   private async handleReviewDeletedEvent({
     review,
     booking,
   }: ReviewEventPayload) {
-    await this.courtsService.updateRating(
-      booking.courtId,
-      review.rating,
-      false,
-    );
-    await this.branchesService.updateRating(booking.court.branch.id, review.rating, false);
-    await this.usersService.incrementCount(review.userId, -1, 'reviewsCount');
+    await this.dataSource.transaction(async () => {
+      await this.courtsService.updateRating(
+        booking.courtId,
+        review.rating,
+        false,
+      );
+      await this.branchesService.updateRating(
+        booking.court.branch.id,
+        review.rating,
+        false,
+      );
+      await this.usersService.incrementCount(
+        review.userId,
+        -1,
+        'reviewsCount',
+      );
+    });
   }
 }

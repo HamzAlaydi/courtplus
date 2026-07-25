@@ -28,6 +28,7 @@ import {
 import { t } from "i18next";
 import { ErrorCode } from "react-native-image-picker";
 import FastImage from "react-native-fast-image";
+import { getApiErrorMessage } from "./errorMessages";
 import ImageResizer from "@bam.tech/react-native-image-resizer";
 import { Asset } from "react-native-image-picker";
 import { ReactNode } from "react";
@@ -357,11 +358,7 @@ export const dehydrateQuery = (query: any) => {
 };
 
 export const getErrorMessage = (message: string) => {
-  const translationFound = i18n.exists(`messages.${message}`);
-  if (translationFound) {
-    return t(`messages.${message}`);
-  }
-  return t("messages.somethingWentWrong");
+  return getApiErrorMessage(message);
 };
 
 export const formatCurrency = (amount: number) => {

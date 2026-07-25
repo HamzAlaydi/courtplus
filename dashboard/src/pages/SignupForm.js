@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Form, Input, Button } from "antd";
 import { signUpStaff } from "../actions/auth_actions";
 import { useNotification } from "../modules/NotificationProvider";
+import { notifyError } from "../utils/errorMessages";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const SignUpForm = () => {
   const [loading, setLoading] = useState(false);
   const notify = useNotification(); // Access global notification function
   const navigate = useNavigate(); // Initialize useNavigate for navigation
+  const { t } = useTranslation();
 
   const onFinish = (values) => {
     setLoading(true);
@@ -18,7 +21,7 @@ const SignUpForm = () => {
       })
       .catch((err) => {
         console.log(err);
-        notify("error", err?.response?.data?.code);
+        notifyError(notify, err, t);
       });
     setLoading(false);
   };

@@ -24,6 +24,7 @@ import {
 } from "../actions/billing_action";
 import { createCheckoutSession } from "../actions/subscription_action";
 import { useNotification } from "../modules/NotificationProvider";
+import { notifyError } from "../utils/errorMessages";
 
 // Amounts from the API are in cents
 const formatAmount = (cents, currency) =>
@@ -55,10 +56,7 @@ export default function Billing() {
       if (res?.url) window.open(res.url, "_blank", "noopener,noreferrer");
     },
     onError: (err) => {
-      notify(
-        "error",
-        err?.response?.data?.code || t("billing.portal_failed")
-      );
+      notifyError(notify, err, t, "billing.portal_failed");
     },
   });
 
@@ -74,10 +72,7 @@ export default function Billing() {
       if (res?.url) window.location.href = res.url;
     },
     onError: (err) => {
-      notify(
-        "error",
-        err?.response?.data?.code || t("billing.checkout_failed")
-      );
+      notifyError(notify, err, t, "billing.checkout_failed");
     },
   });
 

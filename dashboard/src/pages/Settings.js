@@ -13,6 +13,7 @@ import {
 } from "../actions/staff.action";
 import { getTenant, updateTenant } from "../actions/tenant_action";
 import { uploadImageToS3 } from "../utils/functions";
+import { notifyError } from "../utils/errorMessages";
 import ImageUploader from "../components/ImageUploader";
 import { useNotification } from "../modules/NotificationProvider";
 import { useTranslation } from "react-i18next";
@@ -75,10 +76,7 @@ export default function SettingsPage() {
       notify("success", t("business_profile.saved"));
     } catch (err) {
       console.log(err);
-      notify(
-        "error",
-        err?.response?.data?.code || t("business_profile.save_failed")
-      );
+      notifyError(notify, err, t, "business_profile.save_failed");
     } finally {
       setLoadingBusiness(false);
     }
@@ -247,10 +245,7 @@ export default function SettingsPage() {
       deleteForm.resetFields();
     } catch (err) {
       console.log(err);
-      notify(
-        "error",
-        err?.response?.data?.code || t("settings.deleteRequestFailed")
-      );
+      notifyError(notify, err, t, "settings.deleteRequestFailed");
     } finally {
       setLoadingDelete(false);
     }

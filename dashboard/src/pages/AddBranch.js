@@ -31,6 +31,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MdDeleteOutline } from "react-icons/md";
 import ModalDelete from "../components/ModalDelete";
 import { uploadImageToS3 } from "../utils/functions";
+import { notifyError } from "../utils/errorMessages";
 import LocationSelector from "../components/LocationSelector";
 
 export default function AddBranch() {
@@ -179,12 +180,7 @@ export default function AddBranch() {
         })
         .catch((err) => {
           console.log(err);
-          notify(
-            "error",
-            err?.response?.data?.code ||
-              err?.response?.data?.message ||
-              t("branchForm.notifications.update_failed")
-          );
+          notifyError(notify, err, t, "branchForm.notifications.update_failed");
         });
     } else {
       createBranch(formData)
@@ -195,12 +191,7 @@ export default function AddBranch() {
         })
         .catch((err) => {
           console.log(err);
-          notify(
-            "error",
-            err?.response?.data?.code ||
-              err?.response?.data?.message ||
-              t("branchForm.notifications.create_failed")
-          );
+          notifyError(notify, err, t, "branchForm.notifications.create_failed");
         });
     }
   };

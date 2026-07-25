@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { deleteCourt } from "../actions/court_actions";
 import { useNotification } from "../modules/NotificationProvider";
+import { notifyError } from "../utils/errorMessages";
 
 const STATUS_COLORS = {
   available: "green",
@@ -30,10 +31,7 @@ const CourtCard = ({ name, id, image, status, court }) => {
       notify("success", t("courtCard.delete_success"));
     },
     onError: (err) => {
-      notify(
-        "error",
-        err?.response?.data?.code || t("courtCard.delete_failed")
-      );
+      notifyError(notify, err, t, "courtCard.delete_failed");
     },
   });
 

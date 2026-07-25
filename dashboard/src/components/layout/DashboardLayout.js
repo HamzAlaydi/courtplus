@@ -16,6 +16,7 @@ import NavDropdown from "./NavDropdown";
 import NotificationsDropdown from "./NotificationsDropdown";
 import { getTenant, requestUnsuspend } from "../../actions/tenant_action";
 import { useNotification } from "../../modules/NotificationProvider";
+import { notifyError } from "../../utils/errorMessages";
 
 const { Header, Content, Sider } = Layout;
 
@@ -55,10 +56,7 @@ const DashboardLayout = () => {
       notify("success", t("suspension.sent"));
     },
     onError: (err) => {
-      notify(
-        "error",
-        err?.response?.data?.code || t("suspension.send_failed")
-      );
+      notifyError(notify, err, t, "suspension.send_failed");
     },
   });
 

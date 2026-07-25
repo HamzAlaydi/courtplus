@@ -34,6 +34,7 @@ import ModalDelete from "../components/ModalDelete";
 import { MdDeleteOutline } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { uploadImageToS3 } from "../utils/functions";
+import { notifyError } from "../utils/errorMessages";
 
 const { TextArea } = Input;
 
@@ -148,10 +149,7 @@ export default function CourtForm() {
     },
     onError: (err) => {
       console.log("Error creating court:", err);
-      notify(
-        "error",
-        err?.response?.data?.code || "Something went wrong while creating."
-      );
+      notifyError(notify, err, t);
     },
   });
 
@@ -168,10 +166,7 @@ export default function CourtForm() {
           await resubmitCourt(id);
           notify("success", t("courtForm.resubmit_success"));
         } catch (err) {
-          notify(
-            "error",
-            err?.response?.data?.code || t("courtForm.resubmit_failed")
-          );
+          notifyError(notify, err, t, "courtForm.resubmit_failed");
         }
         navigate("/courts");
         return;
