@@ -89,9 +89,8 @@ export class FirebaseService {
           title,
           body: content,
           imageUrl: image,
-          //TODO: channelId,clickAction
-          channelId: 'updates',
-          clickAction: 'OPEN_UPDATES',
+          // No channelId: the app doesn't register custom channels; letting
+          // FCM use its default channel keeps notifications visible.
           sound: 'default',
         },
       },

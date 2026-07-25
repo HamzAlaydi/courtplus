@@ -72,7 +72,7 @@ i18next.init({
           },
           booking_created: {
             title: 'New Booking',
-            content: 'New booking created at {{court}}',
+            content: 'New booking created at {{courtName}}',
           },
           moment_posted: {
             title: 'Moment Posted',
@@ -261,7 +261,7 @@ i18next.init({
           },
           booking_created: {
             title: 'حجز جديد',
-            content: 'تم إنشاء حجز جديد في {{court}}',
+            content: 'تم إنشاء حجز جديد في {{courtName}}',
           },
           moment_posted: {
             title: 'نشر لحظة',
