@@ -4,12 +4,22 @@ import {
   ROLES_KEY,
   AuthorizedUserTypeMetadata,
 } from 'src/decorators/user-type.decorator';
+import { IS_PUBLIC_KEY } from 'src/decorators/is-public';
 
 @Injectable()
 export class UserTypeGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const metadata =
       this.reflector.getAllAndOverride<AuthorizedUserTypeMetadata>(ROLES_KEY, [
         context.getHandler(),
