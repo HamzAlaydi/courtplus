@@ -656,6 +656,9 @@ export class CourtsService {
       images,
       videoAssetId,
       placeId,
+      placeName,
+      address,
+      coordinates,
       schedule: scheduleData,
       ...data
     }: UpdateCourtDto,
@@ -678,9 +681,15 @@ export class CourtsService {
       throw new ForbiddenException(NOT_ALLOWED);
     }
 
-    const location = placeId
-      ? await this.locationsService.addLocation(placeId)
-      : null;
+    const location = coordinates
+      ? await this.locationsService.addLocationWithCoordinates({
+          coordinates,
+          name: placeName || address || data.name || court.name,
+          address: address || placeName || '',
+        })
+      : placeId
+        ? await this.locationsService.addLocation(placeId)
+        : null;
 
     const updateData: Partial<Court> = {
       ...data,
