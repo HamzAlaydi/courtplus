@@ -276,7 +276,9 @@
     "volleyball": "Volleyball",
     "hourlyRate": "Hourly Rate",
     "unit_length": "m",
-    "unit_rate": "SAR"
+    "unit_rate": "SAR",
+    "resubmit_success": "Court updated and sent back for review",
+    "resubmit_failed": "Court updated, but failed to resubmit for review"
   },
   "court": {
     "sport": "Sport",

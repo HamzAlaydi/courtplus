@@ -26,6 +26,7 @@ import {
   createCourt,
   deleteCourt,
   getCourt,
+  resubmitCourt,
   updateCourt,
 } from "../actions/court_actions";
 import ModalDelete from "../components/ModalDelete";
@@ -141,9 +142,26 @@ export default function CourtForm() {
 
   const { mutate: updateCourtMutate } = useMutation({
     mutationFn: (data) => updateCourt(id, data),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries(["all-courts"]);
       queryClient.invalidateQueries(["court", id]);
+
+      // Courts with requested changes go back to the ops queue only AFTER
+      // a successful edit — never resubmit on a failed update.
+      if (court?.status === "changes_requested") {
+        try {
+          await resubmitCourt(id);
+          notify("success", t("courtForm.resubmit_success"));
+        } catch (err) {
+          notify(
+            "error",
+            err?.response?.data?.code || t("courtForm.resubmit_failed")
+          );
+        }
+        navigate("/courts");
+        return;
+      }
+
       navigate(`/courts/${id}`);
       notify("success", "Court updated successfully.");
     },

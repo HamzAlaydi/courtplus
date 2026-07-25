@@ -1,12 +1,12 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Popconfirm, Popover, Tag } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { deleteCourt, resubmitCourt } from "../actions/court_actions";
+import { deleteCourt } from "../actions/court_actions";
 import { useNotification } from "../modules/NotificationProvider";
 
 const STATUS_COLORS = {
@@ -21,7 +21,6 @@ const STATUS_COLORS = {
 const CourtCard = ({ name, id, image, status, court }) => {
   const { t } = useTranslation(); // ✅ Translation hook
   const notify = useNotification();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { mutate: deleteCourtMutate } = useMutation({
@@ -34,21 +33,6 @@ const CourtCard = ({ name, id, image, status, court }) => {
       notify(
         "error",
         err?.response?.data?.code || t("courtCard.delete_failed")
-      );
-    },
-  });
-
-  const { mutate: resubmitMutate, isPending: resubmitting } = useMutation({
-    mutationFn: () => resubmitCourt(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["all-courts"]);
-      notify("success", t("courtCard.resubmit_success"));
-      navigate(`${id}/edit`);
-    },
-    onError: (err) => {
-      notify(
-        "error",
-        err?.response?.data?.code || t("courtCard.resubmit_failed")
       );
     },
   });
@@ -124,14 +108,9 @@ const CourtCard = ({ name, id, image, status, court }) => {
           {t("courtCard.edit")}
         </Link>
         {status === "changes_requested" && (
-          <button
-            type="button"
-            className="court-card-btn"
-            disabled={resubmitting}
-            onClick={() => resubmitMutate()}
-          >
+          <Link to={`${id}/edit`} className="court-card-btn">
             {t("courtCard.resubmit")}
-          </button>
+          </Link>
         )}
         <Popconfirm
           title={t("courtCard.delete_confirm")}

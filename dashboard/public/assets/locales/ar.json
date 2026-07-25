@@ -270,7 +270,9 @@
     "volleyball": "كرة طائرة",
     "hourlyRate": "سعر الساعة",
     "unit_length": "م",
-    "unit_rate": "ر.س"
+    "unit_rate": "ر.س",
+    "resubmit_success": "تم تحديث الملعب وإعادة إرساله للمراجعة",
+    "resubmit_failed": "تم تحديث الملعب، لكن فشل إعادة الإرسال للمراجعة"
   },
   "court": {
     "sport": "الرياضة",
