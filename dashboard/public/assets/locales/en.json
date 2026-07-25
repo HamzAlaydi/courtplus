@@ -484,5 +484,9 @@
       "tenant_unsuspend_requested": "Unsuspend requested",
       "subscription_payment_failed": "Subscription payment failed"
     }
+  },
+  "breadcrumb": {
+    "add": "Add",
+    "edit": "Edit"
   }
 }

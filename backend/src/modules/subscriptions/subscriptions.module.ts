@@ -12,6 +12,7 @@ import { TenantsModule } from '../tenants/tenants.module';
 import { BranchesModule } from '../branches/branches.module';
 import { CourtsModule } from '../courts/courts.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { StaffModule } from '../staff/staff.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     forwardRef(() => BranchesModule),
     forwardRef(() => CourtsModule),
     forwardRef(() => NotificationsModule),
+    forwardRef(() => StaffModule),
   ],
   controllers: [SubscriptionsController, BillingController],
   providers: [SubscriptionsService, PricingService],

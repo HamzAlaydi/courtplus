@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Empty, Input, Pagination, Select, Spin } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import CourtCard from "../components/CourtCard";
 import { getCourts } from "../actions/court_actions";
@@ -126,8 +127,9 @@ export default function Courts() {
 
         {/* 🔹 Filters */}
         <div className="courts-filters">
-          <Input.Search
+          <Input
             allowClear
+            prefix={<SearchOutlined />}
             placeholder={t("courts.search_placeholder")}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}

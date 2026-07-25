@@ -3,17 +3,18 @@
 .courts-filters {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 1.2rem;
   margin-bottom: 2.4rem;
 
   .courts-filter-search {
-    flex: 1 1 240px;
-    max-width: 360px;
+    flex: 1 1 260px;
+    max-width: 380px;
   }
 
   .ant-select {
-    flex: 1 1 160px;
-    max-width: 220px;
+    flex: 0 1 auto;
+    min-width: 180px;
   }
 }
 

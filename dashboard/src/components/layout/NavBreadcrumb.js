@@ -1,8 +1,23 @@
 import React from "react";
 import { Breadcrumb } from "antd";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-// Function to format the breadcrumb text (capitalize and replace dashes)
+// Map known route segments to their locale keys
+const SEGMENT_KEYS = {
+  home: "sideNav.home",
+  users: "sideNav.users",
+  branches: "sideNav.branches",
+  courts: "sideNav.courts",
+  schedule: "sideNav.schedule",
+  billing: "sideNav.billing",
+  settings: "nav.settings",
+  add: "breadcrumb.add",
+  edit: "breadcrumb.edit",
+};
+
+// Fallback for non-mapped segments (ids, unknown slugs):
+// capitalize and replace dashes
 const formatBreadcrumb = (str) => {
   return str
     .replace(/-/g, " ") // Replace dashes with spaces
@@ -11,10 +26,18 @@ const formatBreadcrumb = (str) => {
 
 const NavBreadcrumb = () => {
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const getSegmentLabel = (segment) => {
+    const key = SEGMENT_KEYS[segment];
+    return key ? t(key) : formatBreadcrumb(segment);
+  };
 
   // If the path is exactly "/" or "/home", just return "Home" only
   if (location.pathname === "/" || location.pathname === "/home") {
-    return <Breadcrumb separator=">" items={[{ title: "Home" }]} />;
+    return (
+      <Breadcrumb separator=">" items={[{ title: t("sideNav.home") }]} />
+    );
   }
 
   // Split pathname and remove empty values
@@ -22,12 +45,12 @@ const NavBreadcrumb = () => {
 
   const breadcrumbItems = [
     {
-      title: <Link to="/home">Home</Link>, // Always show "Home" as first breadcrumb
+      title: <Link to="/home">{t("sideNav.home")}</Link>, // Always show "Home" as first breadcrumb
     },
     ...pathSnippets.map((segment, index) => {
       const url = `/${pathSnippets.slice(0, index + 1).join("/")}`; // Build path dynamically
       return {
-        title: formatBreadcrumb(segment),
+        title: getSegmentLabel(segment),
         href: index !== pathSnippets.length - 1 ? url : null, // Only link if not last item
       };
     }),

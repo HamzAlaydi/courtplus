@@ -478,5 +478,9 @@
       "tenant_unsuspend_requested": "تم طلب إلغاء الإيقاف",
       "subscription_payment_failed": "فشل دفع الاشتراك"
     }
+  },
+  "breadcrumb": {
+    "add": "إضافة",
+    "edit": "تعديل"
   }
 }

@@ -36,6 +36,7 @@ import { CourtsService } from '../courts/courts.service';
 import { Court } from '../courts/entities/court.entity';
 import { PricingService, PRICING } from './pricing.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { StaffService } from '../staff/staff.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
@@ -55,6 +56,8 @@ export class SubscriptionsService {
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
     private readonly pricingService: PricingService,
+    @Inject(forwardRef(() => StaffService))
+    private readonly staffService: StaffService,
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
   ) { }
@@ -395,6 +398,20 @@ export class SubscriptionsService {
       await this.subscriptionRepository.save(subscription);
     }
 
+    await this.notificationsService.notifyStaff(
+      { tenantId: subscription.tenantId },
+      {
+        email: false,
+        type: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
+        data: {
+          kind: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
+          tenantId: subscription.tenantId,
+          invoiceId: stripeInvoice.id,
+        },
+        resourceId: subscription.id,
+      },
+    );
+
     // Payment confirmed: move all of the tenant's courts that were
     // waiting for payment into the ops approval queue.
     await this.activatePendingCourts(subscription.tenantId);
@@ -505,7 +522,10 @@ export class SubscriptionsService {
       return tenant.providerCustomerId;
     }
 
-    const ownerEmail = tenant.owner?.email;
+    const owner = tenant.ownerId
+      ? await this.staffService.getById(tenant.ownerId)
+      : null;
+    const ownerEmail = owner?.email ?? tenant.owner?.email;
     if (!ownerEmail) {
       throw new BadRequestException(
         'Tenant owner email is required for subscription',
