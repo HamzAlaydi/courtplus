@@ -1,6 +1,12 @@
 import { ConfigService } from '@nestjs/config';
 import { Twilio } from 'twilio';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import { PHONE_NUMBER_NOT_VERIFIED } from '../error-codes';
 import { ServiceContext } from 'twilio/lib/rest/verify/v2/service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
@@ -27,16 +33,29 @@ export class TwilioService {
   async sendVerificationCode(phoneNumber: string, deviceIp: string) {
     await this.invalidateVerification(phoneNumber);
 
-    const verification = await this.verificationService.verifications.create({
-      to: phoneNumber,
-      channel: 'sms',
-      deviceIp: this.env !== 'development' ? deviceIp : undefined,
-    });
-    await this.cacheManager.set(
-      `verification-sid#${phoneNumber}`,
-      verification.sid,
-    );
-    return verification;
+    try {
+      const verification =
+        await this.verificationService.verifications.create({
+          to: phoneNumber,
+          channel: 'sms',
+          deviceIp: this.env !== 'development' ? deviceIp : undefined,
+        });
+      await this.cacheManager.set(
+        `verification-sid#${phoneNumber}`,
+        verification.sid,
+      );
+      return verification;
+    } catch (error: any) {
+      // Twilio trial accounts can only message verified numbers; surface a
+      // clear client error instead of a raw 500.
+      if (
+        typeof error?.message === 'string' &&
+        error.message.includes('unverified')
+      ) {
+        throw new BadRequestException(PHONE_NUMBER_NOT_VERIFIED);
+      }
+      throw error;
+    }
   }
 
   async checkVerificationCode(phoneNumber: string, code: string) {

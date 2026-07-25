@@ -102,6 +102,10 @@ i18next.init({
             title: 'Payment Released',
             content: 'Your payment has been released',
           },
+          rate_reminder: {
+            title: 'How was your game?',
+            content: 'Rate your experience at {{courtName}}',
+          },
           booking_join_request_submitted: {
             title: 'Join Request Submitted',
             content: 'Your request to join the booking has been submitted',
@@ -290,6 +294,10 @@ i18next.init({
           payment_released: {
             title: 'تم تحرير الدفعة',
             content: 'تم تحرير دفعتك',
+          },
+          rate_reminder: {
+            title: 'كيف كانت مباراتك؟',
+            content: 'قيّم تجربتك في {{courtName}}',
           },
           booking_join_request_submitted: {
             title: 'تم تقديم طلب الانضمام',

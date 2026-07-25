@@ -643,7 +643,8 @@ export class BranchesService {
   async updateRating(branchId: string, rating: number, inc: boolean) {
     const branch = await this.branchRepository.findOne({
       where: { id: branchId },
-      select: ['ratingStats'],
+      // id must be selected explicitly — it is used as the update criteria below
+      select: ['id', 'ratingStats'],
       lock: { mode: 'pessimistic_write' },
     });
 

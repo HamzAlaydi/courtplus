@@ -193,7 +193,7 @@ export class ReviewsService {
   async delete(id: string, user: SessionUser) {
     const review = await this.reviewRepository.findOne({
       where: { id, userId: user.id },
-      relations: ['booking'],
+      relations: ['booking', 'booking.court', 'booking.court.branch'],
     });
 
     if (!review) {
@@ -261,7 +261,7 @@ export class ReviewsService {
       review.rating,
       false,
     );
-    await this.branchesService.updateRating(booking.id, review.rating, false);
+    await this.branchesService.updateRating(booking.court.branch.id, review.rating, false);
     await this.usersService.incrementCount(review.userId, -1, 'reviewsCount');
   }
 }

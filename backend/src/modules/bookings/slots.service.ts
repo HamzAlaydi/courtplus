@@ -8,6 +8,8 @@ import { Schedule } from '../schedules/entities/schedule.entity';
 import { BOOKING } from './booking.constants';
 import { dayjs } from '../shared/dayjs';
 import { v4 as uuidv4 } from 'uuid';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class SlotsService {
@@ -18,6 +20,7 @@ export class SlotsService {
     private readonly bookingsRepository: Repository<Booking>,
     @InjectRepository(SlotReservation)
     private readonly slotReservationRepository: Repository<SlotReservation>,
+    private readonly notificationsService: NotificationsService,
   ) { }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -32,23 +35,64 @@ export class SlotsService {
   }
 
   // Safety net for bookings whose start/end jobs were missed (worker
+  // Safety net for bookings whose start/end jobs were missed (worker
   // downtime, booking created after startDate, etc.): once endDate has
   // passed, a booking must not stay pending/in_progress forever.
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleExpiredBookingsCompletion(): Promise<void> {
-    const result = await this.bookingsRepository.update(
-      {
+    // Fetch first (court is needed for the rate-reminder payload), then
+    // complete in bulk. Batched to keep the sweep light.
+    const expiredBookings = await this.bookingsRepository.find({
+      where: {
         endDate: LessThan(new Date()),
         status: In([BookingStatus.PENDING, BookingStatus.IN_PROGRESS]),
       },
+      relations: ['court'],
+      take: 100,
+    });
+
+    if (expiredBookings.length === 0) {
+      return;
+    }
+
+    const result = await this.bookingsRepository.update(
+      { id: In(expiredBookings.map((booking) => booking.id)) },
       { status: BookingStatus.COMPLETED },
     );
 
-    if (result.affected && result.affected > 0) {
-      this.logger.log(
-        `Marked ${result.affected} expired bookings as completed`,
-      );
+    this.logger.log(
+      `Marked ${result.affected} expired bookings as completed`,
+    );
+
+    for (const booking of expiredBookings) {
+      try {
+        await this.notifyRateReminder(booking);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to send rate reminder for booking ${booking.id}`,
+          error,
+        );
+      }
     }
+  }
+
+  // Same payload and recipient rule as BookingsService.notifyRateReminder:
+  // owner/organizer only, skipped for staff-created bookings.
+  private async notifyRateReminder(booking: Booking): Promise<void> {
+    if (!booking.userId) {
+      return;
+    }
+    await this.notificationsService.sendNotification(booking.userId, {
+      type: NotificationType.RATE_REMINDER,
+      data: {
+        kind: NotificationType.RATE_REMINDER,
+        bookingId: booking.id,
+        courtId: booking.courtId,
+        courtName: booking.court?.name ?? '',
+      },
+      resourceId: booking.id,
+      sendEmail: false,
+    });
   }
 
   async reserveSlot(

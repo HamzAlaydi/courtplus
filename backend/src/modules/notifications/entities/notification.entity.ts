@@ -32,6 +32,7 @@ export enum NotificationType {
   REFUND_SUCCEEDED = 'refund_succeeded',
   REFUND_FAILED = 'refund_failed',
   PAYMENT_RELEASED = 'payment_released',
+  RATE_REMINDER = 'rate_reminder',
   MOMENT_POSTED = 'moment_posted',
   POST_LIKE = 'post_like',
   REPORT_CREATED = 'report_created',

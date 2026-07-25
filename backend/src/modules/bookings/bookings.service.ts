@@ -1289,6 +1289,34 @@ export class BookingsService {
     );
   }
 
+  /**
+   * Sent when a booking completes. Owner/organizer only (booking.userId) —
+   * pinging every participant on top of BOOKING_ENDED would be noisy, and the
+   * organizer is the one who set up the game. Staff-created bookings (no
+   * customer owner) are skipped.
+   */
+  async notifyRateReminder(booking: Booking): Promise<void> {
+    if (!booking.userId) {
+      return;
+    }
+    let courtName = booking.court?.name;
+    if (courtName === undefined) {
+      const court = await this.courtsService.findOne(booking.courtId, {});
+      courtName = court?.name ?? '';
+    }
+    await this.notificationsService.sendNotification(booking.userId, {
+      type: NotificationType.RATE_REMINDER,
+      data: {
+        kind: NotificationType.RATE_REMINDER,
+        bookingId: booking.id,
+        courtId: booking.courtId,
+        courtName,
+      },
+      resourceId: booking.id,
+      sendEmail: false,
+    });
+  }
+
 
   @Transactional()
   async joinBooking(

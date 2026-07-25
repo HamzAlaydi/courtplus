@@ -203,6 +203,8 @@ export class BookingsProcessor extends WorkerHost {
       NotificationType.BOOKING_ENDED,
       { bookingId: booking.id },
     );
+
+    await this.bookingsService.notifyRateReminder(booking);
   }
 
   @OnWorkerEvent('failed')
