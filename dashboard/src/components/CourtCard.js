@@ -104,12 +104,13 @@ const CourtCard = ({ name, id, image, status, court }) => {
         <Link to={`${id}`} className="court-card-btn" type="text">
           {t("courtCard.open")}
         </Link>
-        <Link to={`${id}/edit`} className="court-card-btn" type="text">
-          {t("courtCard.edit")}
-        </Link>
-        {status === "changes_requested" && (
+        {status === "changes_requested" ? (
           <Link to={`${id}/edit`} className="court-card-btn">
             {t("courtCard.resubmit")}
+          </Link>
+        ) : (
+          <Link to={`${id}/edit`} className="court-card-btn" type="text">
+            {t("courtCard.edit")}
           </Link>
         )}
         <Popconfirm

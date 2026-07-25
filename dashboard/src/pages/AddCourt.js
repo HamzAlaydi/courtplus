@@ -8,6 +8,7 @@ import {
   Spin,
   InputNumber,
   Switch,
+  Tag,
   Tooltip,
 } from "antd";
 import "dayjs/locale/en";
@@ -36,6 +37,14 @@ import { uploadImageToS3 } from "../utils/functions";
 
 const { TextArea } = Input;
 
+// Same colors as CourtCard for courts in a moderation state
+const MODERATION_STATUS_COLORS = {
+  pending_payment: "orange",
+  pending_approval: "blue",
+  changes_requested: "red",
+  suspended: "default",
+};
+
 export default function CourtForm() {
   const { t } = useTranslation();
   const { id } = useParams(); // Get the court ID from the URL
@@ -60,6 +69,12 @@ export default function CourtForm() {
   const [placeId, setPlaceId] = useState();
   const [place, setPlace] = useState(); // full selection: { name, address, lat, lng }
   const [courtStatus, setCourtStatus] = useState(true); // Default value
+
+  // Courts in a moderation state: the available/unavailable toggle is hidden
+  // and their status is shown as a Tag instead
+  const isModerationStatus = Object.keys(MODERATION_STATUS_COLORS).includes(
+    court?.status
+  );
 
   // 🔹 Fetch branches with applied filters
   const { isLoading, data: branchData } = useQuery({
@@ -196,7 +211,10 @@ export default function CourtForm() {
         place?.lat != null && place?.lng != null
           ? { lat: place.lat, lng: place.lng }
           : undefined,
-      status: courtStatus ? "available" : "unavailable",
+      // Courts in a moderation state keep it — never stomp with available/unavailable
+      ...(isModerationStatus
+        ? {}
+        : { status: courtStatus ? "available" : "unavailable" }),
     };
 
     if (id) {
@@ -425,16 +443,24 @@ export default function CourtForm() {
             </Form.Item>
 
             <Form.Item label={t("courtForm.status")}>
-              <div className="form-row">
-                <Switch
-                  className="toggle-switch"
-                  checked={courtStatus}
-                  onChange={setCourtStatus}
-                />
-                <Tooltip title={t("courtForm.status_tooltip")}>
-                  <IoMdInformationCircleOutline color="#777" size={26} />
-                </Tooltip>
-              </div>
+              {isModerationStatus ? (
+                <div className="form-row">
+                  <Tag color={MODERATION_STATUS_COLORS[court?.status]}>
+                    {t(`courtCard.status.${court?.status}`, court?.status)}
+                  </Tag>
+                </div>
+              ) : (
+                <div className="form-row">
+                  <Switch
+                    className="toggle-switch"
+                    checked={courtStatus}
+                    onChange={setCourtStatus}
+                  />
+                  <Tooltip title={t("courtForm.status_tooltip")}>
+                    <IoMdInformationCircleOutline color="#777" size={26} />
+                  </Tooltip>
+                </div>
+              )}
             </Form.Item>
           </div>
         </div>
