@@ -94,6 +94,7 @@ describe('FriendshipsService', () => {
           useValue: {
             exists: jest.fn(),
             incrementCount: jest.fn(),
+            getById: jest.fn(),
           },
         },
         {
@@ -272,6 +273,11 @@ describe('FriendshipsService', () => {
   describe('handleFollowEvent', () => {
     it('should increment user counts and send notification', async () => {
       const event = { followerId: 'user-1', followingId: 'user-2' };
+      usersService.getById.mockResolvedValue({
+        id: 'user-1',
+        firstName: 'John',
+        lastName: 'Doe',
+      } as any);
 
       await (service as any).handleFollowEvent(event);
 
@@ -291,6 +297,8 @@ describe('FriendshipsService', () => {
           type: 'follow',
           data: {
             userId: 'user-1',
+            firstName: 'John',
+            lastName: 'Doe',
           },
         }),
       );

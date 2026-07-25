@@ -168,6 +168,10 @@ export class ReportingService {
         type: notificationType,
         data: {
           reportId: report.id,
+          entityType: report.entityType,
+          entityId: report.entityId,
+          entityName,
+          ...entityDetails,
         },
         resourceId: report.id,
       });

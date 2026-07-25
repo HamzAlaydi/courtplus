@@ -87,6 +87,7 @@ export class BookingsProcessor extends WorkerHost {
       {
         bookingId: booking.id,
         minutesBeforeMatch: minutesBeforeBooking,
+        time: reminderTime,
       },
       [],
       {
@@ -100,6 +101,17 @@ export class BookingsProcessor extends WorkerHost {
         reminderTime,
       },
     );
+
+    await this.bookingsService.notifyStaffBookingReminder(booking, reminderTime, {
+      bookingId: booking.id,
+      courtName: booking.court?.name,
+      branchName: booking.court?.branch?.name,
+      inTime: reminderTime,
+      date: startDateLocal.format('MMM DD, YYYY'),
+      startTime: startDateLocal.format('h:mm A'),
+      endTime: endDateLocal.format('h:mm A'),
+      expectedAttendees: booking.participants?.length?.toString(),
+    });
 
     await this.scheduleNextReminder(booking, minutesBeforeBooking);
   }
@@ -152,6 +164,7 @@ export class BookingsProcessor extends WorkerHost {
     await this.bookingsService.notifyParticipants(
       booking.id,
       NotificationType.BOOKING_STARTED,
+      { bookingId: booking.id },
     );
   }
 
@@ -177,6 +190,7 @@ export class BookingsProcessor extends WorkerHost {
     await this.bookingsService.notifyParticipants(
       booking.id,
       NotificationType.BOOKING_ENDED,
+      { bookingId: booking.id },
     );
   }
 

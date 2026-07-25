@@ -257,6 +257,7 @@ export class OpsService {
           resourceName: tenant.name,
           reason,
         },
+        resourceId: id,
       },
     );
 
@@ -277,6 +278,7 @@ export class OpsService {
           tenantId: id,
           tenantName: tenant.name,
         },
+        resourceId: id,
       },
     );
 
@@ -318,6 +320,9 @@ export class OpsService {
       await this.unsuspendRequestRepository.update(id, {
         resolvedAt: new Date(),
       });
+      // Resolving a request approves it: lift the suspension and notify the
+      // tenant staff (unsuspendTenant emits TENANT_UNSUSPENDED).
+      await this.unsuspendTenant(request.tenantId);
     }
     return this.unsuspendRequestRepository.findOne({ where: { id } });
   }

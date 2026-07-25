@@ -48,6 +48,7 @@ export enum NotificationType {
   TENANT_UNSUSPENDED = 'tenant_unsuspended',
   TENANT_UNSUSPEND_REQUESTED = 'tenant_unsuspend_requested',
   SUBSCRIPTION_PAYMENT_FAILED = 'subscription_payment_failed',
+  SUBSCRIPTION_PAYMENT_SUCCEEDED = 'subscription_payment_succeeded',
 
 }
 

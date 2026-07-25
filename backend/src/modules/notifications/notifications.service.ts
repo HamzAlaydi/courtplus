@@ -43,6 +43,7 @@ export class NotificationsService {
     [NotificationType.BOOKING_CREATED]: EmailTemplate.STAFF_BOOKING_CREATED,
     [NotificationType.BOOKING_CANCELLED]: EmailTemplate.STAFF_BOOKING_CANCELLED,
     [NotificationType.BOOKING_REMINDER]: EmailTemplate.STAFF_BOOKING_REMINDER,
+    [NotificationType.REVIEW_ADDED]: EmailTemplate.REVIEW_ADDED,
     [NotificationType.COURT_APPROVED]: EmailTemplate.COURT_APPROVED,
     [NotificationType.COURT_CHANGES_REQUESTED]: EmailTemplate.COURT_CHANGES_REQUESTED,
     [NotificationType.COURT_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,

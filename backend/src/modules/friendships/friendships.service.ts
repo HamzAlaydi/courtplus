@@ -219,10 +219,13 @@ export class FriendshipsService {
     const { followerId, followingId } = event;
     await this.usersService.incrementCount(followerId, 1, 'followingCount');
     await this.usersService.incrementCount(followingId, 1, 'followersCount');
+    const follower = await this.usersService.getById(followerId);
     await this.notificationsService.sendNotification(followingId, {
       type: NotificationType.FOLLOW,
       data: {
         userId: followerId,
+        firstName: follower?.firstName,
+        lastName: follower?.lastName,
       },
     });
   }

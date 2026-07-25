@@ -300,10 +300,11 @@ export class PostsService {
         return;
       }
       await this.updateStats(post, 1);
+      const poster = await this.usersService.getById(post.userId);
       await this.bookingsService.notifyParticipants(
         post.bookingId,
         NotificationType.MOMENT_POSTED,
-        { postId: post.id, userId: post.userId },
+        { postId: post.id, userId: post.userId, name: poster?.fullName || 'A player' },
         [post.userId],
       );
       await this.bookingEventsService.create({
@@ -341,11 +342,14 @@ export class PostsService {
         return;
       }
 
+      const likedByUser = await this.usersService.getById(likedBy);
       await this.notificationsService.sendNotification(post.userId, {
         type: NotificationType.POST_LIKE,
         data: {
           postId: post.id,
           userId: likedBy,
+          firstName: likedByUser?.firstName,
+          lastName: likedByUser?.lastName,
         },
       });
     } catch (error) {

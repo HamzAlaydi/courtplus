@@ -36,7 +36,7 @@ i18next.init({
           follow: {
             title: 'New Follower',
             content:
-              '{{user.firstName}} {{user.lastName}} started following you',
+              '{{firstName}} {{lastName}} started following you',
           },
           review_added: {
             title: 'New Review',
@@ -68,7 +68,7 @@ i18next.init({
           },
           post_like: {
             title: 'Post Liked',
-            content: '{{user.firstName}} {{user.lastName}} liked your post',
+            content: '{{firstName}} {{lastName}} liked your post',
           },
           booking_created: {
             title: 'New Booking',
@@ -187,6 +187,10 @@ i18next.init({
             title: 'Subscription Payment Failed',
             content: 'Your subscription payment could not be processed',
           },
+          subscription_payment_succeeded: {
+            title: 'Subscription Payment Successful',
+            content: 'Your subscription payment was processed successfully',
+          },
         },
       },
     },
@@ -221,7 +225,7 @@ i18next.init({
           },
           follow: {
             title: 'متابع جديد',
-            content: '{{user.firstName}} {{user.lastName}} بدأ بمتابعتك',
+            content: '{{firstName}} {{lastName}} بدأ بمتابعتك',
           },
           review_added: {
             title: 'تقييم جديد',
@@ -253,7 +257,7 @@ i18next.init({
           },
           post_like: {
             title: 'إعجاب بالمنشور',
-            content: '{{user.firstName}} {{user.lastName}} أعجب بمنشورك',
+            content: '{{firstName}} {{lastName}} أعجب بمنشورك',
           },
           booking_created: {
             title: 'حجز جديد',
@@ -370,6 +374,10 @@ i18next.init({
           subscription_payment_failed: {
             title: 'فشل دفع الاشتراك',
             content: 'تعذر معالجة دفعة اشتراكك',
+          },
+          subscription_payment_succeeded: {
+            title: 'دفع الاشتراك ناجح',
+            content: 'تمت معالجة دفعة اشتراكك بنجاح',
           },
         },
       },

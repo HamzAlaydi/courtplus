@@ -27,6 +27,7 @@ import { BookingStatus } from '../bookings/entities/booking.entity';
 import { BranchesService } from '../branches/branches.service';
 import type { SessionUser } from '../auth/@types/session';
 import { UsersService } from '../users/users.service';
+import { dayjs } from '../shared/dayjs';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { ParticipantsService } from '../bookings/participants.service';
 @Injectable()
@@ -221,6 +222,8 @@ export class ReviewsService {
       branch: true,
     });
 
+    const reviewer = await this.usersService.getById(review.userId);
+
     await this.notificationsService.notifyStaff(
       {
         tenantId: court.branch.tenantId,
@@ -230,8 +233,19 @@ export class ReviewsService {
         type: NotificationType.REVIEW_ADDED,
         data: {
           reviewId: review.id,
+          courtId: booking.courtId,
         },
         resourceId: review.id,
+        emailData: {
+          staffName: 'Team',
+          branchName: court.branch.name,
+          courtName: court.name,
+          reviewerName: reviewer?.fullName || 'A player',
+          rating: review.rating,
+          reviewDate: dayjs(review.createdAt).format('MMM DD, YYYY'),
+          reviewComment: review.comment,
+          reviewId: review.id,
+        },
       },
     );
   }

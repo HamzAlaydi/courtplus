@@ -235,9 +235,25 @@ export class PaymentsService {
       `[PAYMENT_FLOW] Calling Stripe refund - paymentId: ${paymentId}, stripePaymentIntentId: ${payment.providerPaymentId}`,
     );
 
-    const refund = await this.stripeService.refundPayment(
-      payment.providerPaymentId,
-    );
+    let refund: Stripe.Refund;
+    try {
+      refund = await this.stripeService.refundPayment(
+        payment.providerPaymentId,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[PAYMENT_FLOW] Stripe refund failed - paymentId: ${paymentId}, userId: ${payment.userId}`,
+        error,
+      );
+      await this.notificationsService.sendNotification(payment.userId, {
+        type: NotificationType.REFUND_FAILED,
+        data: {
+          paymentId: payment.id,
+          bookingId: payment.bookingId,
+        },
+      });
+      throw error;
+    }
 
     this.logger.log(
       `[PAYMENT_FLOW] Stripe refund successful - paymentId: ${paymentId}, stripeRefundId: ${refund.id}, refundAmount: ${refund.amount / 100}`,

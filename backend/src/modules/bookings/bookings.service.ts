@@ -1265,6 +1265,31 @@ export class BookingsService {
     });
   }
 
+  async notifyStaffBookingReminder(
+    booking: Booking,
+    reminderTime: string,
+    emailData: Record<string, any>,
+  ): Promise<void> {
+    if (!booking.court?.branch?.id) {
+      return;
+    }
+    await this.notificationsService.notifyStaff(
+      { branchId: booking.court.branch.id },
+      {
+        type: NotificationType.BOOKING_REMINDER,
+        data: {
+          bookingId: booking.id,
+          courtId: booking.courtId,
+          court: booking.court.name,
+          courtName: booking.court.name,
+          time: reminderTime,
+        },
+        resourceId: booking.id,
+        emailData,
+      },
+    );
+  }
+
 
   @Transactional()
   async joinBooking(
@@ -1593,6 +1618,9 @@ export class BookingsService {
     if (participant.booking.paymentType === PaymentType.WHOLE) {
       promises.push(this.notifyParticipants(participant.bookingId, NotificationType.BOOKING_JOINED, {
         participantId: participant.id,
+        userId: participant.userId,
+        bookingId: participant.bookingId,
+        name: participant.user?.fullName || 'A player',
       }, [participant.userId]))
     }
     await Promise.allSettled(promises)
@@ -1652,6 +1680,7 @@ export class BookingsService {
 
     promises.push(this.notifyParticipants(booking.id, NotificationType.BOOKING_INVITATION, {
       bookingId: booking.id,
+      name: booking.user?.fullName || 'A player',
     }, skippedNotifiedUsers, {
       inviterName: booking.user?.fullName || 'A player',
       courtName: booking.court.name,
@@ -1664,10 +1693,30 @@ export class BookingsService {
     }))
 
     if (booking.user) {
+      promises.push(this.notificationsService.sendNotification(booking.userId, {
+        type: NotificationType.BOOKING_CREATED,
+        data: {
+          bookingId: booking.id,
+          courtId: booking.courtId,
+          court: booking.court.name,
+          courtName: booking.court.name,
+          date: startDateLocal.format('MMM DD, YYYY'),
+          startTime: startDateLocal.format('h:mm A'),
+          endTime: endDateLocal.format('h:mm A'),
+        },
+        resourceId: booking.id,
+        sendEmail: false,
+      }));
       promises.push(this.notificationsService.notifyStaff(
         { branchId: booking.court.branch.id },
         {
           type: NotificationType.BOOKING_CREATED,
+          data: {
+            bookingId: booking.id,
+            courtId: booking.courtId,
+            court: booking.court.name,
+            courtName: booking.court.name,
+          },
           emailData: {
             bookingId: booking.id,
             courtName: booking.court.name,
@@ -1725,6 +1774,12 @@ export class BookingsService {
         { tenantId: booking.court.branch.tenantId, branchId: booking.court.branch.id },
         {
           type: NotificationType.BOOKING_CANCELLED,
+          data: {
+            bookingId: booking.id,
+            courtId: booking.courtId,
+            court: booking.court.name,
+            courtName: booking.court.name,
+          },
           emailData: {
             bookingId: booking.id,
             courtName: booking.court.name,
@@ -1764,6 +1819,7 @@ export class BookingsService {
       this.notifyParticipants(booking.id, NotificationType.BOOKING_INVITATION_ACCEPTED, {
         userId,
         bookingId: booking.id,
+        name: participant.user?.fullName || 'A player',
       }, [userId], {
         acceptedByName: participant.user?.fullName || 'A player',
         courtName: booking.court?.name,
@@ -1805,6 +1861,7 @@ export class BookingsService {
         data: {
           userId: userId,
           bookingId: booking.id,
+          name: participant.user?.fullName || 'A player',
         },
         resourceId: booking.id,
         emailData: {
@@ -1840,6 +1897,7 @@ export class BookingsService {
           participantId: participant.id,
           userId: participant.userId,
           bookingId: booking.id,
+          name: participant.user?.fullName || 'A player',
         },
         [participant.userId],
       ),
@@ -1865,6 +1923,7 @@ export class BookingsService {
           participantId: participant.id,
           userId: participant.userId,
           bookingId: booking.id,
+          name: participant.user?.fullName || 'A player',
         },
         [participant.userId],
       ),
@@ -1883,9 +1942,11 @@ export class BookingsService {
       event: BookingEventType.PARTICIPANT_JOINED,
     })
 
+    const payer = await this.usersService.getById(userId);
     await this.notifyParticipants(booking.id, NotificationType.BOOKING_JOINED, {
       bookingId: booking.id,
-      userId
+      userId,
+      name: payer?.fullName || 'A player',
     }, [userId])
   }
 
@@ -1934,6 +1995,7 @@ export class BookingsService {
       this.notifyParticipants(booking.id, NotificationType.BOOKING_PARTICIPANT_CANCELLED, {
         leftUserId: participant.userId,
         bookingId: booking.id,
+        name: participant.user?.fullName || 'A player',
       }, [participant.userId])
     ]);
   }
@@ -1956,8 +2018,17 @@ export class BookingsService {
       }),
       this.notifyParticipants(booking.id, NotificationType.BOOKING_JOINED, {
         newUserId: participant.userId,
+        userId: participant.userId,
         bookingId: booking.id,
-      }, [participant.userId, addedBy])
+        name: participant.user?.fullName || 'A player',
+      }, [participant.userId, addedBy]),
+      this.notificationsService.sendNotification(participant.userId, {
+        type: NotificationType.BOOKING_PARTICIPANT_ADDED,
+        data: {
+          bookingId: booking.id,
+        },
+        resourceId: booking.id,
+      }),
     ]);
   }
 }
