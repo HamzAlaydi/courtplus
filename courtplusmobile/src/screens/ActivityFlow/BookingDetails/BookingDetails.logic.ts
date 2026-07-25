@@ -2,15 +2,16 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useGetProfile, usePayMatch } from "apis";
 import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
 import { useStripePayment } from "hooks";
-import { ParticipantStatus } from "models";
+import { MatchStatus, ParticipantStatus } from "models";
 import {
   ActivityStackNavigationProp,
   ActivityStackParamList,
 } from "navigation/types";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "store";
 import { invalidateQuery } from "utils";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 export const useBookingDetails = () => {
   const route = useRoute<RouteProp<ActivityStackParamList, "BookingDetails">>();
@@ -21,6 +22,7 @@ export const useBookingDetails = () => {
   const toggleLoading = useAppStore((store) => store.toggleLoading);
   const { t } = useTranslation();
   const { data: profileData } = useGetProfile();
+  const reviewCourtModalRef = useRef<BottomSheetModal>(null);
 
   const handlePay = async () => {
     try {
@@ -69,6 +71,12 @@ export const useBookingDetails = () => {
   );
 
   const bookingTicketButton = useMemo(() => {
+    if (item.status === MatchStatus.COMPLETED && !item.review) {
+      return {
+        title: t("activity.addReview"),
+        onPress: () => reviewCourtModalRef.current?.present(),
+      };
+    }
     if (currentParticipant?.status === ParticipantStatus.PENDING_PAYMENT) {
       return {
         title: t("booking.payPart"),
@@ -79,12 +87,13 @@ export const useBookingDetails = () => {
       title: t("activity.bookingTicket"),
       onPress: onBookingTicketPress,
     };
-  }, [t]);
+  }, [t, item.status, item.review, currentParticipant]);
 
   return {
     onActivityLogPress,
     item,
     formattedTime,
     bookingTicketButton,
+    reviewCourtModalRef,
   };
 };

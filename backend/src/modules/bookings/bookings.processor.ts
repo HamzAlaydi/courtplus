@@ -171,14 +171,25 @@ export class BookingsProcessor extends WorkerHost {
   private async processBookingEnd(booking: Booking): Promise<void> {
     this.logger.log(`Processing booking end for booking ${booking.id}`);
 
-    const updated = await this.bookingsService.changeBookingStatus(
+    let updated = await this.bookingsService.changeBookingStatus(
       booking.id,
       BookingStatus.IN_PROGRESS,
       BookingStatus.COMPLETED,
     );
 
     if (!updated) {
-      this.logger.log(`Booking ${booking.id} is not in progress (status: ${booking.status}), skipping end`);
+      // The booking never transitioned to IN_PROGRESS (e.g. its start job was
+      // missed because it was created after startDate), but its time has
+      // passed — close it out instead of leaving it pending forever.
+      updated = await this.bookingsService.changeBookingStatus(
+        booking.id,
+        BookingStatus.PENDING,
+        BookingStatus.COMPLETED,
+      );
+    }
+
+    if (!updated) {
+      this.logger.log(`Booking ${booking.id} is not pending or in progress (status: ${booking.status}), skipping end`);
       return;
     }
 

@@ -5,7 +5,10 @@ export const useSaved = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetBookmarks();
 
-  const savedData = flattenData(data);
+  // Drop bookmarks whose target court/branch no longer exists.
+  const savedData = flattenData(data).filter((item) =>
+    item.type === "court" ? !!item.court : !!item.branch
+  );
   return {
     savedData,
     fetchNextPage,

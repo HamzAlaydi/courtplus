@@ -8,8 +8,9 @@ import React, {
 } from "react";
 import { Dimensions, FlatList, View, ViewToken } from "react-native";
 import styles from "./Carousel.styles";
-import { CarouselProps } from "./Carousel.types";
+import { CarouselMedia, CarouselProps } from "./Carousel.types";
 import { CachedImage } from "molecules/index";
+import VideoPlayer from "../VideoPlayer/VideoPlayer.component";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -76,16 +77,20 @@ const Carousel = ({
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: string; index: number }) => (
+    ({ item }: { item: CarouselMedia; index: number }) => (
       <View style={themedStyles.imageContainer}>
-        <CachedImage source={item} overrideStyle={themedStyles.image} />
+        {item.isVideo ? (
+          <VideoPlayer source={item.url} overrideStyle={themedStyles.image} />
+        ) : (
+          <CachedImage source={item.url} overrideStyle={themedStyles.image} />
+        )}
       </View>
     ),
     [themedStyles.imageContainer, themedStyles.image]
   );
 
   const keyExtractor = useCallback(
-    (_item: string, index: number) => `carousel-image-${index}`,
+    (_item: CarouselMedia, index: number) => `carousel-media-${index}`,
     []
   );
 

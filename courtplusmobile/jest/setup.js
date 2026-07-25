@@ -25,6 +25,10 @@ jest.mock("@react-native-community/netinfo", () =>
 jest.mock("@stripe/stripe-react-native", () =>
   require("@stripe/stripe-react-native/jest/mock")
 );
+jest.mock("react-native-video", () => {
+  const { View } = require("react-native");
+  return { __esModule: true, default: View };
+});
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock")
 );

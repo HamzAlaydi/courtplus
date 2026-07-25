@@ -33,7 +33,14 @@ const CourtInfo = ({
 
   return (
     <View style={styles.container}>
-      <Carousel images={assets.map((asset) => asset.url)} />
+      <Carousel
+        images={assets.map((asset) => ({
+          url: asset.url,
+          isVideo:
+            asset.mimeType?.startsWith("video") ||
+            asset.type?.toLowerCase().includes("video"),
+        }))}
+      />
       <View style={styles.sessionOverviewContainer}>
         <SessionOverview sessions={info} isDividerBlack />
       </View>

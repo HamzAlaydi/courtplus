@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { LessThan, MoreThan, Not, Repository } from 'typeorm';
+import { In, LessThan, MoreThan, Not, Repository } from 'typeorm';
 import { Booking, BookingStatus } from './entities/booking.entity';
 import { SlotReservation } from './entities/slot-reservation.entity';
 import { Schedule } from '../schedules/entities/schedule.entity';
@@ -28,6 +28,26 @@ export class SlotsService {
 
     if (result.affected > 0) {
       this.logger.log(`Cleaned up ${result.affected} expired slot reservations`);
+    }
+  }
+
+  // Safety net for bookings whose start/end jobs were missed (worker
+  // downtime, booking created after startDate, etc.): once endDate has
+  // passed, a booking must not stay pending/in_progress forever.
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleExpiredBookingsCompletion(): Promise<void> {
+    const result = await this.bookingsRepository.update(
+      {
+        endDate: LessThan(new Date()),
+        status: In([BookingStatus.PENDING, BookingStatus.IN_PROGRESS]),
+      },
+      { status: BookingStatus.COMPLETED },
+    );
+
+    if (result.affected && result.affected > 0) {
+      this.logger.log(
+        `Marked ${result.affected} expired bookings as completed`,
+      );
     }
   }
 

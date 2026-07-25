@@ -26,8 +26,17 @@ const SavedScreen = () => {
   const renderItem = ({ item }: { item: Bookmark }) => {
     const currentItem =
       item.type === "court"
-        ? { name: item.court.name, location: item.court.branch.name }
-        : { name: item.branch.tenantId, location: item.branch.location.name };
+        ? {
+            name: item.court?.name ?? "",
+            location: item.court?.branch?.name ?? "",
+          }
+        : {
+            name: item.branch?.name ?? "",
+            location:
+              item.branch?.location?.name ??
+              item.branch?.location?.address ??
+              "",
+          };
     return (
       <BookmarkItem
         image={Images.openMatch}

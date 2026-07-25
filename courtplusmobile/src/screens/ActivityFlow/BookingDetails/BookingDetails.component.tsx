@@ -1,5 +1,6 @@
 import { ActionItem, Card, CustomButton, CustomText } from "atoms/index";
 import { Header } from "molecules/index";
+import ReviewCourtModal from "molecules/modals/ReviewCourtModal/ReviewCourtModal.component";
 import { MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
@@ -17,7 +18,7 @@ const BookingDetailsScreen = () => {
 
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
-  const { onActivityLogPress, item, formattedTime, bookingTicketButton } =
+  const { onActivityLogPress, item, formattedTime, bookingTicketButton, reviewCourtModalRef } =
     useBookingDetails();
 
   const courtImage = getCourtImage(item.court);
@@ -206,6 +207,12 @@ const BookingDetailsScreen = () => {
           title={bookingTicketButton.title}
         />
       </View>
+      <ReviewCourtModal
+        onClose={() => reviewCourtModalRef.current?.dismiss()}
+        ref={reviewCourtModalRef}
+        courtName={item.court.name}
+        bookingId={item.id}
+      />
     </MainWrapper>
   );
 };

@@ -606,8 +606,14 @@ export const getCourtImage = (court: Court): ImageSourcePropType => {
   if (court.mainAsset) {
     return { uri: court.mainAsset };
   }
-  if (court.assets.length > 0) {
-    return { uri: court.assets[0].url };
+  // Skip video assets — they can't be rendered by an Image component.
+  const imageAsset = court.assets?.find(
+    (asset) =>
+      !asset.mimeType?.startsWith("video") &&
+      !asset.type?.toLowerCase().includes("video")
+  );
+  if (imageAsset) {
+    return { uri: imageAsset.url };
   }
   return Images.openMatch;
 };

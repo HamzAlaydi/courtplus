@@ -51,6 +51,7 @@ export { default as LevelSelectionModal } from "./modals/LevelSelectionModal/Lev
 export { default as AddPlayersModal } from "./modals/AddPlayersModal/AddPlayersModal.component";
 export { default as LabelValuePair } from "./LabelValuePair/LabelValuePair.component";
 export { default as Carousel } from "./Carousel/Carousel.component";
+export { default as VideoPlayer } from "./VideoPlayer/VideoPlayer.component";
 export { default as ReviewCourtModal } from "./modals/ReviewCourtModal/ReviewCourtModal.component";
 export { default as UserFollowRow } from "./UserFollowRow/UserFollowRow.component";
 export { default as DeleteGameModal } from "./modals/DeleteGameModal/DeleteGameModal.component";
