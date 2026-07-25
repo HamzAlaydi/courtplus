@@ -80,7 +80,7 @@ export default function CourtForm() {
         width: court.width || 0,
         hourlyRate: court.hourlyRate || 0,
         surface: court.surface || "grass",
-        zone: court.schedule?.timeZone || "UTC",
+        zone: court.schedule?.timeZone || "Asia/Riyadh",
       });
 
       setAvailabilities(court.schedule?.availabilities || []);
@@ -257,7 +257,13 @@ export default function CourtForm() {
           </Button>
         )}
       </div>
-      <Form size="large" form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form
+        size="large"
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={{ zone: "Asia/Riyadh" }}
+      >
         <div className="form-section">
           <div className="form-group">
             <h4 className="form-title">{t("courtForm.basic_info")}</h4>

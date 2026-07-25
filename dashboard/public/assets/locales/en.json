@@ -449,7 +449,13 @@
       "view": "View",
       "empty": "No invoices yet"
     },
-    "court_pending_payment": "Court created. It's pending payment — complete payment in Billing to publish it."
+    "court_pending_payment": "Court created. It's pending payment — complete payment in Billing to publish it.",
+    "checkout_failed": "Failed to start the checkout",
+    "subscribe_cta": {
+      "title": "No active subscription",
+      "description": "Subscribe — Base plan {{amount}}/mo (1 branch + 2 courts included) — to publish your courts.",
+      "button": "Subscribe"
+    }
   },
   "suspension": {
     "banner_title": "Your account is suspended",

@@ -23,7 +23,6 @@ import {
   NOT_ALLOWED,
   COURT_NOT_FOUND,
   BRANCH_NOT_FOUND,
-  SUBSCRIPTION_REQUIRED,
   INVALID_COURT_STATUS_TRANSITION,
 } from '../shared/error-codes';
 import { LocationsService } from 'src/modules/branches/locations.service';
@@ -38,7 +37,6 @@ import { CourtEvent } from './courts.events';
 import { CourtEventPayload } from './courts.events';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { Schedule } from '../schedules/entities/schedule.entity';
-import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 @Injectable()
 export class CourtsService {
   private readonly logger = new Logger(CourtsService.name);
@@ -55,8 +53,6 @@ export class CourtsService {
     private readonly bookmarksService: BookmarksService,
     @Inject(forwardRef(() => SlotsService))
     private readonly slotsService: SlotsService,
-    @Inject(forwardRef(() => SubscriptionsService))
-    private readonly subscriptionsService: SubscriptionsService,
   ) { }
 
   @Transactional()
@@ -82,13 +78,6 @@ export class CourtsService {
     }
     if (branch.tenantId !== currentUser.tenantId) {
       throw new ForbiddenException(NOT_ALLOWED);
-    }
-
-    const subscription = await this.subscriptionsService.getActiveSubscription(
-      currentUser.tenantId,
-    );
-    if (!subscription) {
-      throw new ForbiddenException(SUBSCRIPTION_REQUIRED);
     }
 
     const location = coordinates

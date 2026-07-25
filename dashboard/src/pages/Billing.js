@@ -22,6 +22,7 @@ import {
   getBillingOverview,
   getPendingCharges,
 } from "../actions/billing_action";
+import { createCheckoutSession } from "../actions/subscription_action";
 import { useNotification } from "../modules/NotificationProvider";
 
 // Amounts from the API are in cents
@@ -61,9 +62,29 @@ export default function Billing() {
     },
   });
 
+  // 🔹 Start the base-plan checkout (no active subscription yet)
+  const checkoutMutation = useMutation({
+    mutationFn: () =>
+      createCheckoutSession({
+        branchCount: 1,
+        successUrl: `${window.location.origin}/billing?subscription=success`,
+        cancelUrl: `${window.location.origin}/billing?subscription=cancelled`,
+      }),
+    onSuccess: (res) => {
+      if (res?.url) window.location.href = res.url;
+    },
+    onError: (err) => {
+      notify(
+        "error",
+        err?.response?.data?.code || t("billing.checkout_failed")
+      );
+    },
+  });
+
   const breakdown = overview?.breakdown;
   const pricing = overview?.pricing;
   const currency = pricing?.currency || breakdown?.currency;
+  const hasSubscription = !!overview?.subscription;
 
   const invoiceColumns = [
     {
@@ -116,20 +137,44 @@ export default function Billing() {
     <div className="content billing-page">
       <div className="content-header">
         <h4>{t("billing.title")}</h4>
-        <Button
-          type="primary"
-          icon={<CreditCardOutlined />}
-          loading={portalMutation.isPending}
-          onClick={() => portalMutation.mutate()}
-        >
-          {t("billing.manage_payment")}
-        </Button>
+        {hasSubscription && (
+          <Button
+            type="primary"
+            icon={<CreditCardOutlined />}
+            loading={portalMutation.isPending}
+            onClick={() => portalMutation.mutate()}
+          >
+            {t("billing.manage_payment")}
+          </Button>
+        )}
       </div>
 
       {overviewError && (
         <Alert
           type="error"
           message={t("billing.load_failed")}
+          style={{ marginBottom: 24 }}
+        />
+      )}
+
+      {/* 🔹 Subscribe CTA when there is no active subscription */}
+      {overview && !hasSubscription && (
+        <Alert
+          type="info"
+          showIcon
+          message={t("billing.subscribe_cta.title")}
+          description={t("billing.subscribe_cta.description", {
+            amount: formatAmount(pricing?.baseAmountCents, currency),
+          })}
+          action={
+            <Button
+              type="primary"
+              loading={checkoutMutation.isPending}
+              onClick={() => checkoutMutation.mutate()}
+            >
+              {t("billing.subscribe_cta.button")}
+            </Button>
+          }
           style={{ marginBottom: 24 }}
         />
       )}
@@ -195,8 +240,14 @@ export default function Billing() {
                 <Button
                   size="small"
                   type="primary"
-                  loading={portalMutation.isPending}
-                  onClick={() => portalMutation.mutate()}
+                  loading={
+                    portalMutation.isPending || checkoutMutation.isPending
+                  }
+                  onClick={() =>
+                    hasSubscription
+                      ? portalMutation.mutate()
+                      : checkoutMutation.mutate()
+                  }
                 >
                   {t("billing.pending_charges.pay_now")}
                 </Button>

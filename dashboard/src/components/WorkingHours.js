@@ -121,10 +121,7 @@ export default function WorkingHours({ title, initialSchedule, onChange }) {
           name="zone"
           label={t("working_hours.timezone")}
         >
-          <Select
-            defaultValue={initialSchedule?.timeZone}
-            placeholder="Time Zone"
-          >
+          <Select>
             {timeZones.map((tz) => (
               <Select.Option key={tz.value} value={tz.value}>
                 {tz.label}

@@ -80,7 +80,7 @@ export default function AddBranch() {
         name: branch.name || "",
         status: branch.status || "open",
         phoneNumber: branch.phoneNumber || "",
-        zone: branch.schedule?.timeZone || "UTC",
+        zone: branch.schedule?.timeZone || "Asia/Riyadh",
         location: branch.location
           ? {
               coordinates,
@@ -285,6 +285,7 @@ export default function AddBranch() {
             onFinish={handleSubmit}
             size="large"
             layout="vertical"
+            initialValues={{ zone: "Asia/Riyadh" }}
           >
             <div className="addbranch-form">
               <div className="addbranch-form-left">

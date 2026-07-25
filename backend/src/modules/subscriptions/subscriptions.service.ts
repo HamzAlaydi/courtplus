@@ -397,8 +397,17 @@ export class SubscriptionsService {
 
     // Payment confirmed: move all of the tenant's courts that were
     // waiting for payment into the ops approval queue.
+    await this.activatePendingCourts(subscription.tenantId);
+  }
+
+  /**
+   * Flip all of the tenant's pending_payment courts to pending_approval and
+   * notify ops about each one. Safe to call multiple times — courts that are
+   * no longer pending_payment are simply not matched.
+   */
+  private async activatePendingCourts(tenantId: string): Promise<void> {
     const courts = await this.courtsService.markTenantCourtsPendingApproval(
-      subscription.tenantId,
+      tenantId,
     );
 
     for (const court of courts) {
@@ -444,6 +453,18 @@ export class SubscriptionsService {
 
   async handleCheckoutSessionCompleted(event: Stripe.Event): Promise<void> {
     const session = event.data.object as any;
+
+    // Base subscription checkout paid: a brand-new subscription is active and
+    // every court the tenant created while unsubscribed can now move from
+    // pending_payment into the ops approval queue. (The first invoice.paid
+    // also covers this; doing it here too guards against webhook ordering.)
+    if (session.mode === 'subscription') {
+      const tenantId = session.metadata?.tenantId;
+      if (tenantId && session.payment_status === 'paid') {
+        await this.activatePendingCourts(tenantId);
+      }
+      return;
+    }
 
     if (session.mode !== 'setup') {
       return;
