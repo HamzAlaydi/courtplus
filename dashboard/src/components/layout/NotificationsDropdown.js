@@ -78,8 +78,14 @@ export default function NotificationsDropdown() {
   });
 
   // 🚀 Infinite Query
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useInfiniteQuery({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+  } = useInfiniteQuery({
       queryKey: ["notifications", type],
       queryFn: ({ pageParam = 1 }) =>
         getNotifications({ page: pageParam, pageSize: PAGE_SIZE, type }),
@@ -91,6 +97,8 @@ export default function NotificationsDropdown() {
         return undefined;
       },
       placeholderData: (previousData) => previousData,
+      refetchInterval: 30000, // live-update the list like the badge
+      refetchOnMount: "always", // fresh list every time the dropdown mounts/opens
     });
 
   //   const unseenCount = unseenData?.count || 0;
@@ -150,8 +158,11 @@ export default function NotificationsDropdown() {
   // Opening the dropdown marks everything seen → badge clears on invalidation
   const handleOpenChange = (open) => {
     setDropdownOpen(open);
-    if (open && unreadCount > 0) {
-      markAllSeenMutation.mutate();
+    if (open) {
+      refetch(); // fresh list every time the dropdown opens
+      if (unreadCount > 0) {
+        markAllSeenMutation.mutate();
+      }
     }
   };
 
