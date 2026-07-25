@@ -362,7 +362,8 @@
     "EMAIL_SEND_FAILED": "We couldn't send the email. Please try again in a moment.",
     "SMS_SEND_FAILED": "We couldn't send the SMS. Please try again in a moment.",
     "STORAGE_SERVICE_UNAVAILABLE": "File storage is temporarily unavailable. Please try again later.",
-    "LOCATION_SERVICE_UNAVAILABLE": "Location services are temporarily unavailable. Please try again later."
+    "LOCATION_SERVICE_UNAVAILABLE": "Location services are temporarily unavailable. Please try again later.",
+    "UPLOAD_FAILED": "The image couldn't be uploaded. Please try again."
   },
   "form": {
     "phone": "Phone is required",

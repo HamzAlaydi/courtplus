@@ -6,7 +6,7 @@ import { AuthenticatedStackNavigationProp } from "navigation/types";
 import { useRef, useState } from "react";
 import { Asset } from "react-native-image-picker";
 import { useAppStore } from "store";
-import { invalidateQuery, queryClient, queryKeys } from "utils";
+import { invalidateQuery, queryClient, queryKeys, getApiErrorMessage } from "utils";
 
 export const useProfileImageHeader = (
   id: string,
@@ -62,7 +62,7 @@ export const useProfileImageHeader = (
   const onImageSelected = async (image: Asset) => {
     try {
       toggleLoading(true);
-      await uploadImageMutation({
+      const uploaded = await uploadImageMutation({
         data: {
           uri: image.uri ?? "",
           fileName: image.fileName ?? "",
@@ -73,6 +73,12 @@ export const useProfileImageHeader = (
         },
         type: pickerType === "avatarAssetId" ? "avatarAssetId" : "coverAssetId",
       });
+      if (!uploaded) {
+        // uploadImageToBucket swallows S3 errors and returns null —
+        // don't pretend the upload succeeded.
+        showSnackbar({ message: getApiErrorMessage("UPLOAD_FAILED") });
+        return;
+      }
       invalidateQuery("getProfile");
       !isCompleteProfile && goBack();
     } catch (error) {
