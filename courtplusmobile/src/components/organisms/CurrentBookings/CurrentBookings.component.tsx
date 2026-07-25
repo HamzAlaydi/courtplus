@@ -8,15 +8,17 @@ import { Images } from "theme";
 import { useTranslation } from "react-i18next";
 import { useThemeContext } from "contexts";
 import styles from "./CurrentBookings.styles";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 
 const CurrentBookings = () => {
   const {
     bookingsData,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     isMyBooking,
     onBookingPress,
     profileData,
@@ -58,6 +60,14 @@ const CurrentBookings = () => {
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          tintColor={colors.GREEN}
+          colors={[colors.GREEN]}
+        />
+      }
       contentContainerStyle={themedStyles.contentContainer}
       overrideLoaderContainerStyle={themedStyles.loader}
       ItemSeparatorComponent={() => <View style={themedStyles.separator} />}

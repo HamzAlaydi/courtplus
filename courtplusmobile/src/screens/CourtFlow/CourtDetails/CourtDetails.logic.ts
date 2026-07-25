@@ -14,7 +14,9 @@ export const useCourtDetails = () => {
   const route = useRoute<RouteProp<CourtStackParamList, "CourtDetails">>();
   const { id } = route.params;
   const { navigate } = useNavigation<CourtStackNavigationProp>();
-  const { data, isLoading } = useGetCourtDetails({ id });
+  const { data, isLoading, isRefetching, refetch } = useGetCourtDetails({
+    id,
+  });
   const { mutateAsync: postBookmarkMutation } = usePostBookmark();
   const { mutateAsync: deleteBookmarkMutation } = useDeleteBookmark();
   const toggleLoading = useAppStore((state) => state.toggleLoading);
@@ -63,6 +65,8 @@ export const useCourtDetails = () => {
     onBookCourtPress,
     data,
     isLoading,
+    isRefetching,
+    refetch,
     courtSport,
     onBookmarkPress,
     onReviewPress,

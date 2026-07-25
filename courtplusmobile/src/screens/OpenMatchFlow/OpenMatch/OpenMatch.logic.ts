@@ -9,8 +9,15 @@ import { flattenData, invalidateQuery } from "utils";
 
 export const useOpenMatch = () => {
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetOpenBookings({ page: 1 });
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetOpenBookings({ page: 1 });
   const { data: profileData } = useGetProfile();
   const { mutateAsync: payMatchMutation } = usePayMatch();
   const { initPayment, showPaymentOverlay } = useStripePayment();
@@ -32,13 +39,15 @@ export const useOpenMatch = () => {
         id: booking.id,
       });
       if (response) {
-        await initPayment({
+        const paymentInitialized = await initPayment({
           ephemeralKey: response?.ephemeralKey ?? "",
           customerId: response?.customerId ?? "",
           publishableKey: response?.publishableKey ?? "",
           clientSecret: response?.clientSecret ?? "",
         });
-        await showPaymentOverlay(booking?.court?.mainAsset ?? "", false);
+        if (paymentInitialized) {
+          await showPaymentOverlay(booking?.court?.mainAsset ?? "", false);
+        }
         invalidateQuery("getOpenBookings");
       }
     } catch (error) {
@@ -54,6 +63,8 @@ export const useOpenMatch = () => {
     hasNextPage,
     isFetchingNextPage,
     isFetching,
+    isRefetching,
+    refetch,
     onStartMatchPress,
     profileId,
     handlePay,

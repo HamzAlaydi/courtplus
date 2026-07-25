@@ -85,7 +85,25 @@
       "empty": "No branches yet",
       "emptyCta": "Create your first branch"
     },
-    "subscribe_banner": "Subscribe to the Base plan ($30/mo, 1 branch + 2 courts included) to publish your courts."
+    "subscribe_banner": "Subscribe to the Base plan ($30/mo, 1 branch + 2 courts included) to publish your courts.",
+    "reservations": {
+      "title": "Recent Reservations",
+      "court": "Court",
+      "customer": "Customer",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "minutes": "{{count}} min",
+      "amount": "Amount",
+      "status": "Status",
+      "empty": "No reservations yet",
+      "statuses": {
+        "pending": "Pending",
+        "in_progress": "In Progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      }
+    }
   },
   "sideNav": {
     "users": "Users",

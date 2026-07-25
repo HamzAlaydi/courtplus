@@ -59,13 +59,15 @@ export const useBookingSummary = () => {
       });
 
       if (response) {
-        await initPayment({
+        const paymentInitialized = await initPayment({
           ephemeralKey: response?.ephemeralKey ?? "",
           customerId: response?.customerId ?? "",
           publishableKey: response?.publishableKey ?? "",
           clientSecret: response?.clientSecret ?? "",
         });
-        await showPaymentOverlay(courtData?.mainAsset ?? "");
+        if (paymentInitialized) {
+          await showPaymentOverlay(courtData?.mainAsset ?? "");
+        }
       }
     } catch (error) {
       showSnackbar({ message: (error as Error).message });

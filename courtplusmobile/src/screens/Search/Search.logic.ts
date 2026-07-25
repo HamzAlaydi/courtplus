@@ -36,17 +36,24 @@ export const useSearch = () => {
     }
     return selectedSports.map((sport) => sport.value).join(",");
   }, [selectedSports]);
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetCourts(
-      {
-        page: 1,
-        lat: location?.lat,
-        lng: location?.long,
-        sport: sportQuery,
-        search: debouncedSearchValue,
-      },
-      !!debouncedSearchValue
-    );
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetCourts(
+    {
+      page: 1,
+      lat: location?.lat,
+      lng: location?.long,
+      sport: sportQuery,
+      search: debouncedSearchValue,
+    },
+    !!debouncedSearchValue
+  );
 
   const onNotificationPress = () => {
     navigate("Notifications");
@@ -64,9 +71,11 @@ export const useSearch = () => {
     setSelectedSports,
     data,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     setSearchInput,
     searchInput,
     onNotificationPress,

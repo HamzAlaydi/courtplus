@@ -1,6 +1,6 @@
 import List from "organisms/List/List.component";
 import React, { useMemo } from "react";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import { useBookingHistory } from "./BookingHistory.logic";
 import { BookingSummaryCard } from "molecules/index";
 import { ListRenderItemInfo } from "@shopify/flash-list";
@@ -14,9 +14,11 @@ const BookingHistory = () => {
   const {
     bookingsData,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     onBookingDetailsPress,
     profileData,
   } = useBookingHistory();
@@ -46,6 +48,14 @@ const BookingHistory = () => {
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
       overrideLoaderContainerStyle={themedStyles.loader}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          tintColor={colors.GREEN}
+          colors={[colors.GREEN]}
+        />
+      }
       emptyConfig={{
         image: Images.emptyBooking,
         title: t("activity.noBookings"),

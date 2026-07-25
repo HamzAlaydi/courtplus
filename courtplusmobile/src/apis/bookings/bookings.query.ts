@@ -20,24 +20,33 @@ export const useGetBookings = ({
   pageSize,
   ...request
 }: BookingsRequest) => {
-  const { data, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: [queryKeys.getBookings],
-      initialData: { pageParams: [], pages: [] },
-      queryFn: ({ pageParam = 1 }) =>
-        getBookings({ page: pageParam, ...request }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, pages) => {
-        return lastPage ? getNextPage(lastPage, pages) : undefined;
-      },
-    });
+  const {
+    data,
+    isFetching,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: [queryKeys.getBookings],
+    initialData: { pageParams: [], pages: [] },
+    queryFn: ({ pageParam = 1 }) =>
+      getBookings({ page: pageParam, ...request }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage ? getNextPage(lastPage, pages) : undefined;
+    },
+  });
 
   return {
     data,
     isLoading: isFetching,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 };
 
@@ -55,24 +64,33 @@ export const useGetOpenBookings = ({
   page,
   ...request
 }: OpenBookingsRequest) => {
-  const { data, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: [queryKeys.getOpenBookings, request],
-      initialData: { pageParams: [], pages: [] },
-      queryFn: ({ pageParam = 1 }) =>
-        getOpenBookings({ page: pageParam, ...request }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, pages) => {
-        return lastPage ? getNextPage(lastPage, pages) : undefined;
-      },
-    });
+  const {
+    data,
+    isFetching,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: [queryKeys.getOpenBookings, request],
+    initialData: { pageParams: [], pages: [] },
+    queryFn: ({ pageParam = 1 }) =>
+      getOpenBookings({ page: pageParam, ...request }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage ? getNextPage(lastPage, pages) : undefined;
+    },
+  });
   const isLoading = isFetching && !isFetchingNextPage;
   return {
     data,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 };
 

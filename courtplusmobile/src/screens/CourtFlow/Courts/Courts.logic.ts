@@ -37,9 +37,11 @@ export const useCourts = () => {
   const {
     data: courts,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useGetCourts(
     {
       page: 1,
@@ -85,9 +87,11 @@ export const useCourts = () => {
   return {
     courts,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     location,
     setSelectedSports,
     onSearchFocus,

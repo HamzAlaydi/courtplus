@@ -17,7 +17,7 @@ export interface CourtsRequest {
 }
 
 /** Default geo-filter radius in meters when the device location is known. */
-export const DEFAULT_COURTS_RADIUS = 50000;
+export const DEFAULT_COURTS_RADIUS = 500000;
 
 export interface CourtsResponse extends ApiResponse {
   items: Court[];

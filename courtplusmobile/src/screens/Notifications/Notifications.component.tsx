@@ -3,7 +3,7 @@ import { List, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNotifications } from "./Notifications.logic";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 import { Notification } from "models";
 import { useThemeContext } from "contexts";
@@ -15,9 +15,11 @@ const NotificationsScreen = () => {
   const {
     notificationsData,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useNotifications();
   const {
     currentTheme: { colors },
@@ -46,6 +48,14 @@ const NotificationsScreen = () => {
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.GREEN}
+            colors={[colors.GREEN]}
+          />
+        }
         contentContainerStyle={themedStyles.listContainer}
         ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
       />

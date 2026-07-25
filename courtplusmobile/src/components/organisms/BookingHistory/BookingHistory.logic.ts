@@ -6,8 +6,15 @@ import { flattenData } from "utils";
 
 export const useBookingHistory = () => {
   const { data: profileData } = useGetProfile();
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetBookings({ page: 1, status: "completed" });
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetBookings({ page: 1, status: "completed" });
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
 
   const bookingsData = flattenData(data);
@@ -22,9 +29,11 @@ export const useBookingHistory = () => {
   return {
     bookingsData,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     onBookingDetailsPress,
     profileData,
   };

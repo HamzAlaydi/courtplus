@@ -11,6 +11,7 @@ import { getBillingOverview, getPendingCharges } from "../actions/billing_action
 import WelcomeHeader from "../components/home/WelcomeHeader";
 import StatCards from "../components/home/StatCards";
 import HomeCharts from "../components/home/HomeCharts";
+import RecentReservations from "../components/home/RecentReservations";
 import ProfileCompletionCard from "../components/home/ProfileCompletionCard";
 import QuickActions from "../components/home/QuickActions";
 import BranchesSummary from "../components/home/BranchesSummary";
@@ -95,6 +96,10 @@ export default function Home() {
 
       <section className="home-section" style={{ animationDelay: "160ms" }}>
         <HomeCharts stats={stats} />
+      </section>
+
+      <section className="home-section" style={{ animationDelay: "200ms" }}>
+        <RecentReservations />
       </section>
 
       <section

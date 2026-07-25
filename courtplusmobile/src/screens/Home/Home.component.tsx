@@ -3,7 +3,7 @@ import { useThemeContext } from "contexts";
 import { FilterLocationModal, HomeCourt, SportChips } from "molecules/index";
 import { List, MainWrapper } from "organisms/index";
 import React, { useCallback, useMemo, useRef } from "react";
-import { Image, ImageBackground, View } from "react-native";
+import { Image, ImageBackground, RefreshControl, View } from "react-native";
 import { Images } from "theme";
 import styles from "./Home.styles";
 import LocationHeader from "molecules/LocationHeader/LocationHeader.component";
@@ -30,6 +30,8 @@ const HomeScreen = () => {
     setSelectedSports,
     onSearchFocus,
     actionCards,
+    isRefetching,
+    refetch,
   } = useHome();
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
 
@@ -55,6 +57,14 @@ const HomeScreen = () => {
       enableSafeArea
       overrideContainerStyle={themedStyles.container}
       overrideContentStyle={themedStyles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          tintColor={colors.GREEN}
+          colors={[colors.GREEN]}
+        />
+      }
     >
       <LocationHeader
         currentLocation={location?.address ?? ""}

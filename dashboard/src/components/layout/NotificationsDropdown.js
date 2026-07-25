@@ -147,6 +147,14 @@ export default function NotificationsDropdown() {
     }
   };
 
+  // Opening the dropdown marks everything seen → badge clears on invalidation
+  const handleOpenChange = (open) => {
+    setDropdownOpen(open);
+    if (open && unreadCount > 0) {
+      markAllSeenMutation.mutate();
+    }
+  };
+
   const dropdownContent = (
     <div className="notifications-dropdown">
       {/* Header */}
@@ -237,7 +245,7 @@ export default function NotificationsDropdown() {
         trigger={["click"]}
         placement="bottomRight"
         open={dropdownOpen}
-        onOpenChange={setDropdownOpen}
+        onOpenChange={handleOpenChange}
       >
         <Badge count={unreadCount} size="small">
           <BellOutlined className="notif-icon" />

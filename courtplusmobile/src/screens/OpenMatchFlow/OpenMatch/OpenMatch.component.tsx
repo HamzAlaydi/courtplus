@@ -4,7 +4,7 @@ import { Header, OpenMatchItem } from "molecules/index";
 import { List, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, View } from "react-native";
+import { Image, RefreshControl, View } from "react-native";
 import { Images } from "theme";
 import styles from "./OpenMatch.styles";
 import { useOpenMatch } from "./OpenMatch.logic";
@@ -24,6 +24,8 @@ const OpenMatchScreen = () => {
     hasNextPage,
     isFetchingNextPage,
     isFetching,
+    isRefetching,
+    refetch,
     onStartMatchPress,
     profileId,
     handlePay,
@@ -99,6 +101,14 @@ const OpenMatchScreen = () => {
             title: t("activity.noBookings"),
           }}
           isLoading={isFetching}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.GREEN}
+              colors={[colors.GREEN]}
+            />
+          }
           contentContainerStyle={themedStyles.listContainer}
           ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
         />

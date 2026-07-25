@@ -6,7 +6,7 @@ import React, { useCallback, useMemo } from "react";
 import styles from "./Search.styles";
 import { useTranslation } from "react-i18next";
 import { Images } from "theme";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, RefreshControl, TouchableOpacity, View } from "react-native";
 import { useSearch } from "./Search.logic";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 import { Court } from "models";
@@ -24,9 +24,11 @@ const SearchScreen = () => {
     setSelectedSports,
     data,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     setSearchInput,
     searchInput,
     onNotificationPress,
@@ -90,6 +92,14 @@ const SearchScreen = () => {
           hasNextPage={hasNextPage}
           fetchNextPage={fetchNextPage}
           isFetchingNextPage={isFetchingNextPage}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.GREEN}
+              colors={[colors.GREEN]}
+            />
+          }
           contentContainerStyle={themedStyles.listContainer}
           ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
           emptyConfig={{

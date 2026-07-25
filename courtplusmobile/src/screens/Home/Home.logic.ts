@@ -26,7 +26,12 @@ export const useHome = () => {
     return selectedSports.map((sport) => sport.value).join(",");
   }, [selectedSports]);
 
-  const { data: courts, isLoading: isCourtsLoading } = useGetCourts(
+  const {
+    data: courts,
+    isLoading: isCourtsLoading,
+    isRefetching,
+    refetch,
+  } = useGetCourts(
     {
       page: 1,
       pageSize: 9,
@@ -79,5 +84,7 @@ export const useHome = () => {
     setSelectedSports,
     onSearchFocus,
     actionCards,
+    isRefetching,
+    refetch,
   };
 };

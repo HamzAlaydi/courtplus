@@ -4,7 +4,7 @@ import { Header, SportBadge, StarDisplay } from "molecules/index";
 import { CourtTabs, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, RefreshControl, TouchableOpacity, View } from "react-native";
 import styles from "./CourtDetails.styles";
 import { Images } from "theme";
 import { useCourtDetails } from "./CourtDetails.logic";
@@ -20,6 +20,8 @@ const CourtDetailsScreen = () => {
   const {
     onBookCourtPress,
     isLoading,
+    isRefetching,
+    refetch,
     data,
     courtSport,
     onBookmarkPress,
@@ -47,6 +49,14 @@ const CourtDetailsScreen = () => {
       <MainWrapper
         scrollEnabled
         overrideContentStyle={themedStyles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.GREEN}
+            colors={[colors.GREEN]}
+          />
+        }
       >
         <View style={[themedStyles.mainContent, themedStyles.infoContainer]}>
           <Header whiteColor title={t("court.courtDetails")} />

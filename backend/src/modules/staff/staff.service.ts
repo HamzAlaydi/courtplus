@@ -511,6 +511,23 @@ export class StaffService {
         }
       });
       staff = branchStaffers.map((branchStaffer) => branchStaffer.staffer);
+
+      // Branch links are not guaranteed to exist for every staffer (e.g.
+      // owner created at tenant level). When a tenantId is also provided,
+      // union with tenant-level staff so nobody is missed.
+      if (tenantId) {
+        const tenantStaff = await this.staffRepository.find({
+          where: { tenantId, deletedAt: IsNull() },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        });
+        const seen = new Set(staff.map((staffer) => staffer.id));
+        staff.push(...tenantStaff.filter((staffer) => !seen.has(staffer.id)));
+      }
     } else if (tenantId) {
       staff = await this.staffRepository.find({
         where: { tenantId, deletedAt: IsNull() },
@@ -804,11 +821,16 @@ export class StaffService {
 
   async incrementNotificationsCount(staffIds: string[]) {
     if (!staffIds?.length) return;
-    await this.staffRepository.increment(
-      { id: In(staffIds) },
-      'notificationsCount',
-      1,
-    );
+    // NULL-safe: rows created before the column existed have NULL, and
+    // NULL + 1 stays NULL — the badge would never move for those users.
+    await this.staffRepository
+      .createQueryBuilder()
+      .update()
+      .set({
+        notificationsCount: () => 'COALESCE("notificationsCount", 0) + 1',
+      })
+      .where('id IN (:...staffIds)', { staffIds })
+      .execute();
   }
 
   async requestAccountDeletion(

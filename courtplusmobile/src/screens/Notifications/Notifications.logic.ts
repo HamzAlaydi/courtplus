@@ -6,11 +6,13 @@ export const useNotifications = () => {
   const {
     data,
     isLoading,
+    isRefetching,
     isError,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useGetNotifications();
   const { mutateAsync: markAllAsSeenMutation } = useMarkAllNotificationsAsSeen();
 
@@ -23,10 +25,12 @@ export const useNotifications = () => {
   return {
     notificationsData,
     isLoading,
+    isRefetching,
     isError,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 };

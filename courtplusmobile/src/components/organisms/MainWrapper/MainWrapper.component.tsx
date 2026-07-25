@@ -14,6 +14,7 @@ const MainWrapper = ({
   enableSafeArea = false,
   whiteBackground = false,
   disableBottomPadding,
+  refreshControl,
 }: MainWrapperProps) => {
   const { bottom, top } = useSafeAreaInsets();
   const {
@@ -36,6 +37,7 @@ const MainWrapper = ({
       contentContainerStyle={[styles.content, overrideContentStyle]}
       scrollEnabled={scrollEnabled}
       keyboardShouldPersistTaps="handled"
+      {...(scrollEnabled && refreshControl ? { refreshControl } : {})}
     >
       {children}
     </Wrapper>

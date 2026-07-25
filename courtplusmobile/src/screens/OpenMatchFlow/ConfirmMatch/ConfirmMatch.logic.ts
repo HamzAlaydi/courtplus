@@ -48,13 +48,15 @@ export const useConfirmMatch = () => {
         autoAccept,
       });
       if (response) {
-        await initPayment({
+        const paymentInitialized = await initPayment({
           ephemeralKey: response?.ephemeralKey ?? "",
           customerId: response?.customerId ?? "",
           publishableKey: response?.publishableKey ?? "",
           clientSecret: response?.clientSecret ?? "",
         });
-        await showPaymentOverlay(court?.mainAsset ?? "");
+        if (paymentInitialized) {
+          await showPaymentOverlay(court?.mainAsset ?? "");
+        }
       }
     } catch (error) {
       showSnackbar({ message: (error as Error).message });

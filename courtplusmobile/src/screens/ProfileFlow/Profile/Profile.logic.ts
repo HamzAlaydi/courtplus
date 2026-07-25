@@ -32,6 +32,7 @@ export const useProfile = () => {
     fetchNextPage: fetchNextPostsPage,
     hasNextPage: hasNextPostsPage,
     isFetchingNextPage: isFetchingNextPostsPage,
+    refetch: refetchPosts,
   } = useGetPosts({ page: 1, userId: data?.id });
   const reportSubmittedModalRef = useRef<BottomSheetModal>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -83,7 +84,7 @@ export const useProfile = () => {
   const onRefresh = async () => {
     try {
       setIsRefreshing(true);
-      await refetch();
+      await Promise.all([refetch(), refetchPosts()]);
     } catch (error) {
       showSnackbar({ message: (error as Error).message });
     } finally {

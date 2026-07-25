@@ -21,10 +21,12 @@ export const useGetCourts = (
   const {
     data: courtsData,
     isFetching,
+    isRefetching,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useInfiniteQuery({
     queryKey: [queryKeys.getCourts, request],
     initialData: { pageParams: [], pages: [] },
@@ -42,22 +44,26 @@ export const useGetCourts = (
   return {
     data: courts,
     isLoading: isFetching && !isFetchingNextPage,
+    isRefetching,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 };
 
 export const useGetCourtDetails = ({ id }: CourtRequestIdRequest) => {
-  const { data, isFetching, error } = useQuery({
+  const { data, isFetching, isRefetching, error, refetch } = useQuery({
     queryKey: [queryKeys.getCourtDetails, id],
     queryFn: () => getCourtDetails({ id }),
   });
   return {
     data,
     isLoading: isFetching,
+    isRefetching,
     error,
+    refetch,
   };
 };
 

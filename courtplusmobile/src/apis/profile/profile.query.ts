@@ -27,17 +27,23 @@ export const useGetProfile = () => {
 };
 
 export const useGetPosts = (request: GetPostsRequest) => {
-  const { data, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: [queryKeys.getPosts, request],
-      initialData: { pageParams: [], pages: [] },
-      queryFn: ({ pageParam = 1 }) => getPosts({ ...request, page: pageParam }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, pages) => {
-        return lastPage ? getNextPage(lastPage, pages) : undefined;
-      },
-      enabled: !!request.userId,
-    });
+  const {
+    data,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: [queryKeys.getPosts, request],
+    initialData: { pageParams: [], pages: [] },
+    queryFn: ({ pageParam = 1 }) => getPosts({ ...request, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage ? getNextPage(lastPage, pages) : undefined;
+    },
+    enabled: !!request.userId,
+  });
 
   return {
     data,
@@ -45,6 +51,7 @@ export const useGetPosts = (request: GetPostsRequest) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 };
 

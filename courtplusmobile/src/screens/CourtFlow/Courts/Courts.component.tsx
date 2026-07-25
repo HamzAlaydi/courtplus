@@ -9,7 +9,7 @@ import {
   SortModal,
   SportChips,
 } from "molecules/index";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, RefreshControl, TouchableOpacity, View } from "react-native";
 import { Input } from "atoms/index";
 import { Images } from "theme";
 import { useTranslation } from "react-i18next";
@@ -26,10 +26,12 @@ const CourtsScreen = () => {
   const {
     courts,
     isLoading,
+    isRefetching,
     location,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     setSelectedSports,
     onSearchFocus,
     onSortPress,
@@ -96,6 +98,14 @@ const CourtsScreen = () => {
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.GREEN}
+            colors={[colors.GREEN]}
+          />
+        }
       />
       <FilterLocationModal ref={bottomSheetModalRef} />
       <SortModal

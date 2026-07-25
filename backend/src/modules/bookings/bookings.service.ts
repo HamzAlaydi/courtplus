@@ -1708,7 +1708,7 @@ export class BookingsService {
         sendEmail: false,
       }));
       promises.push(this.notificationsService.notifyStaff(
-        { branchId: booking.court.branch.id },
+        { tenantId: booking.court.branch.tenantId, branchId: booking.court.branch.id },
         {
           type: NotificationType.BOOKING_CREATED,
           data: {

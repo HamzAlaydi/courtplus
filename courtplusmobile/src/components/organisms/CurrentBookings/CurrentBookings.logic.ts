@@ -8,8 +8,15 @@ import { flattenData } from "utils";
 export const useCurrentBookings = () => {
   const { data: profileData } = useGetProfile();
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetBookings({ page: 1, status: "pending,in_progress" });
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetBookings({ page: 1, status: "pending,in_progress" });
 
   const bookingsData = flattenData(data);
   const isMyBooking = useCallback(
@@ -31,9 +38,11 @@ export const useCurrentBookings = () => {
   return {
     bookingsData,
     isLoading,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
     isMyBooking,
     onBookingPress,
     profileData,
