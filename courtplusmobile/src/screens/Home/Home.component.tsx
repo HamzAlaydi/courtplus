@@ -108,6 +108,11 @@ const HomeScreen = () => {
         ItemSeparatorComponent={() => (
           <View style={themedStyles.courtSeparator} />
         )}
+        emptyConfig={{
+          image: Images.emptyBooking,
+          title: t("court.noCourts"),
+          subtitle: t("court.noCourtsSubtitle"),
+        }}
         showsHorizontalScrollIndicator={false}
       />
 

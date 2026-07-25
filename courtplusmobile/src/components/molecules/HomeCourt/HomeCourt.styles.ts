@@ -18,6 +18,19 @@ export default (colors: ColorsType) =>
       width: "100%",
       height: verticalScale(133),
       borderRadius: spacing[8],
+      alignItems: "flex-end",
+      padding: spacing[8],
+    },
+    bookmarkContainer: {
+      backgroundColor: colors.MED_BLACK,
+      width: spacing[36],
+      height: spacing[36],
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: spacing[30],
+    },
+    bookmarkIcon: {
+      tintColor: colors.WHITE,
     },
     distanceContainer: {
       flexDirection: "row",

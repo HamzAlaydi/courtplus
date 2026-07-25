@@ -20,6 +20,9 @@ export const useReviewCourtModal = (bookingId: string, onClose: () => void) => {
       toggleLoading(true);
       await postReview({ bookingId, comment, rating });
       invalidateQuery("getBookings");
+      invalidateQuery("getCourtDetails");
+      invalidateQuery("getCourts");
+      invalidateQuery("getCourtReviews");
       onClose();
     } catch (error) {
       showSnackbar({ message: (error as Error).message });

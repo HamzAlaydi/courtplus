@@ -19,6 +19,8 @@ interface AppState {
   userId: string;
   onDismiss: (() => void) | null;
   selectedCountryCode?: string;
+  /** Booking ids whose post-game rate prompt was already shown/dismissed. */
+  dismissedRatePromptIds: string[];
 }
 
 interface Actions {
@@ -27,6 +29,7 @@ interface Actions {
   toggleShowOnboarding: () => void;
   setFirstVisit: () => void;
   setUserTokens: (newTokens: Tokens) => void;
+  addDismissedRatePromptId: (bookingId: string) => void;
   setCustomBottomSheet: (
     children: React.ReactNode,
     title?: string,
@@ -74,6 +77,16 @@ export const useAppStore = create<
         accessToken: "",
         refreshToken: "",
       },
+      dismissedRatePromptIds: [],
+      addDismissedRatePromptId: (bookingId) =>
+        set((state) => ({
+          ...state,
+          dismissedRatePromptIds: state.dismissedRatePromptIds.includes(
+            bookingId
+          )
+            ? state.dismissedRatePromptIds
+            : [...state.dismissedRatePromptIds, bookingId],
+        })),
       setUserTokens: (newTokens) =>
         set((state) => ({
           ...state,
@@ -101,6 +114,7 @@ export const useAppStore = create<
         firstVisit: state.firstVisit,
         userTokens: state.userTokens,
         userId: state.userId,
+        dismissedRatePromptIds: state.dismissedRatePromptIds,
       }),
     }
   )

@@ -59,6 +59,7 @@ const BookingHistory = () => {
       emptyConfig={{
         image: Images.emptyBooking,
         title: t("activity.noBookings"),
+        subtitle: t("activity.noBookingsSubtitle"),
       }}
       ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
     />

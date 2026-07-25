@@ -7,6 +7,7 @@ import styles from "./CourtItem.styles";
 import { CourtItemProps } from "./CourtItem.types";
 import { convertDistance, getCourtImage } from "utils";
 import { useTranslation } from "react-i18next";
+import { useToggleBookmark } from "hooks";
 
 const CourtItem = ({
   onPress,
@@ -19,6 +20,7 @@ const CourtItem = ({
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
+  const { isBookmarked, onBookmarkPress } = useToggleBookmark(item);
 
   const courtImage = getCourtImage(item);
 
@@ -32,10 +34,14 @@ const CourtItem = ({
         style={themedStyles.imageBg}
         imageStyle={themedStyles.image}
       >
-        <TouchableOpacity style={themedStyles.bookmarkContainer}>
+        <TouchableOpacity
+          style={themedStyles.bookmarkContainer}
+          onPress={onBookmarkPress}
+          hitSlop={8}
+        >
           <Image
-            source={!item.isBookmarked ? Images.bookmark : Images.bookmark2}
-            style={!item.isBookmarked && themedStyles.bookmarkIcon}
+            source={!isBookmarked ? Images.bookmark : Images.bookmark2}
+            style={!isBookmarked && themedStyles.bookmarkIcon}
           />
         </TouchableOpacity>
       </ImageBackground>

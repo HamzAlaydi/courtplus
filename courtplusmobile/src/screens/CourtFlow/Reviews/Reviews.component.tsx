@@ -8,6 +8,7 @@ import { Review } from "models";
 import { useThemeContext } from "contexts";
 import styles from "./Reviews.styles";
 import { useTranslation } from "react-i18next";
+import { Images } from "theme";
 
 const ReviewsScreen = () => {
   const {
@@ -40,6 +41,11 @@ const ReviewsScreen = () => {
         fetchNextPage={fetchNextPage}
         ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
         contentContainerStyle={themedStyles.listContainer}
+        emptyConfig={{
+          image: Images.emptyStar,
+          title: t("reviews.noReviews"),
+          subtitle: t("reviews.noReviewsSubtitle"),
+        }}
       />
     </MainWrapper>
   );

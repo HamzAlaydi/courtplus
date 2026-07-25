@@ -15,4 +15,12 @@ export default (colors: ColorsType) =>
       textAlign: "center",
       color: colors.DARK_BLUE,
     },
+    subtitle: {
+      width: horizontalScale(260),
+      textAlign: "center",
+      color: colors.SLATE_GRAY,
+    },
+    button: {
+      marginTop: verticalScale(8),
+    },
   });

@@ -23,6 +23,7 @@ export const queryKeys = {
   getMatchById: "getMatchById",
   getBookings: "getBookings",
   getOpenBookings: "getOpenBookings",
+  getUnratedCompletedBookings: "getUnratedCompletedBookings",
   getBookingEvents: "getBookingEvents",
   getUserById: "getUserById",
 };

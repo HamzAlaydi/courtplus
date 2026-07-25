@@ -95,6 +95,15 @@ const CommunityScreen = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={themedStyles.listContainer}
           ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
+          emptyConfig={{
+            image: Images.emptyBooking,
+            title: searchInput
+              ? t("community.noResults")
+              : t("community.noUsers"),
+            subtitle: searchInput
+              ? t("community.noResultsSubtitle")
+              : t("community.noUsersSubtitle"),
+          }}
         />
       </View>
     </MainWrapper>

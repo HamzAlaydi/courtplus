@@ -2,7 +2,7 @@
   "general": {
     "delete": "Delete",
     "done": "Done",
-    "agreement": "By starting, you agree to our Terms of Service  \u00A0\u00A0 Privacy Policy",
+    "agreement": "By starting, you agree to our Terms of Service     Privacy Policy",
     "male": "Male",
     "female": "Female",
     "beginner": "Beginner",
@@ -118,7 +118,9 @@
     "outdoor": "Outdoor",
     "bookCourt": "Book This Court",
     "noReviews": "No reviews to show.",
-    "noCourtsAvailable": "No Courts are available now"
+    "noCourtsAvailable": "No Courts are available now",
+    "noCourtsSubtitle": "Try adjusting your filters or exploring a different area.",
+    "noMomentsSubtitle": "Moments shared on this court will appear here."
   },
   "completeProfile": {
     "title": "Complete Your Profile Setup",
@@ -168,7 +170,10 @@
     "logoutDescription": "Are you sure you want to log out? You can sign back in anytime with your phone number.",
     "chooseGameDescription": "Select a sport to add to your profile.",
     "deleteAccount": "Delete Account",
-    "deleteAccountDescription": "Are you sure you want to delete your account?"
+    "deleteAccountDescription": "Are you sure you want to delete your account?",
+    "noSavedCourtsSubtitle": "Tap the bookmark icon on any court to save it here.",
+    "exploreCourts": "Explore Courts",
+    "noFollowersSubtitle": "When people connect with you, they will show up here."
   },
   "notifications": {
     "title": "Notifications",
@@ -180,7 +185,8 @@
     "view": "View",
     "yesterday": "Yesterday",
     "last7days": "Last 7 days",
-    "invitedMatch": "Invited you to open match"
+    "invitedMatch": "Invited you to open match",
+    "emptySubtitle": "We will let you know when something new happens."
   },
   "tabs": {
     "home": "Home",
@@ -313,11 +319,15 @@
     "playerName": "Player Name",
     "playerID": "Player ID",
     "relatedCoach": "Related Coach",
-    "captureMoment": "Capture a Court+ Moment"
+    "captureMoment": "Capture a Court+ Moment",
+    "noBookingsSubtitle": "Your upcoming and past bookings will appear here."
   },
   "community": {
     "search": "Search for friends",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "noResultsSubtitle": "Try searching for a different name or username.",
+    "noUsers": "No players to show yet",
+    "noUsersSubtitle": "Players you can follow and play with will appear here."
   },
   "filters": {
     "sort": "Sort",
@@ -396,7 +406,11 @@
     "addComment": "Add Comment",
     "addReview": "Add Review",
     "reviewSuccess": "Thank You !",
-    "reviewSuccessDescription": "Your review has been submitted, your feedback is important to us as to the doctors and the community."
+    "reviewSuccessDescription": "Your review has been submitted, your feedback is important to us as to the doctors and the community.",
+    "noReviews": "No reviews yet",
+    "noReviewsSubtitle": "Be the first to share your experience.",
+    "ratePromptTitle": "How was your game at {{court}}?",
+    "later": "Later"
   },
   "openMatch": {
     "description": "Ready for an amazing match",
@@ -420,7 +434,8 @@
     "membersAccepted": "Members need to be accepted",
     "addPlayers": "Add Players",
     "playersNameEmailPhone": "players name, Email, phonenumber",
-    "pickDay": "Pick a day"
+    "pickDay": "Pick a day",
+    "noMatchesSubtitle": "There are no open matches right now. Start your own and invite players!"
   },
   "recoverAccount": {
     "welcomeBack": "Welcome back!",

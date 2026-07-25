@@ -39,6 +39,8 @@ export const useCourtDetails = () => {
         });
       }
       invalidateQuery("getCourtDetails");
+      invalidateQuery("getMyBookmarks");
+      invalidateQuery("getCourts");
     } catch (error) {
       showSnackbar({ message: (error as Error).message });
     } finally {

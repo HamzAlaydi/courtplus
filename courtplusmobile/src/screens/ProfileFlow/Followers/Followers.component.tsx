@@ -61,6 +61,7 @@ const FollowersScreen = () => {
         emptyConfig={{
           image: Images.emptyBooking,
           title: t("profile.noFollowers"),
+          subtitle: t("profile.noFollowersSubtitle"),
         }}
       />
     </MainWrapper>

@@ -99,6 +99,9 @@ const OpenMatchScreen = () => {
           emptyConfig={{
             image: Images.emptyBooking,
             title: t("activity.noBookings"),
+            subtitle: t("openMatch.noMatchesSubtitle"),
+            buttonTitle: t("openMatch.startMatch"),
+            onButtonPress: onStartMatchPress,
           }}
           isLoading={isFetching}
           refreshControl={

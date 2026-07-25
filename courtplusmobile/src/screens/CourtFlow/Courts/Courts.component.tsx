@@ -98,6 +98,11 @@ const CourtsScreen = () => {
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        emptyConfig={{
+          image: Images.emptyBooking,
+          title: t("court.noCourts"),
+          subtitle: t("court.noCourtsSubtitle"),
+        }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}

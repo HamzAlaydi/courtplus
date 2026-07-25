@@ -29,6 +29,7 @@ const CourtMoments = ({ courtId }: CourtMomentsProps) => {
         overrideStyle: styles.emptyContainer,
         image: Images.cloud,
         title: t("court.noMoments"),
+        subtitle: t("court.noMomentsSubtitle"),
       }}
     />
   );

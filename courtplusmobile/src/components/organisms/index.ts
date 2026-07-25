@@ -11,4 +11,5 @@ export { default as TimeSlots } from "./TimeSlots/TimeSlots.component";
 export { default as AvatarSlots } from "./AvatarSlots/AvatarSlots.component";
 export { default as CustomCalendar } from "./CustomCalendar/CustomCalendar.component";
 export { default as BookingHistory } from "./BookingHistory/BookingHistory.component";
+export { default as RateBookingPrompt } from "./RateBookingPrompt/RateBookingPrompt.component";
 export { default as SportsLevelManager } from "./SportsLevelManager/SportsLevelManager.component";

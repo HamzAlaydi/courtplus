@@ -105,6 +105,7 @@ const SearchScreen = () => {
           emptyConfig={{
             image: Images.emptyBooking,
             title: t("community.noResults"),
+            subtitle: t("community.noResultsSubtitle"),
           }}
         />
       )}

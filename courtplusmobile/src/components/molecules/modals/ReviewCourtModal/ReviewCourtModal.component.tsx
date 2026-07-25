@@ -12,7 +12,7 @@ import StarDisplay from "molecules/StarDisplay/StarDisplay.component";
 import { ReviewCourtModalProps } from "./ReviewCourtModal.types";
 
 const ReviewCourtModal = forwardRef<BottomSheetModal, ReviewCourtModalProps>(
-  ({ courtName, bookingId, onClose }, ref) => {
+  ({ courtName, bookingId, onClose, onLater, title }, ref) => {
     const {
       currentTheme: { colors },
     } = useThemeContext();
@@ -31,7 +31,7 @@ const ReviewCourtModal = forwardRef<BottomSheetModal, ReviewCourtModalProps>(
       <BottomSheetOverlay onDismiss={onDismiss} isWhite ref={ref}>
         <View style={themedStyles.content}>
           <CustomText
-            text={t("reviews.title")}
+            text={title ?? t("reviews.title")}
             font="headline1"
             weight="bold"
           />
@@ -71,6 +71,13 @@ const ReviewCourtModal = forwardRef<BottomSheetModal, ReviewCourtModalProps>(
           disabled={isButtonDisabled}
           variant={isButtonDisabled ? "disabledDark" : "active"}
         />
+        {onLater && (
+          <CustomButton
+            variant="link"
+            title={t("reviews.later")}
+            onPress={onLater}
+          />
+        )}
       </BottomSheetOverlay>
     );
   }

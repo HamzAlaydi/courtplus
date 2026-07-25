@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import { useSaved } from "./Saved.logic";
 import { Bookmark } from "models";
 import { View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { AuthenticatedStackNavigationProp } from "navigation/types";
 
 const SavedScreen = () => {
   const {
@@ -15,6 +17,7 @@ const SavedScreen = () => {
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
+  const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
   const {
     savedData,
     fetchNextPage,
@@ -62,6 +65,9 @@ const SavedScreen = () => {
         emptyConfig={{
           image: Images.emptyFavorites,
           title: t("profile.noSavedCourts"),
+          subtitle: t("profile.noSavedCourtsSubtitle"),
+          buttonTitle: t("profile.exploreCourts"),
+          onButtonPress: () => navigate("MainTabs", { screen: "Courts" }),
           overrideStyle: themedStyles.emptyContainer,
         }}
         ItemSeparatorComponent={() => <View style={themedStyles.separator} />}

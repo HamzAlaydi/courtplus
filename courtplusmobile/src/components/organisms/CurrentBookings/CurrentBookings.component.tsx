@@ -74,6 +74,7 @@ const CurrentBookings = () => {
       emptyConfig={{
         image: Images.emptyBooking,
         title: t("activity.noBookings"),
+        subtitle: t("activity.noBookingsSubtitle"),
       }}
     />
   );

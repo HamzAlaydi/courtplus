@@ -22,6 +22,7 @@ import CommunityFilledIcon from "assets/images/svg/communityFilled";
 import CommunityIcon from "assets/images/svg/community";
 import ActivityFilledIcon from "assets/images/svg/activityFilled";
 import ActivityIcon from "assets/images/svg/activity";
+import { RateBookingPrompt } from "organisms/index";
 
 const MainTabsNavigator = createBottomTabNavigator<MainTabsParamList>();
 
@@ -71,38 +72,41 @@ const MainTabs = () => {
   ];
 
   return (
-    <MainTabsNavigator.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      initialRouteName="Home"
-    >
-      {tabs.map((tab) => (
-        <MainTabsNavigator.Screen
-          key={tab.name}
-          name={tab.name}
-          component={tab.component}
-          options={{
-            tabBarIcon: ({ focused }) =>
-              focused ? <tab.focusedIcon /> : <tab.icon />,
-            tabBarLabel: ({ focused }) => (
-              <CustomText
-                numberOfLines={1}
-                text={tab.label}
-                font="text"
-                weight="semiBold"
-                overrideStyle={[
-                  focused
-                    ? themedStyles.tabBarLabelActive
-                    : themedStyles.tabBarLabel,
-                  themedStyles.tabBar,
-                ]}
-              />
-            ),
-          }}
-        />
-      ))}
-    </MainTabsNavigator.Navigator>
+    <>
+      <MainTabsNavigator.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        initialRouteName="Home"
+      >
+        {tabs.map((tab) => (
+          <MainTabsNavigator.Screen
+            key={tab.name}
+            name={tab.name}
+            component={tab.component}
+            options={{
+              tabBarIcon: ({ focused }) =>
+                focused ? <tab.focusedIcon /> : <tab.icon />,
+              tabBarLabel: ({ focused }) => (
+                <CustomText
+                  numberOfLines={1}
+                  text={tab.label}
+                  font="text"
+                  weight="semiBold"
+                  overrideStyle={[
+                    focused
+                      ? themedStyles.tabBarLabelActive
+                      : themedStyles.tabBarLabel,
+                    themedStyles.tabBar,
+                  ]}
+                />
+              ),
+            }}
+          />
+        ))}
+      </MainTabsNavigator.Navigator>
+      <RateBookingPrompt />
+    </>
   );
 };
 

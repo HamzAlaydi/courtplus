@@ -41,6 +41,7 @@ const NotificationsScreen = () => {
           image: Images.notificationBell,
           overrideImageStyle: themedStyles.emptyImage,
           title: t("notifications.empty"),
+          subtitle: t("notifications.emptySubtitle"),
         }}
         isLoading={isLoading}
         data={notificationsData}

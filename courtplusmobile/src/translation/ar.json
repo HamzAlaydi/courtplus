@@ -2,7 +2,7 @@
   "general": {
     "delete": "حذف",
     "done": "تم",
-    "agreement": " ببدء الاستخدام، فإنك توافق على شروط الخدمة  \u00A0\u00A0 و سياسة الخصوصية.",
+    "agreement": " ببدء الاستخدام، فإنك توافق على شروط الخدمة     و سياسة الخصوصية.",
     "male": "ذكر",
     "female": "أنثى",
     "beginner": "هاوي",
@@ -130,7 +130,10 @@
     "addSport": "إضافة لعبة",
     "preferredTimeDesc": "لتقديم نتائج بحث أفضل، نحتاج إلى معرفة مستوى التقييم المفضل لديك",
     "logoutDescription": "هل أنت متأكد أنك تريد تسجيل الخروج؟ يمكنك تسجيل الدخول مرة أخرى في أي وقت باستخدام رقم هاتفك.",
-    "chooseGameDescription": "اختر الرياضة التي تريد إضافتها إلى ملفك الشخصي."
+    "chooseGameDescription": "اختر الرياضة التي تريد إضافتها إلى ملفك الشخصي.",
+    "noSavedCourtsSubtitle": "اضغط على أيقونة الحفظ في أي ملعب لحفظه هنا.",
+    "exploreCourts": "استكشف الملاعب",
+    "noFollowersSubtitle": "عندما يتواصل معك الأشخاص سيظهرون هنا."
   },
   "court": {
     "allCourts": "جميع الملاعب",
@@ -159,7 +162,9 @@
     "outdoor": "الخارجي",
     "bookCourt": "حجز الملعب",
     "noReviews": "لا توجد مراجعات لعرضها.",
-    "noCourtsAvailable": "لا توجد ملاعب متاحة حاليًا"
+    "noCourtsAvailable": "لا توجد ملاعب متاحة حاليًا",
+    "noCourtsSubtitle": "حاول تعديل عوامل التصفية أو استكشاف منطقة أخرى.",
+    "noMomentsSubtitle": "ستظهر اللحظات التي تتم مشاركتها في هذا الملعب هنا."
   },
   "completeProfile": {
     "title": " أكمل إعداد ملفك الشخصي",
@@ -180,7 +185,8 @@
     "likedMoment": "أعجب بلحظتك",
     "last7days": "آخر 7 أيام",
     "yesterday": "أمس",
-    "invitedMatch": "دعاك إلى مباراة مفتوحة"
+    "invitedMatch": "دعاك إلى مباراة مفتوحة",
+    "emptySubtitle": "سنُعلمك عندما يحدث شيء جديد."
   },
   "tabs": {
     "home": "الصفحة الرئيسية",
@@ -313,11 +319,15 @@
     "playerName": "اسم اللاعب",
     "playerID": "رقم اللاعب",
     "relatedCoach": "المدرب المسؤول",
-    "captureMoment": "توثيق لحظة في Court+"
+    "captureMoment": "توثيق لحظة في Court+",
+    "noBookingsSubtitle": "ستظهر حجوزاتك القادمة والسابقة هنا."
   },
   "community": {
     "search": "ابحث عن أصدقاء",
-    "noResults": "لا توجد نتائج"
+    "noResults": "لا توجد نتائج",
+    "noResultsSubtitle": "جرّب البحث باسم مختلف أو اسم مستخدم آخر.",
+    "noUsers": "لا يوجد لاعبون لعرضهم بعد",
+    "noUsersSubtitle": "سيظهر هنا اللاعبون الذين يمكنك متابعتهم واللعب معهم."
   },
   "filters": {
     "sort": "التصنيف",
@@ -396,7 +406,11 @@
     "addComment": "إضافة ملاحظة",
     "addReview": "إضافة مراجعة",
     "reviewSuccess": "شكرا لك!",
-    "reviewSuccessDescription": "تم إرسال ملاحظاتك، وهي مهمة للغاية لمساعدتنا على فهم حاجاتك وتخصيص خدماتنا بشكل أفضل."
+    "reviewSuccessDescription": "تم إرسال ملاحظاتك، وهي مهمة للغاية لمساعدتنا على فهم حاجاتك وتخصيص خدماتنا بشكل أفضل.",
+    "noReviews": "لا توجد مراجعات بعد",
+    "noReviewsSubtitle": "كن أول من يشارك تجربته.",
+    "ratePromptTitle": "كيف كانت مباراتك في {{court}}؟",
+    "later": "لاحقًا"
   },
   "openMatch": {
     "description": "استعد لمباراة رائعة",
@@ -420,7 +434,8 @@
     "membersAccepted": "يجب على الأعضاء القبول",
     "addPlayers": "اضافة لاعبين",
     "playersNameEmailPhone": "اسم اللاعب، البريد الإلكتروني، رقم الهاتف",
-    "pickDay": "اختر اليوم"
+    "pickDay": "اختر اليوم",
+    "noMatchesSubtitle": "لا توجد مباريات مفتوحة الآن. ابدأ مباراتك الخاصة وادعُ اللاعبين!"
   },
   "recoverAccount": {
     "welcomeBack": "مرحبا بعودتك!",
