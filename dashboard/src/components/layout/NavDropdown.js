@@ -82,7 +82,11 @@ const NavDropdown = () => {
     <>
       <Dropdown menu={{ items }} trigger={["click"]} placement="bottomRight">
         <button className={`nav-prof-btn ${isRTL ? "rtl" : ""}`}>
-          <Avatar size="large" className="nav-avatar">
+          <Avatar
+            size={36}
+            className="nav-avatar"
+            src={tenant?.logoURL || undefined}
+          >
             {initials}
           </Avatar>
           <div className="nav-user-info">
@@ -111,7 +115,11 @@ const NavDropdown = () => {
         className={`profile-modal ${isRTL ? "rtl" : ""}`}
       >
         <div className="profile-header">
-          <Avatar size={100} className="profile-avatar">
+          <Avatar
+            size={100}
+            className="profile-avatar"
+            src={tenant?.logoURL || undefined}
+          >
             {initials}
           </Avatar>
           <h3>{fullName}</h3>

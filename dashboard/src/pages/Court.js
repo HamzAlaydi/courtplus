@@ -5,7 +5,7 @@ import { BiEdit } from "react-icons/bi";
 import { getCourt } from "../actions/court_actions";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import CourtCarousel from "../components/CourtCarousel";
+import CourtMediaGallery from "../components/court/CourtMediaGallery";
 import ReviewsTab from "../components/court/ReviewsTab";
 import BookingTab from "../components/court/BookingTab";
 import PostsTab from "../components/court/PostsTab";
@@ -132,19 +132,10 @@ export default function Court() {
 
       <div className="court">
         <div className="court-header">
-          {court?.assets?.length > 0 && (
-            <CourtCarousel
-              images={getImages(court.assets)}
-              centerSlideScale={1.2}
-            />
-          )}
-          {getVideo(court?.assets) && (
-            <video
-              className="court-video"
-              src={getVideo(court.assets)}
-              controls
-            />
-          )}
+          <CourtMediaGallery
+            images={getImages(court?.assets)}
+            video={getVideo(court?.assets)}
+          />
         </div>
 
         <div className="court-title">
