@@ -695,6 +695,16 @@ export class CourtsService {
       ...data,
     };
 
+    // Moderation states (pending_payment/pending_approval/changes_requested/
+    // suspended) are owned by the ops/billing flows — a vendor edit must never
+    // stomp them with a plain available/unavailable toggle.
+    if (
+      court.status !== CourtStatus.AVAILABLE &&
+      court.status !== CourtStatus.UNAVAILABLE
+    ) {
+      delete updateData.status;
+    }
+
     if (location) {
       updateData.locationId = location.id;
     }
