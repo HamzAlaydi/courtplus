@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { StaffRole } from '../entities/enum';
 import { Optional } from '@nestjs/common';
@@ -22,7 +22,7 @@ export class CreateStaffInvitationDto {
   })
   @IsIn(INVITATION_ALLOWED_ROLES)
   @Optional()
-  role?: StaffRole.ADMIN | StaffRole.USER;
+  role?: StaffRole;
 
 
   @ApiProperty({
@@ -37,9 +37,9 @@ export class CreateStaffInvitationDto {
 export class UpdateStaffRoleDto {
   @ApiProperty({
     description: 'Role of the staff',
-    enum: StaffRole,
+    enum: INVITATION_ALLOWED_ROLES,
     example: StaffRole.USER,
   })
-  @IsEnum(StaffRole)
+  @IsIn([StaffRole.ADMIN, StaffRole.USER])
   role: StaffRole;
 }

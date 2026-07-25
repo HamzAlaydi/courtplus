@@ -581,5 +581,28 @@ describe('AssetsService', () => {
       expect(mockS3Service.deleteFile).not.toHaveBeenCalled();
       expect(mockAssetRepository.delete).not.toHaveBeenCalled();
     });
+
+    it('should skip moderation for non-image assets', async () => {
+      const videoAsset = {
+        id: 'asset-video',
+        key: 'assets/asset-video',
+        type: AssetType.PostVideo,
+      } as Asset;
+
+      const documentAsset = {
+        id: 'asset-doc',
+        key: 'files/asset-doc',
+        type: AssetType.TenantDocument,
+      } as Asset;
+
+      await service['handleAssetAssigned']({ asset: videoAsset });
+      await service['handleAssetAssigned']({ asset: documentAsset });
+
+      expect(
+        mockRekognitionService.detectExplicitContent,
+      ).not.toHaveBeenCalled();
+      expect(mockS3Service.deleteFile).not.toHaveBeenCalled();
+      expect(mockAssetRepository.delete).not.toHaveBeenCalled();
+    });
   });
 });

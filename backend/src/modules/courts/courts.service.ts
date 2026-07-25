@@ -563,6 +563,13 @@ export class CourtsService {
       queryBuilder.andWhere('tenant.blockedAt IS NULL');
     }
 
+    if (user && user.type === UserType.Staff) {
+      // Staff visibility: courts are scoped to the staff member's tenant.
+      queryBuilder.andWhere('branch.tenantId = :tenantId', {
+        tenantId: user.tenantId,
+      });
+    }
+
     const court = await queryBuilder.getOne();
     if (!court) {
       return null;

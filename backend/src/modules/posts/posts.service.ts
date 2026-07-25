@@ -205,10 +205,14 @@ export class PostsService {
       },
       {
         conflictPaths: ['postId', 'userId'],
+        skipUpdateIfNoValuesChanged: true,
       },
     );
 
-    if (result.identifiers.length > 0 && result.identifiers[0].id) {
+    // On a repeated like the upsert conflicts and inserts nothing (raw is
+    // empty); only the first like emits the event that increments likesCount.
+    const inserted = Array.isArray(result.raw) && result.raw.length > 0;
+    if (inserted) {
       runOnTransactionCommit(() => {
         this.eventEmitter.emit(PostEvent.POST_LIKED, {
           post,

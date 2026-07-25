@@ -5,6 +5,7 @@ import {
   Inject,
   forwardRef,
   BadRequestException,
+  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -45,6 +46,7 @@ import {
   PARTICIPANT_NOT_FOUND,
   ALREADY_RESPONDED,
   SLOT_ALREADY_RESERVED,
+  SLOT_OVERLAPS_WITH_BOOKING,
   COURT_NOT_FOUND,
   BOOKING_JOIN_APPROVAL_NOT_REQUIRED,
   ONLY_CREATOR_CAN_MANAGE,
@@ -58,6 +60,7 @@ import {
   CANNOT_REMOVE_BOOKING_CREATOR,
   ONLY_CREATOR_CAN_ADD_PARTICIPANTS,
   SCHEDULE_NOT_FOUND,
+  NOT_ALLOWED,
 } from '../shared/error-codes';
 import { ListBookingsResponseDto } from './dto/list-booking-response.dto';
 import { UsersService } from '../users/users.service';
@@ -113,7 +116,7 @@ export class BookingsService {
     input: CreateBookingDto,
     sessionUser: SessionUser,
   ): Promise<PaymentResponseDto> {
-    const { courtId, paymentType, participants, startAt, duration } = input;
+    const { courtId, paymentType, participants = [], startAt, duration } = input;
     this.logger.log(
       `[BOOKING_FLOW] Initiating booking - userId: ${sessionUser.id}, courtId: ${courtId}, startAt: ${startAt}, duration: ${duration}min, paymentType: ${paymentType}`,
     );
@@ -161,6 +164,9 @@ export class BookingsService {
       this.logger.warn(
         `[BOOKING_FLOW] Booking failed - ${reason} - courtId: ${courtId}, startDate: ${startDate.toISOString()}, details: ${JSON.stringify(details)}`,
       );
+      if (reason === SLOT_OVERLAPS_WITH_BOOKING) {
+        throw new ConflictException(reason);
+      }
       throw new BadRequestException(reason);
     }
 
@@ -211,7 +217,7 @@ export class BookingsService {
   @Transactional()
   async create(
     {
-      participants: userIds,
+      participants: userIds = [],
       paymentType,
       courtId,
       duration,
@@ -261,6 +267,9 @@ export class BookingsService {
       this.logger.warn(
         `[BOOKING_FLOW] Booking creation failed - ${reason} - courtId: ${courtId}, startDate: ${startDate.toISOString()}, details: ${JSON.stringify(details)}`,
       );
+      if (reason === SLOT_OVERLAPS_WITH_BOOKING) {
+        throw new ConflictException(reason);
+      }
       throw new BadRequestException(reason);
     }
 
@@ -767,11 +776,29 @@ export class BookingsService {
     const isStaff = user.type === UserType.Staff;
     const participant = booking.participants.find((p) => p.userId === user.id);
 
+    // Staff may only cancel bookings that belong to their own tenant.
+    if (isStaff && booking.court?.branch?.tenantId !== user.tenantId) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Cancellation denied - cross-tenant attempt: bookingId: ${id}, userId: ${user.id}`,
+      );
+      throw new ForbiddenException(NOT_ALLOWED);
+    }
+
     this.logger.debug(
       `[BOOKING_FLOW] Cancellation context - bookingId: ${id}, isCreator: ${isCreator}, isStaff: ${isStaff}, currentStatus: ${booking.status}`,
     );
 
     if (isCreator || isStaff) {
+      if (
+        booking.status === BookingStatus.IN_PROGRESS ||
+        booking.status === BookingStatus.COMPLETED
+      ) {
+        this.logger.warn(
+          `[BOOKING_FLOW] Cancellation failed - booking already started - bookingId: ${id}, status: ${booking.status}`,
+        );
+        throw new BadRequestException(BOOKING_NOT_ACTIVE);
+      }
+
       this.logger.log(
         `[BOOKING_FLOW] Full booking cancellation by ${isStaff ? 'staff' : 'creator'} - bookingId: ${id}`,
       );

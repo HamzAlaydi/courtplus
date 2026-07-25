@@ -44,6 +44,7 @@ import {
   CANNOT_ASSIGN_OWNER_TO_BRANCH,
   CANNOT_ASSIGN_SELF,
   CANNOT_MODIFY_LAST_SUPER_ADMIN,
+  CANNOT_PROMOTE_TO_SUPER_ADMIN,
   ROLE_REQUIRED,
   OWNER_CANNOT_DELETE_ACCOUNT,
 } from '../shared/error-codes';
@@ -224,6 +225,9 @@ export class StaffService {
     if (staff.role === StaffRole.OWNER) {
       throw new ForbiddenException(CANNOT_MODIFY_OWNER_ROLE);
     }
+    if (role === StaffRole.SUPER_ADMIN || role === StaffRole.OWNER) {
+      throw new BadRequestException(CANNOT_PROMOTE_TO_SUPER_ADMIN);
+    }
 
     await this.staffRepository.update(staffId, { role });
     await this.cacheManager.del(`staff#${staff.tenantId}`);
@@ -278,6 +282,10 @@ export class StaffService {
 
     if (!superAdmins && !role) {
       throw new BadRequestException(ROLE_REQUIRED);
+    }
+
+    if (!superAdmins && role === StaffRole.SUPER_ADMIN) {
+      throw new BadRequestException(CANNOT_PROMOTE_TO_SUPER_ADMIN);
     }
 
     const existingStaff = await this.getByEmail(email);

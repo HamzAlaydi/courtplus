@@ -1,6 +1,7 @@
 import {
-  BadRequestException,
   ClassSerializerInterceptor,
+  HttpException,
+  HttpStatus,
   Module,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -82,7 +83,10 @@ import { AuditInterceptor } from './modules/logging/audit.interceptor';
           },
         ],
         errorMessage(context, throttlerLimitDetail) {
-          throw new BadRequestException(TOO_MANY_REQUESTS);
+          throw new HttpException(
+            TOO_MANY_REQUESTS,
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
         },
         storage: new ThrottlerStorageRedisService(
           new Redis({

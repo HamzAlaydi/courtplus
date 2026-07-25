@@ -3,6 +3,7 @@ import { ReportingService } from './reporting.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ListReportsDto } from './dto/list-reports.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserTypeGuard } from '../auth/guards/user-type.guard';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import type { SessionUser } from '../auth/@types/session';
 import {
@@ -16,7 +17,7 @@ import { AuthorizedUserType } from 'src/decorators/user-type.decorator';
 import { ListReportsResultDto } from './dto/list-reports-response.dto';
 import { Report } from './entities/report.entity';
 @ApiTags('Reporting')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UserTypeGuard)
 @Controller('report')
 @ApiBearerAuth()
 export class ReportingController {

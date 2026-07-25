@@ -24,9 +24,10 @@ import { ListPostsDto } from './dto/list-posts.dto';
 import { ListPostsResponseDto } from './dto/list-posts-response.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserTypeGuard } from '../auth/guards/user-type.guard';
 @ApiTags('Posts')
 @Controller('posts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UserTypeGuard)
 @ApiBearerAuth()
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}

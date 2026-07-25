@@ -44,6 +44,15 @@ export class CreateBranchDto {
   name: string;
 
   @ApiProperty({
+    description: 'The description of the branch',
+    example: 'Indoor padel club with 4 courts',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({
     description: 'The phone number of the branch',
     example: '+1234567890',
   })

@@ -53,6 +53,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
       sid: session.id,
       role: session.user.role,
       tenantId: session.user.tenantId,
+      deviceId: session.deviceId,
     } satisfies SessionUser;
   }
 }

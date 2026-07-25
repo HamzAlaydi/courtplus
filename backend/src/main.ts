@@ -17,6 +17,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      // Strip body properties that are not declared on the DTO to
+      // prevent mass assignment (e.g. role/tenantId/stat overrides).
+      whitelist: true,
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());

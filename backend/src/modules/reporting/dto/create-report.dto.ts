@@ -1,4 +1,4 @@
-import { IsEnum, IsString, IsUUID, IsOptional } from 'class-validator';
+import { IsEnum, IsString, IsUUID, IsOptional, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ReportEntity } from '../entities/report.entity';
 
@@ -23,6 +23,7 @@ export class CreateReportDto {
     example: 'Abusive behavior',
   })
   @IsString()
+  @IsNotEmpty()
   reason: string;
 
   @ApiProperty({

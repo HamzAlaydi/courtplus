@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Report, ReportEntity, ReportStatus } from './entities/report.entity';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ListReportsDto } from './dto/list-reports.dto';
@@ -10,10 +10,12 @@ import { ReportEvent } from './reporting.events';
 import type { ReportCreatedEventPayload } from './reporting.events';
 import { UsersService } from '../users/users.service';
 import {
+  BOOKING_NOT_FOUND,
   BRANCH_NOT_FOUND,
   COURT_NOT_FOUND,
   USER_NOT_FOUND,
 } from '../shared/error-codes';
+import { Booking } from '../bookings/entities/booking.entity';
 import { BranchesService } from '../branches/branches.service';
 import { CourtsService } from '../courts/courts.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
@@ -33,6 +35,7 @@ export class ReportingService {
     private readonly notificationsService: NotificationsService,
     private readonly staffService: StaffService,
     private readonly emailService: EmailService,
+    private readonly dataSource: DataSource,
   ) { }
 
   async createReport(
@@ -58,6 +61,14 @@ export class ReportingService {
         const court = await this.courtsService.exists(entityId);
         if (!court) {
           throw new NotFoundException(COURT_NOT_FOUND);
+        }
+        break;
+      case ReportEntity.BOOKING:
+        const booking = await this.dataSource.getRepository(Booking).exists({
+          where: { id: entityId },
+        });
+        if (!booking) {
+          throw new NotFoundException(BOOKING_NOT_FOUND);
         }
         break;
     }

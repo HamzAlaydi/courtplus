@@ -1,6 +1,7 @@
 import {
   Injectable,
   BadRequestException,
+  ConflictException,
   NotFoundException,
   Inject,
   forwardRef,
@@ -73,7 +74,7 @@ export class ReviewsService {
       where: { userId, bookingId },
     })
     if (existingReview) {
-      throw new BadRequestException(REVIEW_ALREADY_EXISTS);
+      throw new ConflictException(REVIEW_ALREADY_EXISTS);
     }
     const booking = await this.bookingsService.findOne(
       { id: bookingId },

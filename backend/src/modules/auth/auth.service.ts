@@ -582,6 +582,7 @@ export class AuthService {
               : undefined,
         },
         id: session.id,
+        deviceId: session.deviceId,
       };
     } catch (error) {
       throw new UnauthorizedException(INVALID_REFRESH_TOKEN);

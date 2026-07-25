@@ -201,6 +201,10 @@ export class AssetsService {
 
   @OnEvent(AssetEvent.ASSET_ASSIGNED)
   private async handleAssetAssigned({ asset }: AssetAssignedEvent) {
+    if (asset.type && this.getAssetTypeToFileType(asset.type) !== 'image') {
+      return;
+    }
+
     try {
       const { explicit, labels } =
         await this.rekognitionService.detectExplicitContent(asset.key);

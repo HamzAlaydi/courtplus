@@ -170,6 +170,9 @@ export class VerificationService {
       case VerificationContext.PASSWORD_RESET:
         template = EmailTemplate.ForgotPassword;
         break;
+      case VerificationContext.ACCOUNT_DELETION:
+        template = EmailTemplate.AccountDeletion;
+        break;
     }
     await this.emailService.sendEmail({
       to: [user.email],

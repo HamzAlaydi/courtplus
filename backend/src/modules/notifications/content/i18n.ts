@@ -8,6 +8,7 @@ i18next.init({
       translation: {
         emails: {
           forgot_password: 'Password Reset for Court+',
+          account_deletion: 'Confirm your Court+ account deletion',
           account_verification: 'Complete your Court+ account now',
           email_verification: 'Verify your email for Court+',
           staff_booking_created: 'New booking has been created',
@@ -337,6 +338,7 @@ i18next.init({
       translation: {
         emails: {
           forgot_password: 'إعادة تعيين كلمة المرور لـ Court+',
+          account_deletion: 'تأكيد حذف حسابك في Court+',
           account_verification: 'أكمل حسابك في Court+ الآن',
           email_verification: 'تحقق من بريدك الإلكتروني لـ Court+',
           staff_booking_created: 'تم إنشاء حجز جديد',

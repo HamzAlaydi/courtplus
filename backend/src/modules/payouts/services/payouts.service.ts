@@ -92,7 +92,10 @@ export class PayoutsService {
     return payout;
   }
 
-  @Transactional()
+  // NOTE: intentionally NOT @Transactional — the catch below performs
+  // compensating writes (refund + FAILED status) and then rethrows.
+  // Inside a transaction the rethrow would roll the compensation back,
+  // leaving the payout stuck in `pending` with the funds still deducted.
   async approvePayout(payoutId: string): Promise<Payout> {
     const payout = await this.payoutRepo.findOne({
       where: { id: payoutId },

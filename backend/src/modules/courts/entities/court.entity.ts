@@ -74,9 +74,11 @@ export class Court extends BaseEntity {
   @ApiProperty({
     description: 'The size category of the court',
     example: 'Standard',
+    nullable: true,
+    required: false,
   })
-  @Column()
-  size: string;
+  @Column({ nullable: true })
+  size?: string;
 
   @ApiProperty({
     description: 'The surface type of the court',
@@ -145,9 +147,11 @@ export class Court extends BaseEntity {
   @ApiProperty({
     description: 'The ID of the location this court is at',
     example: '123e4567-e89b-12d3-a456-426614174000',
+    nullable: true,
+    required: false,
   })
-  @Column('uuid')
-  locationId: string;
+  @Column('uuid', { nullable: true })
+  locationId?: string;
 
   @ApiProperty({
     description: 'The hourly rate of the court',

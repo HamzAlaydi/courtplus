@@ -4,6 +4,7 @@ import { render } from '@react-email/components';
 import { MailService } from './mail.service';
 import { AccountVerificationEmail } from 'src/emails/account-verification';
 import { ForgotPasswordEmail } from 'src/emails/forgot-password';
+import { AccountDeletionEmail } from 'src/emails/account-deletion';
 import { BookingCreatedEmail } from 'src/emails/staff-booking-created';
 import { BookingReminderEmail } from 'src/emails/staff-booking-reminder';
 import { BookingCancellationEmail } from 'src/emails/staff-booking-cancelled';
@@ -27,6 +28,7 @@ import { i18next } from 'src/modules/notifications/content/i18n';
 export enum EmailTemplate {
   ForgotPassword = 'forgot_password',
   AccountVerification = 'account_verification',
+  AccountDeletion = 'account_deletion',
   EmailVerification = 'email_verification',
   STAFF_BOOKING_CREATED = 'staff_booking_created',
   STAFF_BOOKING_REMINDER = 'staff_booking_reminder',
@@ -57,6 +59,7 @@ export class EmailService {
   ) {
     this.templateComponents = {
       [EmailTemplate.ForgotPassword]: ForgotPasswordEmail,
+      [EmailTemplate.AccountDeletion]: AccountDeletionEmail,
       [EmailTemplate.AccountVerification]: AccountVerificationEmail,
       [EmailTemplate.STAFF_BOOKING_CREATED]: BookingCreatedEmail,
       [EmailTemplate.STAFF_BOOKING_REMINDER]: BookingReminderEmail,

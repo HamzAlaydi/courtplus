@@ -7,8 +7,11 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { UserTypeGuard } from 'src/modules/auth/guards/user-type.guard';
 import { PayoutsService } from '../services/payouts.service';
 import { BalanceService } from '../services/balance.service';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
@@ -29,6 +32,7 @@ import type { SessionUser } from 'src/modules/auth/@types/session';
 @Controller('payouts')
 @ApiTags('Payouts')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, UserTypeGuard)
 export class PayoutsController {
   constructor(
     private readonly payoutsService: PayoutsService,
