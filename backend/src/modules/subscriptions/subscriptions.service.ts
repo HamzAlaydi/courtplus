@@ -478,6 +478,10 @@ export class SubscriptionsService {
     if (session.mode === 'subscription') {
       const tenantId = session.metadata?.tenantId;
       if (tenantId && session.payment_status === 'paid') {
+        await this.tenantsService.setProviderCustomerIdIfMissing(
+          tenantId,
+          session.customer as string,
+        );
         await this.activatePendingCourts(tenantId);
       }
       return;
@@ -575,6 +579,13 @@ export class SubscriptionsService {
     );
     subscription.currentPeriodEnd = new Date(
       stripeSubscription.current_period_end * 1000,
+    );
+
+    // Webhook-created subscriptions never set tenant.providerCustomerId,
+    // which breaks invoice listing. Backfill it (only when missing).
+    await this.tenantsService.setProviderCustomerIdIfMissing(
+      tenantId,
+      stripeSubscription.customer as string,
     );
 
     return this.subscriptionRepository.save(subscription);

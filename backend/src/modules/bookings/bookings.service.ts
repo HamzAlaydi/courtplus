@@ -38,7 +38,7 @@ import {
 } from '../payments/entities/payment.entity';
 import { CourtsService } from '../courts/courts.service';
 import { CourtStatus } from '../courts/entities/court.entity';
-import { dayjs } from '../shared/dayjs';
+import { dayjs, parseBookingDateTime } from '../shared/dayjs';
 import {
   BOOKING_NOT_FOUND,
   ONLY_CREATOR_CAN_CANCEL,
@@ -130,11 +130,8 @@ export class BookingsService {
       throw new BadRequestException(SCHEDULE_NOT_FOUND);
     }
 
-    const startDate = dayjs.tz(startAt, court.schedule.timeZone).toDate();
-    const endDate = dayjs
-      .tz(startAt, court.schedule.timeZone)
-      .add(duration, 'minutes')
-      .toDate();
+    const startDate = parseBookingDateTime(startAt, court.schedule.timeZone);
+    const endDate = dayjs(startDate).add(duration, 'minutes').toDate();
 
     this.logger.debug(
       `[BOOKING_FLOW] Slot check - courtId: ${courtId}, startDate: ${startDate.toISOString()}, endDate: ${endDate.toISOString()}, timezone: ${court.schedule.timeZone}`,
@@ -246,11 +243,8 @@ export class BookingsService {
       throw new NotFoundException(COURT_NOT_FOUND);
     }
 
-    const startDate = dayjs.tz(startAt, court.schedule.timeZone).toDate();
-    const endDate = dayjs
-      .tz(startAt, court.schedule.timeZone)
-      .add(duration, 'minutes')
-      .toDate();
+    const startDate = parseBookingDateTime(startAt, court.schedule.timeZone);
+    const endDate = dayjs(startDate).add(duration, 'minutes').toDate();
 
     this.logger.debug(
       `[BOOKING_FLOW] Checking slot availability with lock - courtId: ${courtId}, startDate: ${startDate.toISOString()}, endDate: ${endDate.toISOString()}`,
@@ -527,6 +521,7 @@ export class BookingsService {
       .leftJoinAndSelect('booking.court', 'court')
       .leftJoinAndSelect('court.branch', 'branch')
       .leftJoinAndSelect('court.location', 'location')
+      .leftJoinAndSelect('court.schedule', 'schedule')
       .leftJoinAndSelect('branch.location', 'branchLocation')
       .leftJoinAndMapMany(
         'court.assets',
@@ -548,6 +543,7 @@ export class BookingsService {
         'court.avgRating',
         'court.status',
         'court.sport',
+        'schedule.timeZone',
         'branch.id',
         'branch.name',
         'branch.tenantId',
@@ -691,6 +687,9 @@ export class BookingsService {
 
     const mappedBookings = bookings.map((booking) => ({
       ...booking,
+      // Booking datetimes are stored as UTC; the court's schedule timezone is
+      // the authoritative zone for rendering them as local wall times.
+      timeZone: booking.court?.schedule?.timeZone ?? null,
       court: mappedCourts.find((court) => court.id === booking.court.id),
     }));
 

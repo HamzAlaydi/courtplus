@@ -195,6 +195,23 @@ export class TenantsService {
     return tenant;
   }
 
+  /**
+   * Persist the Stripe customer id on the tenant, but only when it is not
+   * set yet (atomic, idempotent backfill for webhook-created subscriptions).
+   */
+  async setProviderCustomerIdIfMissing(
+    tenantId: string,
+    providerCustomerId: string,
+  ): Promise<void> {
+    if (!providerCustomerId) {
+      return;
+    }
+    await this.tenantRepository.update(
+      { id: tenantId, providerCustomerId: IsNull() },
+      { providerCustomerId },
+    );
+  }
+
   async updateTenant(
     userId: string,
     { logoAssetId, name, phoneNumber, documents }: UpdateTenantDto,
