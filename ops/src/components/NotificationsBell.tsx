@@ -4,11 +4,13 @@ import {
   Button,
   List,
   Popover,
+  Space,
   Spin,
   Typography,
   Empty,
+  Tooltip,
 } from "antd";
-import { BellOutlined } from "@ant-design/icons";
+import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -19,6 +21,7 @@ import {
   markNotificationRead,
 } from "@/api/notifications";
 import type { AppNotification } from "@/api/types";
+import { LIME } from "@/theme";
 
 /** Deep-link a notification to the relevant console page by data.kind. */
 function notificationTarget(n: AppNotification): string {
@@ -61,16 +64,25 @@ export default function NotificationsBell() {
     enabled: open,
   });
 
+  const unreadItems = (data?.items ?? []).filter((n) => !n.readAt);
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+
   const seenMutation = useMutation({
     mutationFn: markAllNotificationsSeen,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: invalidate,
   });
 
   const readMutation = useMutation({
     mutationFn: markNotificationRead,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: invalidate,
+  });
+
+  // No bulk mark-read endpoint exists — loop the per-item PATCH /:id/read.
+  const markAllReadMutation = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map(markNotificationRead)),
+    onSuccess: invalidate,
   });
 
   const handleOpenChange = (next: boolean) => {
@@ -84,6 +96,22 @@ export default function NotificationsBell() {
     navigate(notificationTarget(n));
   };
 
+  const title = (
+    <Space style={{ width: "100%", justifyContent: "space-between" }}>
+      <span>Notifications</span>
+      <Button
+        type="link"
+        size="small"
+        style={{ padding: 0 }}
+        disabled={unreadItems.length === 0}
+        loading={markAllReadMutation.isPending}
+        onClick={() => markAllReadMutation.mutate(unreadItems.map((n) => n.id))}
+      >
+        Mark all as read
+      </Button>
+    </Space>
+  );
+
   const content = (
     <div style={{ width: 360, maxHeight: 420, overflowY: "auto" }}>
       {isLoading ? (
@@ -96,29 +124,61 @@ export default function NotificationsBell() {
         <List
           size="small"
           dataSource={data.items}
-          renderItem={(n) => (
-            <List.Item
-              onClick={() => handleClick(n)}
-              style={{
-                cursor: "pointer",
-                padding: "10px 12px",
-                background: n.readAt ? undefined : "rgba(200,245,66,0.10)",
-              }}
-            >
-              <List.Item.Meta
-                title={
-                  <Typography.Text strong={!n.readAt} style={{ fontSize: 13 }}>
-                    {notificationText(n)}
-                  </Typography.Text>
+          renderItem={(n) => {
+            const unread = !n.readAt;
+            return (
+              <List.Item
+                onClick={() => handleClick(n)}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px 12px",
+                  background: unread ? "rgba(200,245,66,0.10)" : undefined,
+                }}
+                actions={
+                  unread
+                    ? [
+                        <Tooltip title="Mark as read" key="read">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<CheckOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              readMutation.mutate(n.id);
+                            }}
+                          />
+                        </Tooltip>,
+                      ]
+                    : undefined
                 }
-                description={
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    {dayjs(n.createdAt).format("MMM D, YYYY HH:mm")}
-                  </Typography.Text>
-                }
-              />
-            </List.Item>
-          )}
+              >
+                <List.Item.Meta
+                  avatar={
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: unread ? LIME : "transparent",
+                        marginTop: 6,
+                      }}
+                    />
+                  }
+                  title={
+                    <Typography.Text strong={unread} style={{ fontSize: 13 }}>
+                      {notificationText(n)}
+                    </Typography.Text>
+                  }
+                  description={
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      {dayjs(n.createdAt).format("MMM D, YYYY HH:mm")}
+                    </Typography.Text>
+                  }
+                />
+              </List.Item>
+            );
+          }}
         />
       )}
     </div>
@@ -127,7 +187,7 @@ export default function NotificationsBell() {
   return (
     <Popover
       content={content}
-      title="Notifications"
+      title={title}
       trigger="click"
       open={open}
       onOpenChange={handleOpenChange}
