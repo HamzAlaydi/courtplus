@@ -460,5 +460,23 @@
     "send": "Send Request",
     "sent": "Unsuspend request sent successfully",
     "send_failed": "Failed to send unsuspend request"
+  },
+  "notifications": {
+    "all": "All",
+    "types": {
+      "court_pending_payment": "Court pending payment",
+      "court_pending_approval": "Court pending approval",
+      "court_approved": "Court approved",
+      "court_changes_requested": "Court changes requested",
+      "court_resubmitted": "Court resubmitted",
+      "court_suspended": "Court suspended",
+      "court_unsuspended": "Court unsuspended",
+      "branch_suspended": "Branch suspended",
+      "branch_unsuspended": "Branch unsuspended",
+      "tenant_suspended": "Account suspended",
+      "tenant_unsuspended": "Account unsuspended",
+      "tenant_unsuspend_requested": "Unsuspend requested",
+      "subscription_payment_failed": "Subscription payment failed"
+    }
   }
 }

@@ -23,7 +23,7 @@ class NotificationService {
   markAllNotificationsSeen() {
     return apiRequest({
       method: "post",
-      url: `${API_URL}/all/mark-seen`,
+      url: `${API_URL}/mark-seen`,
       customHeaders: authHeader(),
     });
   }

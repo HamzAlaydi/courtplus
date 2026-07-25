@@ -454,5 +454,23 @@
     "send": "إرسال الطلب",
     "sent": "تم إرسال طلب إلغاء الإيقاف بنجاح",
     "send_failed": "فشل إرسال طلب إلغاء الإيقاف"
+  },
+  "notifications": {
+    "all": "الكل",
+    "types": {
+      "court_pending_payment": "ملعب بانتظار الدفع",
+      "court_pending_approval": "ملعب بانتظار الموافقة",
+      "court_approved": "تمت الموافقة على الملعب",
+      "court_changes_requested": "مطلوب تعديلات على الملعب",
+      "court_resubmitted": "تمت إعادة إرسال الملعب",
+      "court_suspended": "ملعب موقوف",
+      "court_unsuspended": "تم إلغاء إيقاف الملعب",
+      "branch_suspended": "فرع موقوف",
+      "branch_unsuspended": "تم إلغاء إيقاف الفرع",
+      "tenant_suspended": "الحساب موقوف",
+      "tenant_unsuspended": "تم إلغاء إيقاف الحساب",
+      "tenant_unsuspend_requested": "تم طلب إلغاء الإيقاف",
+      "subscription_payment_failed": "فشل دفع الاشتراك"
+    }
   }
 }

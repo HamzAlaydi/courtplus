@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   useInfiniteQuery,
   useMutation,
@@ -44,15 +45,28 @@ const NOTIFICATION_TYPES = [
   "report_created",
   "payment_failed",
   "payment_succeeded",
-  "refund_processed",
   "booking_join_request_submitted",
   "booking_join_request_approved",
   "booking_join_request_rejected",
+  "court_pending_payment",
+  "court_pending_approval",
+  "court_approved",
+  "court_changes_requested",
+  "court_resubmitted",
+  "court_suspended",
+  "court_unsuspended",
+  "branch_suspended",
+  "branch_unsuspended",
+  "tenant_suspended",
+  "tenant_unsuspended",
+  "tenant_unsuspend_requested",
+  "subscription_payment_failed",
 ];
 
 export default function NotificationsDropdown() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [type, setType] = useState(null);
   const [modalData, setModalData] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -60,6 +74,7 @@ export default function NotificationsDropdown() {
   const { data: unseenData } = useQuery({
     queryKey: ["notifications-unseen"],
     queryFn: getUnseenNotificationCount,
+    refetchInterval: 30000,
   });
 
   // 🚀 Infinite Query
@@ -68,14 +83,14 @@ export default function NotificationsDropdown() {
       queryKey: ["notifications", type],
       queryFn: ({ pageParam = 1 }) =>
         getNotifications({ page: pageParam, pageSize: PAGE_SIZE, type }),
-
+      initialPageParam: 1,
       getNextPageParam: (lastPage) => {
         if (lastPage.pagination.currentPage < lastPage.pagination.totalPages) {
           return lastPage.pagination.currentPage + 1;
         }
         return undefined;
       },
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
     });
 
   //   const unseenCount = unseenData?.count || 0;
@@ -88,23 +103,30 @@ export default function NotificationsDropdown() {
   // Mutations
   const markReadMutation = useMutation({
     mutationFn: markNotificationRead,
-    onSuccess: () => queryClient.invalidateQueries(["notifications"]),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unseen"] });
+    },
   });
 
   const markAllSeenMutation = useMutation({
     mutationFn: markAllNotificationsSeen,
-    onSuccess: () => queryClient.invalidateQueries(["notifications"]),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unseen"] });
+    },
   });
 
   // 🔹 Map notification data.kind → in-app destination
   const getTarget = (notif) => {
     const data = notif.data || {};
     switch (data.kind) {
-      case "court_payment_pending":
+      case "court_pending_payment":
+      case "subscription_payment_failed":
         return "/billing";
       case "court_approved":
-      case "changes_requested":
-      case "suspended":
+      case "court_changes_requested":
+      case "court_suspended":
         return data.courtId ? `/courts/${data.courtId}` : "/courts";
       default:
         if (data.branchId) return `/branches/${data.branchId}`;
@@ -137,7 +159,7 @@ export default function NotificationsDropdown() {
             type="default"
             className="btn-mark-all"
             onClick={() => markAllSeenMutation.mutate()}
-            loading={markAllSeenMutation.isLoading}
+            loading={markAllSeenMutation.isPending}
           >
             Mark all
           </Button>
@@ -156,7 +178,7 @@ export default function NotificationsDropdown() {
         >
           {NOTIFICATION_TYPES.map((item) => (
             <Select.Option key={item} value={item}>
-              {item || "All"}
+              {item ? t(`notifications.types.${item}`, item) : t("notifications.all")}
             </Select.Option>
           ))}
         </Select>
