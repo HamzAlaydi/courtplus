@@ -249,6 +249,26 @@ export class BookingsService {
       throw new NotFoundException(COURT_NOT_FOUND);
     }
 
+    // Staff may only create bookings on courts owned by their own tenant.
+    // Return 404 (not 403) to avoid leaking the existence of other
+    // tenants' courts.
+    if (
+      user.type === UserType.Staff &&
+      court.branch?.tenantId !== user.tenantId
+    ) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Booking creation failed - cross-tenant court access: courtId=${courtId}, staffId=${user.id}`,
+      );
+      throw new NotFoundException(COURT_NOT_FOUND);
+    }
+
+    if (!court.schedule) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Booking creation failed - schedule not found for courtId: ${courtId}`,
+      );
+      throw new BadRequestException(SCHEDULE_NOT_FOUND);
+    }
+
     const startDate = parseBookingDateTime(startAt, court.schedule.timeZone);
     const endDate = dayjs(startDate).add(duration, 'minutes').toDate();
 
@@ -727,9 +747,14 @@ export class BookingsService {
     return booking;
   }
 
-  async getOne(id: string, user: SessionUser): Promise<Booking | null> {
+  async getOne(id: string, user: SessionUser): Promise<Booking> {
     const booking = await this.find({ id }, user);
-    return booking.items.length > 0 ? booking.items[0] : null;
+    if (booking.items.length === 0) {
+      // The booking either does not exist or is not visible to this
+      // user/tenant — 404 in both cases to avoid leaking existence.
+      throw new NotFoundException(BOOKING_NOT_FOUND);
+    }
+    return booking.items[0];
   }
   @Transactional()
   async cancel(id: string, user: SessionUser, cancellationReason?: string): Promise<void> {
@@ -1499,7 +1524,11 @@ export class BookingsService {
           } satisfies ParticipantJoinedEventPayload);
         });
 
-        return this.pay(participant);
+        // Only split bookings charge the joiner; on whole bookings the
+        // creator already paid the full amount, so no payment intent.
+        if (booking.paymentType === PaymentType.SPLIT) {
+          return this.pay(participant);
+        }
       }
     } catch (error) {
       this.logger.error(`[BOOKING_FLOW] Join booking failed - error: ${error.message}`, error.stack);

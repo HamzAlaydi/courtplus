@@ -75,6 +75,11 @@ export class ParticipantStateMachine {
     from: ParticipantStatus,
     to: ParticipantStatus,
   ): boolean {
+    // An unhandled event leaves the machine in the same state, so without
+    // this guard every status would "transition" to itself.
+    if (from === to) {
+      return false;
+    }
     for (const eventType of ALL_EVENTS) {
       const actor = createActorAtState(from);
       actor.start();

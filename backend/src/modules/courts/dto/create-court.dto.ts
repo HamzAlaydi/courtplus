@@ -25,6 +25,15 @@ export class CreateCourtDto {
   name: string;
 
   @ApiProperty({
+    description: 'The description of the court',
+    example: 'Full-size indoor court with LED lighting',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({
     description: 'The ID of the branch this court belongs to',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
