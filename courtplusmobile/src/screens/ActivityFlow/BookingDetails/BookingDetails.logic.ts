@@ -29,13 +29,15 @@ export const useBookingDetails = () => {
         id: item.id,
       });
       if (response) {
-        await initPayment({
+        const paymentInitialized = await initPayment({
           ephemeralKey: response?.ephemeralKey ?? "",
           customerId: response?.customerId ?? "",
           publishableKey: response?.publishableKey ?? "",
           clientSecret: response?.clientSecret ?? "",
         });
-        await showPaymentOverlay(item?.court?.mainAsset ?? "", false);
+        if (paymentInitialized) {
+          await showPaymentOverlay(item?.court?.mainAsset ?? "", false);
+        }
         invalidateQuery("getBookings");
       }
     } catch (error) {

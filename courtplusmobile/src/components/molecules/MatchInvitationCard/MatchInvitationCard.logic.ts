@@ -58,13 +58,15 @@ export const useMatchInvitationCard = ({
         id: booking.id,
       });
       if (response) {
-        await initPayment({
+        const paymentInitialized = await initPayment({
           ephemeralKey: response?.ephemeralKey ?? "",
           customerId: response?.customerId ?? "",
           publishableKey: response?.publishableKey ?? "",
           clientSecret: response?.clientSecret ?? "",
         });
-        await showPaymentOverlay(booking?.court?.mainAsset ?? "", false);
+        if (paymentInitialized) {
+          await showPaymentOverlay(booking?.court?.mainAsset ?? "", false);
+        }
         invalidateQuery("getBookings");
       }
     } catch (error) {
