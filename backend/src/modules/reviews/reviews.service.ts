@@ -49,7 +49,6 @@ export class ReviewsService {
     private readonly branchesService: BranchesService,
     @Inject(forwardRef(() => ParticipantsService))
     private readonly participantsService: ParticipantsService,
-    private readonly dataSource: DataSource,
   ) { }
 
   async findByIds(

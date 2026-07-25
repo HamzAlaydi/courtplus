@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   SESv2Client,
@@ -6,6 +6,7 @@ import {
   SendEmailCommandInput,
 } from '@aws-sdk/client-sesv2';
 import * as nodemailer from 'nodemailer';
+import { EMAIL_SEND_FAILED } from 'src/modules/shared/error-codes';
 
 export interface SendMailOptions {
   to: string[];
@@ -23,6 +24,7 @@ export interface SendMailOptions {
  */
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
   private readonly ses: SESv2Client;
   private readonly transporter?: nodemailer.Transporter;
   private readonly driver: string;
@@ -49,6 +51,15 @@ export class MailService {
   }
 
   async sendMail({ to, subject, html, text, replyTo }: SendMailOptions) {
+    try {
+      return await this.send({ to, subject, html, text, replyTo });
+    } catch (error) {
+      this.logger.warn(`Outbound email failed: ${(error as Error).message}`);
+      throw new ServiceUnavailableException(EMAIL_SEND_FAILED);
+    }
+  }
+
+  private async send({ to, subject, html, text, replyTo }: SendMailOptions) {
     if (this.driver === 'smtp') {
       if (!this.transporter) {
         throw new Error(

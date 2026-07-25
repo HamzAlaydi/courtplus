@@ -4,14 +4,14 @@ import {
   S3Client,
   HeadObjectCommand,
 } from '@aws-sdk/client-s3';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import {
   createPresignedPost,
   PresignedPost,
   PresignedPostOptions,
 } from '@aws-sdk/s3-presigned-post';
 import { rfc2047EncodeMetadata } from '../util';
-import { MIMETYPE_REQUIRED } from 'src/modules/shared/error-codes';
+import { MIMETYPE_REQUIRED, STORAGE_SERVICE_UNAVAILABLE } from 'src/modules/shared/error-codes';
 import { S3PresignedUploadOptions } from '../@types/s3';
 import { S3PresignedUploadResult } from '../@types/s3';
 
@@ -26,6 +26,7 @@ export const WildcardContentType = {
 export class S3Service {
   private readonly s3: S3Client;
   private readonly bucketName: string;
+  private readonly logger = new Logger(S3Service.name);
 
   constructor(readonly configService: ConfigService) {
     this.s3 = new S3Client({
@@ -85,10 +86,13 @@ export class S3Service {
       ) as Record<string, string>;
     }
 
-    const presignedPost: PresignedPost = await createPresignedPost(
-      this.s3,
-      presignedPostOptions,
-    );
+    let presignedPost: PresignedPost;
+    try {
+      presignedPost = await createPresignedPost(this.s3, presignedPostOptions);
+    } catch (error) {
+      this.logger.warn(`S3 createPresignedPost failed: ${(error as Error).message}`);
+      throw new ServiceUnavailableException(STORAGE_SERVICE_UNAVAILABLE);
+    }
 
     return {
       url: presignedPost.url,
@@ -107,7 +111,12 @@ export class S3Service {
       Bucket: bucket,
       Key: key,
     });
-    await this.s3.send(command);
+    try {
+      await this.s3.send(command);
+    } catch (error) {
+      this.logger.warn(`S3 deleteObject failed: ${(error as Error).message}`);
+      throw new ServiceUnavailableException(STORAGE_SERVICE_UNAVAILABLE);
+    }
   }
 
   // Checking if a file exists in the S3 bucket

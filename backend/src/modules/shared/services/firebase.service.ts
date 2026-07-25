@@ -6,11 +6,12 @@ import {
   Messaging,
 } from 'firebase-admin/messaging';
 import firebase from 'firebase-admin';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { firebaseConfig } from '../firebase.config';
 import { Notification } from 'src/modules/notifications/entities/notification.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { INVALID_TOKEN } from 'src/modules/shared/error-codes';
 
 export const FIREBASE_INVALID_TOKENS_EVENT = 'firebase.invalid_tokens';
 
@@ -44,7 +45,12 @@ export class FirebaseService {
   }
 
   async verifyIdToken(token: string) {
-    return this.auth.verifyIdToken(token);
+    try {
+      return await this.auth.verifyIdToken(token);
+    } catch (error) {
+      this.logger.warn(`Firebase token verification failed: ${(error as Error).message}`);
+      throw new BadRequestException(INVALID_TOKEN);
+    }
   }
 
   async sendNotification(
@@ -56,7 +62,9 @@ export class FirebaseService {
   ) {
     const { data, type, title, image, content } = notification;
     const tokensArray = Array.isArray(tokens) ? tokens : [tokens];
-    const response = await this.messaging.sendEachForMulticast({
+    let response: BatchResponse;
+    try {
+      response = await this.messaging.sendEachForMulticast({
       notification: {},
       apns: {
         headers: {
@@ -94,12 +102,18 @@ export class FirebaseService {
           sound: 'default',
         },
       },
-      tokens: tokensArray,
-      data: {
-        data: JSON.stringify(data),
-        type,
-      },
-    });
+        tokens: tokensArray,
+        data: {
+          data: JSON.stringify(data),
+          type,
+        },
+      });
+    } catch (error) {
+      // Push is best-effort: an FCM outage must never fail the business
+      // operation that triggered the notification.
+      this.logger.warn(`FCM sendEachForMulticast failed: ${(error as Error).message}`);
+      return;
+    }
 
     if (response.failureCount > 0) {
       const invalidTokens: string[] = [];

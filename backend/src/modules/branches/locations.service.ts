@@ -1,9 +1,17 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { CoordinatesDto } from './dto/create-branch.dto';
 import { Transactional } from 'typeorm-transactional';
+import {
+  LOCATION_NOT_FOUND,
+  LOCATION_SERVICE_UNAVAILABLE,
+} from '../shared/error-codes';
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 // Required by the Nominatim usage policy: https://operations.osmfoundation.org/policies/nominatim/
@@ -25,7 +33,7 @@ export class LocationsService {
     });
 
     if (!response.ok) {
-      throw new Error(`Nominatim request failed with status ${response.status}`);
+      throw new ServiceUnavailableException(LOCATION_SERVICE_UNAVAILABLE);
     }
 
     return response.json();
@@ -39,7 +47,7 @@ export class LocationsService {
     });
 
     if (!Array.isArray(results) || results.length === 0) {
-      throw new Error(`No place found for query: ${placeId}`);
+      throw new BadRequestException(LOCATION_NOT_FOUND);
     }
 
     const result = results[0];

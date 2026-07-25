@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { PHONE_NUMBER_NOT_VERIFIED } from '../error-codes';
 import { ServiceContext } from 'twilio/lib/rest/verify/v2/service';
+import { ServiceUnavailableException } from '@nestjs/common';
+import { SMS_SEND_FAILED } from 'src/modules/shared/error-codes';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
@@ -54,7 +56,8 @@ export class TwilioService {
       ) {
         throw new BadRequestException(PHONE_NUMBER_NOT_VERIFIED);
       }
-      throw error;
+      this.logger.warn(`Twilio sendVerificationCode failed: ${error?.message}`);
+      throw new ServiceUnavailableException(SMS_SEND_FAILED);
     }
   }
 
