@@ -22,7 +22,16 @@ export async function listPendingCourts(
   params: PageParams & { status?: CourtStatus },
 ): Promise<Paginated<Court>> {
   const { data } = await client.get("/ops/courts/pending", { params });
-  return data;
+  // Normalize defensively: the service spreads the court entity flat
+  // ({ ...court, assets }), but tolerate items arriving as { court, assets }
+  // or without an assets array so a row never renders blank.
+  const items: Court[] = (data.items ?? []).map((item: Court & { court?: Court }) => {
+    const court = item.court
+      ? { ...item.court, assets: item.assets ?? item.court.assets }
+      : item;
+    return { ...court, assets: court.assets ?? [] };
+  });
+  return { items, pagination: data.pagination };
 }
 
 export async function approveCourt(id: string): Promise<Court> {

@@ -115,6 +115,10 @@ export default function CourtApprovalsPage() {
         loading={isLoading}
         dataSource={data?.items}
         locale={{ emptyText: <Empty description="Queue is empty" /> }}
+        onRow={(c) => ({
+          onClick: () => setSelected(c),
+          style: { cursor: "pointer" },
+        })}
         pagination={{
           current: page,
           pageSize,
@@ -128,11 +132,8 @@ export default function CourtApprovalsPage() {
         columns={[
           {
             title: "Court",
-            dataIndex: "name",
-            render: (name: string, c) => (
-              <Button type="link" style={{ padding: 0 }} onClick={() => setSelected(c)}>
-                {name}
-              </Button>
+            render: (_, c) => (
+              <Typography.Text strong>{c.name || "Unnamed court"}</Typography.Text>
             ),
           },
           { title: "Branch", render: (_, c) => c.branch?.name ?? "—" },
@@ -151,6 +152,22 @@ export default function CourtApprovalsPage() {
           {
             title: "Media",
             render: (_, c) => <Tag>{c.assets?.length ?? 0} assets</Tag>,
+          },
+          {
+            title: "Actions",
+            width: 100,
+            render: (_, c) => (
+              <Button
+                type="primary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelected(c);
+                }}
+              >
+                Review
+              </Button>
+            ),
           },
         ]}
       />
