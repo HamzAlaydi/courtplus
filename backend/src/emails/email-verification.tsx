@@ -41,7 +41,7 @@ export function EmailVerificationEmail({
       <Hr className="border-gray-200 my-[24px]" />
 
       <Text className="text-[14px] text-gray-500 text-center m-0">
-        © {new Date().getFullYear()} CourtPlus. All rights reserved.
+        © {new Date().getFullYear()} Court+. All rights reserved.
       </Text>
     </BaseEmail>
   );

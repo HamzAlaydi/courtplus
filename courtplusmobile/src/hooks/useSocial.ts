@@ -6,7 +6,7 @@ import {
   signInWithCredential,
 } from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { useSocialLoginMutation } from "apis";
+import { useSocialLoginMutation, registerNotificationToken } from "apis";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import { useAppStore } from "store";
 import { useTranslation } from "react-i18next";
@@ -53,6 +53,7 @@ export const useSocial = (isLoginScreen: boolean) => {
             accessToken: socialResponse.accessToken,
             refreshToken: socialResponse.refreshToken,
           });
+          registerNotificationToken();
         }
       } else {
         showSnackbar({

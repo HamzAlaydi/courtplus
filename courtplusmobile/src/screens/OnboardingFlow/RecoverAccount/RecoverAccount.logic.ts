@@ -4,7 +4,11 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import { useLoginMutation, useSocialLoginMutation } from "apis";
+import {
+  useLoginMutation,
+  useSocialLoginMutation,
+  registerNotificationToken,
+} from "apis";
 import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
 import {
   OnboardingStackNavigationProp,
@@ -43,6 +47,7 @@ export const useRecoverAccount = () => {
           accessToken: response.accessToken,
           refreshToken: response.refreshToken,
         });
+        registerNotificationToken();
         dispatch(StackActions.replace("AuthenticatedStack"));
       }
     } catch (error) {

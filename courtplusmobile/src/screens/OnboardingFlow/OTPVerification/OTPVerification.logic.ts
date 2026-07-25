@@ -4,7 +4,12 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import { useLoginMutation, useSendCodeMutation, useSignupMutation } from "apis";
+import {
+  useLoginMutation,
+  useSendCodeMutation,
+  useSignupMutation,
+  registerNotificationToken,
+} from "apis";
 import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
 import {
   OnboardingStackNavigationProp,
@@ -59,6 +64,7 @@ export const useOTPVerification = () => {
           accessToken: response.accessToken,
           refreshToken: response.refreshToken,
         });
+        registerNotificationToken();
         if (isLogin) {
           dispatch(StackActions.replace("AuthenticatedStack"));
         } else {

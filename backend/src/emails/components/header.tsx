@@ -1,5 +1,8 @@
 import { Img } from '@react-email/components';
 import * as React from 'react';
+
+const DEFAULT_LOGO_URL = 'https://courtplusapp.com/logo512.png';
+
 export type HeaderProps = {
   alt?: string;
   src?: string;
@@ -7,13 +10,13 @@ export type HeaderProps = {
 
 export function Header({ alt, src }: HeaderProps) {
   return (
-    <div className="p-1 py-2 w-[40px] rounded-md border">
+    <div className="py-2">
       <Img
-        src={src ?? `${process.env.APP_LOGO_URL}`}
-        width="36"
-        height="28"
-        className="mx-auto"
-        alt={alt ?? `${process.env.APP_NAME} Logo`}
+        src={src ?? (process.env.APP_LOGO_URL || DEFAULT_LOGO_URL)}
+        width="48"
+        height="48"
+        className="rounded-md"
+        alt={alt ?? 'Court+ Logo'}
       />
     </div>
   );

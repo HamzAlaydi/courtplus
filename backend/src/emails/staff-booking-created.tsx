@@ -109,10 +109,10 @@ export function BookingCreatedEmail({
       <Hr className="border border-solid border-gray-200 my-[24px]" />
 
       <Text className="text-[12px] text-gray-500 text-center m-0">
-        This is an automated notification from CourtPlus System.
+        This is an automated notification from Court+.
       </Text>
       <Text className="text-[12px] text-gray-500 text-center m-0">
-        © 2025 CourtPlus. All rights reserved.
+        © 2025 Court+. All rights reserved.
       </Text>
       <Text className="text-[12px] text-gray-500 text-center m-0">
         Address: to be added

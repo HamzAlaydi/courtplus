@@ -74,11 +74,11 @@ export function StaffInvitationEmail({
       </Text>
 
       <Text className="text-[14px] leading-[20px] text-gray-400 m-0">
-        © {new Date().getFullYear()} CourtPlus. All rights reserved.
+        © {new Date().getFullYear()} Court+. All rights reserved.
       </Text>
 
       <Text className="text-[14px] leading-[20px] text-gray-400 m-0">
-        Address: to be replaced with the actual address
+        Jeddah, Saudi Arabia
       </Text>
     </BaseEmail>
   );

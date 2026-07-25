@@ -1,8 +1,10 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import { getNextPage, onMutate, queryClient, queryKeys } from "utils";
+import { getNextPage, invalidateQuery, onMutate, queryClient, queryKeys } from "utils";
 import {
   getNotifications,
   getNotificationSettings,
+  markAllNotificationsAsSeen,
+  markNotificationAsRead,
   updateNotificationSettings,
 } from "./notification.service";
 import { UpdateNotificationSettingsRequest } from "./notification.types";
@@ -61,4 +63,20 @@ export const useGetNotifications = () => {
     hasNextPage,
     isFetchingNextPage,
   };
+};
+
+export const useMarkNotificationAsRead = () => {
+  const { mutateAsync } = useMutation({
+    mutationFn: markNotificationAsRead,
+    onSuccess: () => invalidateQuery("getNotifications"),
+  });
+  return { mutateAsync };
+};
+
+export const useMarkAllNotificationsAsSeen = () => {
+  const { mutateAsync } = useMutation({
+    mutationFn: markAllNotificationsAsSeen,
+    onSuccess: () => invalidateQuery("getNotifications"),
+  });
+  return { mutateAsync };
 };

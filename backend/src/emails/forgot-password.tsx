@@ -34,10 +34,10 @@ export function ForgotPasswordEmail({ otp }: { otp: string }) {
       <Hr className="border-gray-200 my-[24px]" />
 
       <Text className="text-[14px] text-gray-500 text-center m-0">
-        © {new Date().getFullYear()} CourtPlus. All rights reserved.
+        © {new Date().getFullYear()} Court+. All rights reserved.
       </Text>
       <Text className="text-[14px] text-gray-500 text-center m-0">
-        Address: to be replaced with the actual address
+        Jeddah, Saudi Arabia
       </Text>
     </BaseEmail>
   );

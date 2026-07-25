@@ -86,7 +86,7 @@ export function ReviewAddedEmail({
       <Hr className="border-gray-200 my-[24px]" />
 
       <Text className="text-[12px] text-gray-500 m-0">
-        © 2025 CourtPlus. All rights reserved.
+        © 2025 Court+. All rights reserved.
       </Text>
       <Text className="text-[12px] text-gray-500 m-0">
         Address: to be added

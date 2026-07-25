@@ -53,6 +53,10 @@ jest.mock("@react-native-firebase/messaging", () => ({
     isDeviceRegisteredForRemoteMessages: true,
     registerDeviceForRemoteMessages: jest.fn(async () => undefined),
   })),
+  onMessage: jest.fn(() => jest.fn()),
+  onNotificationOpenedApp: jest.fn(() => jest.fn()),
+  getInitialNotification: jest.fn(async () => null),
+  onTokenRefresh: jest.fn(() => jest.fn()),
   AuthorizationStatus: {
     AUTHORIZED: 1,
     DENIED: 0,

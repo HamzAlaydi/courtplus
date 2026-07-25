@@ -7,14 +7,14 @@ i18next.init({
     en: {
       translation: {
         emails: {
-          forgot_password: 'Password Reset for CourtPlus',
-          account_verification: 'Complete your CourtPlus account now',
-          email_verification: 'Verify your email for CourtPlus',
+          forgot_password: 'Password Reset for Court+',
+          account_verification: 'Complete your Court+ account now',
+          email_verification: 'Verify your email for Court+',
           staff_booking_created: 'New booking has been created',
           staff_booking_reminder: 'A booking is starting soon',
           staff_booking_cancelled: 'A booking has been cancelled',
           review_added: 'New review for your court',
-          staff_invitation: 'CourtPlus Staff Invitation',
+          staff_invitation: 'Court+ Staff Invitation',
           booking_invitation: "You've been invited to join a booking",
           booking_reminder_participant: 'Your booking is starting soon',
           booking_cancelled_participant: 'Your booking has been cancelled',
@@ -193,14 +193,14 @@ i18next.init({
     ar: {
       translation: {
         emails: {
-          forgot_password: 'إعادة تعيين كلمة المرور لـ CourtPlus',
-          account_verification: 'أكمل حسابك في CourtPlus الآن',
-          email_verification: 'تحقق من بريدك الإلكتروني لـ CourtPlus',
+          forgot_password: 'إعادة تعيين كلمة المرور لـ Court+',
+          account_verification: 'أكمل حسابك في Court+ الآن',
+          email_verification: 'تحقق من بريدك الإلكتروني لـ Court+',
           staff_booking_created: 'تم إنشاء حجز جديد',
           staff_booking_reminder: 'حجز سيبدأ قريباً',
           staff_booking_cancelled: 'تم إلغاء حجز',
           review_added: 'تقييم جديد لملعبك',
-          staff_invitation: 'دعوة موظف CourtPlus',
+          staff_invitation: 'دعوة موظف Court+',
           booking_invitation: 'تمت دعوتك للانضمام إلى حجز',
           booking_reminder_participant: 'حجزك سيبدأ قريباً',
           booking_cancelled_participant: 'تم إلغاء حجزك',
