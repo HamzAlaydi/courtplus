@@ -7,9 +7,9 @@ import { ApiProperty } from '@nestjs/swagger';
 export class TenantPreferences extends BaseEntity {
   @ApiProperty({
     description: 'The currency code for the tenant',
-    example: 'USD',
+    example: 'SAR',
   })
-  @Column({ default: 'USD' })
+  @Column({ default: 'SAR' })
   currency: string;
 
   @Column()

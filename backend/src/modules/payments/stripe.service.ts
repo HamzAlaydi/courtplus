@@ -35,7 +35,7 @@ export class StripeService {
     );
     const paymentIntent = await this.stripe.paymentIntents.create({
       amount: Math.round(Number(holdAmount + amount) * 100),
-      currency: currency || 'usd',
+      currency: (currency || 'sar').toLowerCase(),
       customer: customerId,
       automatic_payment_methods: {
         enabled: true,

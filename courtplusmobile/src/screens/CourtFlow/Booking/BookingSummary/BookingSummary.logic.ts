@@ -5,7 +5,12 @@ import { useStripePayment } from "hooks";
 import { PaymentType } from "models";
 import { useState } from "react";
 import { useAppStore, useUserStore } from "store";
-import { formatDate, formatTimeRange } from "utils";
+import {
+  formatDate,
+  formatTimeRange,
+  getSlotsDurationMinutes,
+  sortSlotsByStartTime,
+} from "utils";
 
 export const useBookingSummary = () => {
   const [isPaymentSelected, setIsPaymentSelected] = useState(PaymentType.SPLIT);
@@ -20,8 +25,10 @@ export const useBookingSummary = () => {
   const timeSummary = bookingData?.timeSummary;
   const participants = bookingData?.participants;
 
-  const totalAmount =
-    (courtData?.hourlyRate ?? 0) * (30 * (timeSummary?.slots?.length ?? 0));
+  const sortedSlots = sortSlotsByStartTime(timeSummary?.slots ?? []);
+  const durationMinutes = getSlotsDurationMinutes(sortedSlots);
+  // Matches the backend: court.hourlyRate * (duration / 60)
+  const totalAmount = (courtData?.hourlyRate ?? 0) * (durationMinutes / 60);
 
   const totalAmountSplitted = (
     totalAmount /
@@ -45,8 +52,8 @@ export const useBookingSummary = () => {
         startAt: `${formatDate(
           timeSummary?.date?.toString() ?? "",
           "yyyy-MM-dd"
-        )} ${timeSummary?.slots[0].startTime}`,
-        duration: 30 * (timeSummary?.slots?.length ?? 0),
+        )} ${sortedSlots[0]?.startTime ?? ""}`,
+        duration: durationMinutes,
         participants: participants?.map((participant) => participant.id) ?? [],
         paymentType: isPaymentSelected,
       });

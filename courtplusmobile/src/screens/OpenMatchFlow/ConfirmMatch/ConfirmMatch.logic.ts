@@ -5,7 +5,7 @@ import { useStripePayment } from "hooks";
 import { PaymentType } from "models";
 import { AuthenticatedStackParamList } from "navigation/types";
 import { useAppStore, useOpenMatchStore } from "store";
-import { formatDate } from "utils";
+import { formatDate, getSlotsDurationMinutes, sortSlotsByStartTime } from "utils";
 
 export const useConfirmMatch = () => {
   const court = useOpenMatchStore((store) => store.court);
@@ -20,10 +20,11 @@ export const useConfirmMatch = () => {
 
   const formattedDate = formatDate(date ?? "", "EEE dd MMM, hh:mm aaa");
 
-  const duration = 30 * (selectedSlots?.length ?? 0);
+  const sortedSlots = sortSlotsByStartTime(selectedSlots ?? []);
+  const duration = getSlotsDurationMinutes(sortedSlots);
 
-  const totalAmount =
-    (court?.hourlyRate ?? 0) * (30 * (selectedSlots?.length ?? 0));
+  // Matches the backend: court.hourlyRate * (duration / 60)
+  const totalAmount = (court?.hourlyRate ?? 0) * (duration / 60);
 
   const totalParticipants = participants?.length ? participants?.length + 1 : 1;
 
@@ -38,7 +39,7 @@ export const useConfirmMatch = () => {
         participants: participants?.map((participant) => participant.id) ?? [],
         paymentType: PaymentType.SPLIT,
         startAt: `${formatDate(date?.toString() ?? "", "yyyy-MM-dd")} ${
-          selectedSlots?.[0].startTime
+          sortedSlots[0]?.startTime ?? ""
         }`,
         playersASide: Number(gameType) ?? 0,
         open: true,

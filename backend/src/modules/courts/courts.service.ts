@@ -419,7 +419,7 @@ export class CourtsService {
         ? assets.find((asset) => asset.type === AssetType.CourtImage)
         : null;
       assets = assets.length > 1 ? assets.slice(1) : assets;
-      const currency = (court.branch as any)?.tenantPreferences?.currency || 'USD';
+      const currency = (court.branch as any)?.tenantPreferences?.currency || 'SAR';
       const mappedCourt = {
         ...court,
         assets,
@@ -596,7 +596,7 @@ export class CourtsService {
       ? assets?.find((asset) => asset.type === AssetType.CourtImage)
       : null;
 
-    const currency = (court.branch as any)?.tenantPreferences?.currency || 'USD';
+    const currency = (court.branch as any)?.tenantPreferences?.currency || 'SAR';
 
     const mappedCourt: Court = {
       ...court,

@@ -241,7 +241,7 @@ export class TenantsService {
     if (!preferences) {
       preferences = new TenantPreferences();
       preferences.tenantId = tenantId;
-      preferences.currency = 'USD';
+      preferences.currency = 'SAR';
     }
 
     await this.cacheManager.set(cacheKey, preferences, 300000);

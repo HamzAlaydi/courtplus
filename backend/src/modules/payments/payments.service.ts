@@ -89,9 +89,20 @@ export class PaymentsService {
       `[PAYMENT_FLOW] Payment found - paymentId: ${payment.id}, currentStatus: ${payment.status}, userId: ${payment.userId}, bookingId: ${payment.bookingId}`,
     );
 
-    if (payment.status !== PaymentStatus.PENDING) {
+    // Idempotency guard: skip payments that already reached a processed or
+    // terminal state. A payment in `failed` (e.g. from an earlier
+    // charge.failed) MUST remain recoverable by a later charge.succeeded,
+    // so only fully-processed/terminal statuses are skipped here.
+    const SKIPPED_STATUSES: PaymentStatus[] = [
+      PaymentStatus.COMPLETED,
+      PaymentStatus.HOLD,
+      PaymentStatus.RELEASED,
+      PaymentStatus.REFUNDED,
+      PaymentStatus.CANCELLED,
+    ];
+    if (SKIPPED_STATUSES.includes(payment.status)) {
       this.logger.warn(
-        `[PAYMENT_FLOW] Webhook skipped - duplicate: paymentId: ${payment.id}, currentStatus: ${payment.status}, eventId: ${stripeEvent.id}`,
+        `[PAYMENT_FLOW] Webhook skipped - already processed: paymentId: ${payment.id}, currentStatus: ${payment.status}, eventId: ${stripeEvent.id}`,
       );
       return;
     }
@@ -101,10 +112,22 @@ export class PaymentsService {
         `[PAYMENT_FLOW] Processing successful payment - paymentId: ${payment.id}, bookingId: ${payment.bookingId}`,
       );
       await this.bookingsService.processParticipantPayment(payment);
+      await this.notificationsService.sendNotification(payment.userId, {
+        type: NotificationType.PAYMENT_SUCCEEDED,
+        data: {
+          bookingId: payment.bookingId,
+        },
+      });
       this.logger.log(
         `[PAYMENT_FLOW] Payment processed successfully - paymentId: ${payment.id}`,
       );
     } else {
+      if (payment.status === PaymentStatus.FAILED) {
+        this.logger.warn(
+          `[PAYMENT_FLOW] Webhook skipped - already marked as failed: paymentId: ${payment.id}, eventId: ${stripeEvent.id}`,
+        );
+        return;
+      }
       this.logger.warn(
         `[PAYMENT_FLOW] Payment failed via webhook - paymentId: ${payment.id}, userId: ${payment.userId}, bookingId: ${payment.bookingId}`,
       );
@@ -126,7 +149,7 @@ export class PaymentsService {
     {
       amount,
       holdAmount,
-      currency = 'usd',
+      currency = 'sar',
       data = {},
       bookingId,
     }: Partial<Payment>,
@@ -156,7 +179,7 @@ export class PaymentsService {
     payment.status = PaymentStatus.PENDING
     payment.userId = user.id;
     payment.holdAmount = holdAmount;
-    payment.currency = currency || 'usd';
+    payment.currency = currency || 'sar';
     payment.provider = PaymentProvider.STRIPE;
     payment.providerPaymentId = response.paymentIntent.id;
     payment.providerCustomerId = user.stripeCustomerId;

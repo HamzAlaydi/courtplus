@@ -560,14 +560,43 @@ export const getCreator = (participants: Participant[]) => {
   return participants.find((participant) => participant.isCreator);
 };
 
+export const SLOT_DURATION_MINUTES = 30;
+
+const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+export const sortSlotsByStartTime = (slots: Slot[]) =>
+  [...slots].sort(
+    (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+  );
+
+/**
+ * Selected times act as range boundaries: N selected slots span
+ * [first slot start, last slot start]. A single selection books one
+ * 30-minute interval. Matches the backend totalAmount computation
+ * (hourlyRate * duration / 60).
+ */
+export const getSlotsDurationMinutes = (slots: Slot[]) => {
+  if (!slots?.length) return 0;
+  if (slots.length === 1) return SLOT_DURATION_MINUTES;
+  const sortedSlots = sortSlotsByStartTime(slots);
+  return (
+    timeToMinutes(sortedSlots[sortedSlots.length - 1].startTime) -
+    timeToMinutes(sortedSlots[0].startTime)
+  );
+};
+
 export const formatTimeRange = (slots: Slot[]) => {
-  const firstSlot = slots?.[0];
-  const lastSlot = slots?.[slots.length - 1];
-  const slotsLength = slots?.length ?? 0;
+  if (!slots?.length) return "";
+  const sortedSlots = sortSlotsByStartTime(slots);
+  const firstSlot = sortedSlots[0];
+  const lastSlot = sortedSlots[sortedSlots.length - 1];
 
   const formattedTime =
-    slotsLength > 1
-      ? `${firstSlot?.startTime} - ${lastSlot?.endTime}`
+    sortedSlots.length > 1
+      ? `${firstSlot?.startTime} - ${lastSlot?.startTime}`
       : `${firstSlot?.startTime} - ${firstSlot?.endTime}`;
 
   return formattedTime;
