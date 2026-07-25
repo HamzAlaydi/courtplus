@@ -44,7 +44,10 @@ import { PaginationInputDto } from 'src/common/pagination.input.dto';
 @ApiBearerAuth()
 @Controller('ops')
 @UseGuards(JwtAuthGuard, UserTypeGuard, ThrottlerGuard)
-@Throttle({ auth: { limit: 300, ttl: ms('15m') } })
+@Throttle({
+  auth: { limit: 300, ttl: ms('15m') },
+  phone: { limit: 300, ttl: ms('15m') },
+})
 @AuthorizedUserType.isStaff([StaffRole.SUPER_ADMIN])
 export class OpsController {
   constructor(private readonly opsService: OpsService) { }
