@@ -10,6 +10,7 @@ import {
   Modal,
 } from "antd";
 import { BellOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import {
   useInfiniteQuery,
   useMutation,
@@ -51,6 +52,7 @@ const NOTIFICATION_TYPES = [
 
 export default function NotificationsDropdown() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [type, setType] = useState(null);
   const [modalData, setModalData] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -94,10 +96,33 @@ export default function NotificationsDropdown() {
     onSuccess: () => queryClient.invalidateQueries(["notifications"]),
   });
 
+  // 🔹 Map notification data.kind → in-app destination
+  const getTarget = (notif) => {
+    const data = notif.data || {};
+    switch (data.kind) {
+      case "court_payment_pending":
+        return "/billing";
+      case "court_approved":
+      case "changes_requested":
+      case "suspended":
+        return data.courtId ? `/courts/${data.courtId}` : "/courts";
+      default:
+        if (data.branchId) return `/branches/${data.branchId}`;
+        if (data.courtId) return `/courts/${data.courtId}`;
+        return null;
+    }
+  };
+
   const handleMarkRead = (notif) => {
     markReadMutation.mutate(notif.id);
     setDropdownOpen(false); // CLOSE DROPDOWN ⭐
-    setModalData(notif); // OPEN MODAL
+
+    const target = getTarget(notif);
+    if (target) {
+      navigate(target);
+    } else {
+      setModalData(notif); // OPEN MODAL (no destination)
+    }
   };
 
   const dropdownContent = (

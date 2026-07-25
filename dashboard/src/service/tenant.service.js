@@ -19,6 +19,15 @@ class TenantService {
       customHeaders: authHeader(),
     });
   }
+
+  requestUnsuspend(message) {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/request-unsuspend`,
+      data: { message },
+      customHeaders: authHeader(),
+    });
+  }
 }
 
 const tenantService = new TenantService();

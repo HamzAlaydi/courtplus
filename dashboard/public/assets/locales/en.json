@@ -90,7 +90,8 @@
     "home": "Home",
     "branches": "Branches",
     "courts": "Courts",
-    "schedule": "Schedule"
+    "schedule": "Schedule",
+    "billing": "Billing"
   },
   "branches": {
     "title": "Branches",
@@ -211,8 +212,16 @@
     "delete_failed": "Failed to delete court",
     "status": {
       "available": "available",
-      "unavailable": "unavailable"
-    }
+      "unavailable": "unavailable",
+      "pending_payment": "Pending Payment",
+      "pending_approval": "Pending Approval",
+      "changes_requested": "Changes Requested",
+      "suspended": "Suspended"
+    },
+    "rejection_reason": "Reason",
+    "resubmit": "Edit & Resubmit",
+    "resubmit_success": "Court resubmitted for approval",
+    "resubmit_failed": "Failed to resubmit court"
   },
   "common": {
     "submit": "Submit",
@@ -306,7 +315,9 @@
     "all_sports": "All Sports",
     "all_statuses": "All Statuses",
     "unknown_branch": "Unknown Branch",
-    "total_courts": "Total {{total}} courts"
+    "total_courts": "Total {{total}} courts",
+    "pending_payment_banner": "You have courts pending payment — complete payment to publish them.",
+    "pending_payment_action": "Go to Billing"
   },
   "scheduleDetails": {
     "booking_id": "Booking ID",
@@ -404,5 +415,50 @@
     "error": "Failed to load posts",
     "unknownUser": "Unknown user",
     "likes": "likes"
+  },
+  "billing": {
+    "title": "Billing & Payments",
+    "manage_payment": "Manage payment method",
+    "portal_failed": "Failed to open the billing portal",
+    "load_failed": "Failed to load billing information",
+    "base_plan": "Base Plan",
+    "branch_addons": "Branch Add-ons",
+    "court_addons": "Court Add-ons",
+    "branches_count": "{{count}} branches total",
+    "courts_count": "{{count}} courts total",
+    "next_invoice": "Next Invoice",
+    "per_month": "per month",
+    "no_subscription": "No active subscription",
+    "subscription_status": {
+      "active": "Active",
+      "past_due": "Past Due",
+      "cancelled": "Cancelled",
+      "unpaid": "Unpaid"
+    },
+    "pending_charges": {
+      "title": "Pending Charges",
+      "pay_now": "Pay now"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "number": "Number",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "pdf": "Invoice",
+      "view": "View",
+      "empty": "No invoices yet"
+    },
+    "court_pending_payment": "Court created. It's pending payment — complete payment in Billing to publish it."
+  },
+  "suspension": {
+    "banner_title": "Your account is suspended",
+    "request_unsuspend": "Request unsuspend",
+    "modal_title": "Request Unsuspension",
+    "message_label": "Message",
+    "message_placeholder": "Explain why your account should be reactivated…",
+    "send": "Send Request",
+    "sent": "Unsuspend request sent successfully",
+    "send_failed": "Failed to send unsuspend request"
   }
 }

@@ -119,8 +119,14 @@ export default function CourtForm() {
 
   const { mutate: createCourtMutate } = useMutation({
     mutationFn: createCourt,
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries(["all-courts"]);
+      // New courts go live only after payment + ops approval
+      if (created?.status === "pending_payment") {
+        notify("success", t("billing.court_pending_payment"));
+        navigate("/billing");
+        return;
+      }
       navigate("/courts");
       notify("success", "Court created successfully.");
     },

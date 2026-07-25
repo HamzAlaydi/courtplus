@@ -54,6 +54,14 @@ class CourtService {
       customHeaders: authHeader(),
     });
   }
+
+  resubmitCourt(courtId) {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/${courtId}/resubmit`,
+      customHeaders: authHeader(),
+    });
+  }
 }
 
 const courtService = new CourtService();

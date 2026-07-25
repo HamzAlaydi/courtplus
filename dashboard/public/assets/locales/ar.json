@@ -90,7 +90,8 @@
     "home": "الرئيسية",
     "branches": "الفروع",
     "courts": "الملاعب",
-    "schedule": "الحجوزات"
+    "schedule": "الحجوزات",
+    "billing": "الفوترة"
   },
   "branches": {
     "title": "الفروع",
@@ -207,8 +208,16 @@
     "delete_failed": "فشل حذف الملعب",
     "status": {
       "available": "متاح",
-      "unavailable": "غير متاح"
-    }
+      "unavailable": "غير متاح",
+      "pending_payment": "بانتظار الدفع",
+      "pending_approval": "بانتظار الموافقة",
+      "changes_requested": "مطلوب تعديلات",
+      "suspended": "موقوف"
+    },
+    "rejection_reason": "السبب",
+    "resubmit": "تعديل وإعادة إرسال",
+    "resubmit_success": "تمت إعادة إرسال الملعب للموافقة",
+    "resubmit_failed": "فشل إعادة إرسال الملعب"
   },
   "common": {
     "submit": "إرسال",
@@ -300,7 +309,9 @@
     "all_sports": "كل الرياضات",
     "all_statuses": "كل الحالات",
     "unknown_branch": "فرع غير معروف",
-    "total_courts": "إجمالي {{total}} ملعبًا"
+    "total_courts": "إجمالي {{total}} ملعبًا",
+    "pending_payment_banner": "لديك ملاعب بانتظار الدفع — أكمل الدفع لنشرها.",
+    "pending_payment_action": "الانتقال إلى الفوترة"
   },
   "scheduleDetails": {
     "booking_id": "رقم الحجز",
@@ -398,5 +409,50 @@
     "error": "فشل في تحميل المنشورات",
     "unknownUser": "مستخدم غير معروف",
     "likes": "إعجابات"
+  },
+  "billing": {
+    "title": "الفوترة والمدفوعات",
+    "manage_payment": "إدارة وسيلة الدفع",
+    "portal_failed": "فشل فتح بوابة الفوترة",
+    "load_failed": "فشل تحميل معلومات الفوترة",
+    "base_plan": "الباقة الأساسية",
+    "branch_addons": "إضافات الفروع",
+    "court_addons": "إضافات الملاعب",
+    "branches_count": "{{count}} فروع إجمالًا",
+    "courts_count": "{{count}} ملاعب إجمالًا",
+    "next_invoice": "الفاتورة القادمة",
+    "per_month": "شهريًا",
+    "no_subscription": "لا يوجد اشتراك نشط",
+    "subscription_status": {
+      "active": "نشط",
+      "past_due": "متأخر السداد",
+      "cancelled": "ملغى",
+      "unpaid": "غير مدفوع"
+    },
+    "pending_charges": {
+      "title": "رسوم معلقة",
+      "pay_now": "ادفع الآن"
+    },
+    "invoices": {
+      "title": "الفواتير",
+      "number": "الرقم",
+      "date": "التاريخ",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "pdf": "الفاتورة",
+      "view": "عرض",
+      "empty": "لا توجد فواتير بعد"
+    },
+    "court_pending_payment": "تم إنشاء الملعب. إنه بانتظار الدفع — أكمل الدفع في الفوترة لنشره."
+  },
+  "suspension": {
+    "banner_title": "حسابك موقوف",
+    "request_unsuspend": "طلب إلغاء الإيقاف",
+    "modal_title": "طلب إلغاء الإيقاف",
+    "message_label": "الرسالة",
+    "message_placeholder": "اشرح سبب إعادة تفعيل حسابك…",
+    "send": "إرسال الطلب",
+    "sent": "تم إرسال طلب إلغاء الإيقاف بنجاح",
+    "send_failed": "فشل إرسال طلب إلغاء الإيقاف"
   }
 }

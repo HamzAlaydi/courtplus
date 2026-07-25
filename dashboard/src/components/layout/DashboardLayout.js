@@ -1,7 +1,12 @@
-import { FieldTimeOutlined, PieChartOutlined } from "@ant-design/icons";
-import { Button, Layout, Menu } from "antd";
+import {
+  CreditCardOutlined,
+  FieldTimeOutlined,
+  PieChartOutlined,
+} from "@ant-design/icons";
+import { Alert, Button, Form, Input, Layout, Menu, Modal } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { FiGrid, FiMapPin, FiUsers } from "react-icons/fi";
 import { Link, Outlet, useLocation } from "react-router-dom";
@@ -9,6 +14,8 @@ import LangSwitch from "./LangSwitch";
 import NavBreadcrumb from "./NavBreadcrumb";
 import NavDropdown from "./NavDropdown";
 import NotificationsDropdown from "./NotificationsDropdown";
+import { getTenant, requestUnsuspend } from "../../actions/tenant_action";
+import { useNotification } from "../../modules/NotificationProvider";
 
 const { Header, Content, Sider } = Layout;
 
@@ -17,6 +24,7 @@ const sidebarRoutes = [
   { key: "1", path: "/home" },
   { key: "2", path: "/branches" },
   { key: "3", path: "/courts" },
+  { key: "billing", path: "/billing" },
   { key: "schedule", path: "/schedule" },
   { key: "users", path: "/users" },
   // { key: "sub1", path: "/users" },
@@ -28,6 +36,31 @@ const DashboardLayout = () => {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(true);
   const location = useLocation();
+  const notify = useNotification();
+  const queryClient = useQueryClient();
+  const [unsuspendModalOpen, setUnsuspendModalOpen] = useState(false);
+  const [unsuspendForm] = Form.useForm();
+
+  const { data: tenant } = useQuery({
+    queryKey: ["tenant"],
+    queryFn: getTenant,
+  });
+
+  const unsuspendMutation = useMutation({
+    mutationFn: (message) => requestUnsuspend(message),
+    onSuccess: () => {
+      setUnsuspendModalOpen(false);
+      unsuspendForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["tenant"] });
+      notify("success", t("suspension.sent"));
+    },
+    onError: (err) => {
+      notify(
+        "error",
+        err?.response?.data?.code || t("suspension.send_failed")
+      );
+    },
+  });
 
   // Find the best matching key by selecting the one whose path is a prefix of the current location
   const getSelectedKey = () => {
@@ -73,6 +106,11 @@ const DashboardLayout = () => {
       key: "schedule",
       icon: <FieldTimeOutlined style={iconStyle} />,
       label: <Link to="/schedule">{t("sideNav.schedule")}</Link>,
+    },
+    {
+      key: "billing",
+      icon: <CreditCardOutlined style={iconStyle} />,
+      label: <Link to="/billing">{t("sideNav.billing")}</Link>,
     },
 
     // {
@@ -169,9 +207,59 @@ const DashboardLayout = () => {
           </div>
         </Header>
         <Content className="content-container">
+          {tenant?.blockedAt && (
+            <Alert
+              type="error"
+              showIcon
+              className="suspension-banner"
+              message={t("suspension.banner_title")}
+              description={tenant.blockedReason || undefined}
+              action={
+                <Button
+                  danger
+                  size="small"
+                  onClick={() => setUnsuspendModalOpen(true)}
+                >
+                  {t("suspension.request_unsuspend")}
+                </Button>
+              }
+            />
+          )}
           <Outlet />
         </Content>
       </Layout>
+
+      <Modal
+        open={unsuspendModalOpen}
+        title={t("suspension.modal_title")}
+        onCancel={() => setUnsuspendModalOpen(false)}
+        footer={null}
+      >
+        <Form
+          form={unsuspendForm}
+          layout="vertical"
+          onFinish={(values) => unsuspendMutation.mutate(values.message)}
+        >
+          <Form.Item
+            name="message"
+            label={t("suspension.message_label")}
+            rules={[{ required: true, max: 1000 }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder={t("suspension.message_placeholder")}
+            />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={unsuspendMutation.isPending}
+            block
+          >
+            {t("suspension.send")}
+          </Button>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

@@ -1,16 +1,27 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
-import { Popconfirm } from "antd";
+import { InfoCircleOutlined } from "@ant-design/icons";
+import { Popconfirm, Popover, Tag } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { deleteCourt } from "../actions/court_actions";
+import { deleteCourt, resubmitCourt } from "../actions/court_actions";
 import { useNotification } from "../modules/NotificationProvider";
+
+const STATUS_COLORS = {
+  available: "green",
+  unavailable: "default",
+  pending_payment: "orange",
+  pending_approval: "blue",
+  changes_requested: "red",
+  suspended: "default",
+};
 
 const CourtCard = ({ name, id, image, status, court }) => {
   const { t } = useTranslation(); // ✅ Translation hook
   const notify = useNotification();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { mutate: deleteCourtMutate } = useMutation({
@@ -27,6 +38,25 @@ const CourtCard = ({ name, id, image, status, court }) => {
     },
   });
 
+  const { mutate: resubmitMutate, isPending: resubmitting } = useMutation({
+    mutationFn: () => resubmitCourt(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["all-courts"]);
+      notify("success", t("courtCard.resubmit_success"));
+      navigate(`${id}/edit`);
+    },
+    onError: (err) => {
+      notify(
+        "error",
+        err?.response?.data?.code || t("courtCard.resubmit_failed")
+      );
+    },
+  });
+
+  const showReason =
+    (status === "changes_requested" || status === "suspended") &&
+    court?.rejectionReason;
+
   return (
     <div className="court-card">
       {/* Court Image */}
@@ -42,8 +72,17 @@ const CourtCard = ({ name, id, image, status, court }) => {
           ⭐ {court?.avgRating?.toFixed?.(1) ?? "0.0"}
         </div>
         <div className="status">
-          <span className="dot"></span>
-          {t(`courtCard.status.${status}`)}
+          <Tag color={STATUS_COLORS[status] || "default"}>
+            {t(`courtCard.status.${status}`, status)}
+          </Tag>
+          {showReason && (
+            <Popover
+              content={court.rejectionReason}
+              title={t("courtCard.rejection_reason")}
+            >
+              <InfoCircleOutlined className="status-info-icon" />
+            </Popover>
+          )}
         </div>
       </div>
 
@@ -84,6 +123,16 @@ const CourtCard = ({ name, id, image, status, court }) => {
         <Link to={`${id}/edit`} className="court-card-btn" type="text">
           {t("courtCard.edit")}
         </Link>
+        {status === "changes_requested" && (
+          <button
+            type="button"
+            className="court-card-btn"
+            disabled={resubmitting}
+            onClick={() => resubmitMutate()}
+          >
+            {t("courtCard.resubmit")}
+          </button>
+        )}
         <Popconfirm
           title={t("courtCard.delete_confirm")}
           okText={t("common.delete")}

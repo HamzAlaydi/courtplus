@@ -15,3 +15,6 @@ export const updateCourt = async (courtId, courtData) =>
 
 export const deleteCourt = async (courtId) =>
   await courtService.deleteCourt(courtId);
+
+export const resubmitCourt = async (courtId) =>
+  await courtService.resubmitCourt(courtId);

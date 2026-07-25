@@ -1,0 +1,65 @@
+@use "../base/index" as *;
+
+.billing-page {
+  .billing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.6rem;
+    margin-bottom: 2.4rem;
+  }
+
+  .billing-card {
+    text-align: center;
+
+    .billing-card-icon {
+      font-size: 2.4rem;
+      color: $color-green-dark;
+      margin-bottom: 0.8rem;
+    }
+
+    span {
+      display: block;
+      color: $color-text-light;
+      font-size: 1.3rem;
+      margin-bottom: 0.6rem;
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 2.2rem;
+      font-weight: $font-weight-bold;
+    }
+
+    small {
+      color: $color-text-light;
+    }
+
+    &-total {
+      border-color: $primary-color;
+    }
+  }
+
+  .billing-section {
+    margin-bottom: 2.4rem;
+  }
+
+  .billing-pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+
+      span:first-child {
+        flex: 1;
+        font-weight: $font-weight-meduim;
+      }
+    }
+  }
+}

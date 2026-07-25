@@ -9,6 +9,7 @@ import AuthWrapper from "./modules/AuthWrapper";
 import GuestWrapper from "./modules/GuestWrapper";
 import AddBranch from "./pages/AddBranch";
 import AddCourt from "./pages/AddCourt";
+import Billing from "./pages/Billing";
 import Branch from "./pages/Branch";
 import Branches from "./pages/Branches";
 import Court from "./pages/Court";
@@ -77,6 +78,7 @@ function App() {
             <Route path="courts/:id" element={<Court />} />
             <Route path="courts/:id/edit" element={<AddCourt />} />
             <Route path="courts/add" element={<AddCourt />} />
+            <Route path="billing" element={<Billing />} />
             <Route path="schedule" element={<Schedule />} />
             <Route path="schedule/:id" element={<ScheduleDetails />} />
             <Route path="settings" element={<SettingsPage />} />

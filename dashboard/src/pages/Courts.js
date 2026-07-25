@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Button, Empty, Input, Pagination, Select, Spin } from "antd";
-import { Link } from "react-router-dom";
+import { Alert, Button, Empty, Input, Pagination, Select, Spin } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import CourtCard from "../components/CourtCard";
 import { getCourts } from "../actions/court_actions";
 import { getBranches } from "../actions/branch_action";
+import { getPendingCharges } from "../actions/billing_action";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +14,14 @@ const PAGE_SIZE = 12;
 
 export default function Courts() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // 🔹 Pending payment courts (drives the billing banner)
+  const { data: pendingCharges } = useQuery({
+    queryKey: ["billing-pending-charges"],
+    queryFn: getPendingCharges,
+  });
+  const [bannerVisible, setBannerVisible] = useState(true);
 
   // 🔹 Filters & pagination state
   const [searchInput, setSearchInput] = useState("");
@@ -97,6 +106,23 @@ export default function Courts() {
             <Button type="primary">+ {t("courts.add_new")}</Button>
           </Link>
         </div>
+
+        {/* 🔹 Pending payment banner */}
+        {bannerVisible && pendingCharges?.count > 0 && (
+          <Alert
+            type="warning"
+            showIcon
+            closable
+            onClose={() => setBannerVisible(false)}
+            message={t("courts.pending_payment_banner")}
+            action={
+              <Button size="small" type="primary" onClick={() => navigate("/billing")}>
+                {t("courts.pending_payment_action")}
+              </Button>
+            }
+            style={{ marginBottom: 24 }}
+          />
+        )}
 
         {/* 🔹 Filters */}
         <div className="courts-filters">
