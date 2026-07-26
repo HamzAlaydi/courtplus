@@ -14,7 +14,6 @@ import type { Request } from 'express';
 import { BookingsService } from '../bookings/bookings.service';
 import { BookingEventType } from '../bookings/entities/event.entity';
 import type { BookingPaymentRefundedEventPayload } from '../bookings/bookings.events';
-import { PAYMENT_NOT_FOUND } from '../shared/error-codes';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
 import { User } from '../users/entities/user.entity';
@@ -84,10 +83,13 @@ export class PaymentsService {
       where: { providerPaymentId: paymentIntentId },
     });
     if (!payment) {
-      this.logger.error(
-        `[PAYMENT_FLOW] Webhook failed - payment not found for stripePaymentIntentId: ${paymentIntentId}, eventId: ${stripeEvent.id}`,
+      // Not every charge on the account is a booking payment (e.g.
+      // subscription invoices). Acknowledge instead of throwing so Stripe
+      // does not retry these for days.
+      this.logger.warn(
+        `[PAYMENT_FLOW] Webhook ignored - no booking payment for stripePaymentIntentId: ${paymentIntentId}, eventId: ${stripeEvent.id}`,
       );
-      throw new Error(PAYMENT_NOT_FOUND);
+      return;
     }
 
     this.logger.log(

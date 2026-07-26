@@ -398,23 +398,32 @@ export class SubscriptionsService {
       await this.subscriptionRepository.save(subscription);
     }
 
-    await this.notificationsService.notifyStaff(
-      { tenantId: subscription.tenantId },
-      {
-        email: false,
-        type: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
-        data: {
-          kind: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
-          tenantId: subscription.tenantId,
-          invoiceId: stripeInvoice.id,
-        },
-        resourceId: subscription.id,
-      },
-    );
-
     // Payment confirmed: move all of the tenant's courts that were
-    // waiting for payment into the ops approval queue.
+    // waiting for payment into the ops approval queue. This MUST run before
+    // notifications and must not be skipped: a notification failure can
+    // never block court activation.
     await this.activatePendingCourts(subscription.tenantId);
+
+    try {
+      await this.notificationsService.notifyStaff(
+        { tenantId: subscription.tenantId },
+        {
+          email: false,
+          type: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
+          data: {
+            kind: NotificationType.SUBSCRIPTION_PAYMENT_SUCCEEDED,
+            tenantId: subscription.tenantId,
+            invoiceId: stripeInvoice.id,
+          },
+          resourceId: subscription.id,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send subscription payment succeeded notification for invoice ${stripeInvoice.id}`,
+        error,
+      );
+    }
   }
 
   /**
