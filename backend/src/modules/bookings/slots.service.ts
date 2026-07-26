@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In, LessThan, MoreThan, Not, Repository } from 'typeorm';
 import { Booking, BookingStatus } from './entities/booking.entity';
 import { SlotReservation } from './entities/slot-reservation.entity';
@@ -8,8 +9,6 @@ import { Schedule } from '../schedules/entities/schedule.entity';
 import { BOOKING } from './booking.constants';
 import { dayjs } from '../shared/dayjs';
 import { v4 as uuidv4 } from 'uuid';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class SlotsService {
@@ -20,7 +19,7 @@ export class SlotsService {
     private readonly bookingsRepository: Repository<Booking>,
     @InjectRepository(SlotReservation)
     private readonly slotReservationRepository: Repository<SlotReservation>,
-    private readonly notificationsService: NotificationsService,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -76,23 +75,13 @@ export class SlotsService {
     }
   }
 
-  // Same payload and recipient rule as BookingsService.notifyRateReminder:
-  // owner/organizer only, skipped for staff-created bookings.
-  private async notifyRateReminder(booking: Booking): Promise<void> {
+  // Emitted instead of a direct NotificationsService call to avoid a
+  // module-level DI cycle (BookingsModule <-> NotificationsModule).
+  private notifyRateReminder(booking: Booking): void {
     if (!booking.userId) {
       return;
     }
-    await this.notificationsService.sendNotification(booking.userId, {
-      type: NotificationType.RATE_REMINDER,
-      data: {
-        kind: NotificationType.RATE_REMINDER,
-        bookingId: booking.id,
-        courtId: booking.courtId,
-        courtName: booking.court?.name ?? '',
-      },
-      resourceId: booking.id,
-      sendEmail: false,
-    });
+    this.eventEmitter.emit(BookingEventType.ENDED_SWEEP, { booking });
   }
 
   async reserveSlot(

@@ -26,6 +26,7 @@ export enum BookingEventType {
   // Postgres enum does not need a migration): fired when a payment actually
   // captures money, and when a captured payment is refunded.
   PAYMENT_CAPTURED = 'payment_captured',
+  ENDED_SWEEP = 'ended_sweep',
   PAYMENT_REFUNDED = 'payment_refunded',
 }
 

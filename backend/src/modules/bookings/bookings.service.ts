@@ -1384,6 +1384,11 @@ export class BookingsService {
    * organizer is the one who set up the game. Staff-created bookings (no
    * customer owner) are skipped.
    */
+  @OnEvent(BookingEventType.ENDED_SWEEP)
+  private async handleEndedSweepEvent({ booking }: { booking: Booking }) {
+    await this.notifyRateReminder(booking);
+  }
+
   async notifyRateReminder(booking: Booking): Promise<void> {
     if (!booking.userId) {
       return;
