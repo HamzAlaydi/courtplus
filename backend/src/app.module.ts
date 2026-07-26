@@ -62,6 +62,11 @@ import { AuditInterceptor } from './modules/logging/audit.interceptor';
         password: configService.get('database.password'),
         database: configService.get('database.name'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        // Run pending migrations automatically on boot so deploys need no
+        // manual migration step (Render Shell). synchronize stays off.
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
+        migrationsTableName: '_migrations',
+        migrationsRun: true,
       }),
     }),
     EventEmitterModule.forRoot(),
