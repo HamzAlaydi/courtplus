@@ -1,4 +1,6 @@
 import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { runOnTransactionCommit } from 'typeorm-transactional';
 import { StripeService } from './stripe.service';
 import {
   Payment,
@@ -10,6 +12,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Stripe from 'stripe';
 import type { Request } from 'express';
 import { BookingsService } from '../bookings/bookings.service';
+import { BookingEventType } from '../bookings/entities/event.entity';
+import type { BookingPaymentRefundedEventPayload } from '../bookings/bookings.events';
 import { PAYMENT_NOT_FOUND } from '../shared/error-codes';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
@@ -35,6 +39,7 @@ export class PaymentsService {
     private readonly notificationsService: NotificationsService,
     @InjectQueue('payments')
     private readonly queue: Queue,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async processStripeEvent(req: Request) {
@@ -267,6 +272,16 @@ export class PaymentsService {
     this.logger.log(
       `[PAYMENT_FLOW] Payment status updated to REFUNDED - paymentId: ${paymentId}`,
     );
+
+    runOnTransactionCommit(() => {
+      this.eventEmitter.emit(BookingEventType.PAYMENT_REFUNDED, {
+        bookingId: payment.bookingId,
+        userId: payment.userId,
+        paymentId: payment.id,
+        amount: Number(payment.amount),
+        currency: payment.currency,
+      } satisfies BookingPaymentRefundedEventPayload);
+    });
 
     await this.notificationsService.sendNotification(payment.userId, {
       type: NotificationType.REFUND_SUCCEEDED,

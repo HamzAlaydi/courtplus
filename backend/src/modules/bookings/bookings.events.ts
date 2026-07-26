@@ -51,3 +51,19 @@ export interface BookingPaymentCompletedEventPayload {
 export interface BookingEndedEventPayload {
   booking: Booking;
 }
+
+export interface BookingPaymentCapturedEventPayload {
+  booking: Booking;
+  userId: string;
+  paymentId: string;
+  amount: number;
+  currency?: string;
+}
+
+export interface BookingPaymentRefundedEventPayload {
+  bookingId?: string;
+  userId: string;
+  paymentId: string;
+  amount: number;
+  currency?: string;
+}

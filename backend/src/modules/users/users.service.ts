@@ -47,6 +47,11 @@ import {
 } from '../auth/entities/verification.entity';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UserEvent } from './users.events';
+import { BookingEventType } from '../bookings/entities/event.entity';
+import type {
+  BookingPaymentCapturedEventPayload,
+  BookingPaymentRefundedEventPayload,
+} from '../bookings/bookings.events';
 import { VerifyPhoneCodeDto } from '../auth/dto/verify-code.dto';
 import { VerifyUpdateEmailCodeDto } from './dto/verify-email.dto';
 import { SendEmailCodeDto } from './dto/send-email-code.dto';
@@ -675,6 +680,48 @@ export class UsersService {
         context: VerificationContext.EMAIL_VERIFICATION,
       }),
     ]);
+  }
+
+  @OnEvent(BookingEventType.PAYMENT_CAPTURED)
+  private async handleBookingPaymentCaptured({
+    userId,
+    amount,
+    paymentId,
+  }: BookingPaymentCapturedEventPayload) {
+    try {
+      const capturedAmount = Number(amount);
+      if (!userId || !Number.isFinite(capturedAmount) || capturedAmount <= 0) {
+        this.logger.warn(
+          `Skipping user stats for captured payment - paymentId: ${paymentId}, userId: ${userId}, amount: ${amount}`,
+        );
+        return;
+      }
+      await this.incrementCount(userId, capturedAmount, 'totalSpent');
+      await this.incrementCount(userId, 1, 'bookingsCount');
+    } catch (error) {
+      this.logger.error('Failed to update user stats for payment captured', error);
+    }
+  }
+
+  @OnEvent(BookingEventType.PAYMENT_REFUNDED)
+  private async handleBookingPaymentRefunded({
+    userId,
+    amount,
+    paymentId,
+  }: BookingPaymentRefundedEventPayload) {
+    try {
+      const refundedAmount = Number(amount);
+      if (!userId || !Number.isFinite(refundedAmount) || refundedAmount <= 0) {
+        this.logger.warn(
+          `Skipping user stats for refunded payment - paymentId: ${paymentId}, userId: ${userId}, amount: ${amount}`,
+        );
+        return;
+      }
+      await this.incrementCount(userId, -refundedAmount, 'totalSpent');
+      await this.incrementCount(userId, -1, 'bookingsCount');
+    } catch (error) {
+      this.logger.error('Failed to update user stats for payment refunded', error);
+    }
   }
 
   async getPreferences(userId: string, deviceId: string): Promise<UserPreferences> {

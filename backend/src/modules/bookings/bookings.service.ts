@@ -27,6 +27,7 @@ import type {
   BookingCancelledEventPayload,
   BookingCreatedEventPayload,
   BookingPaymentCompletedEventPayload,
+  BookingPaymentCapturedEventPayload,
 } from './bookings.events';
 import { ListBookingsDto, Sort } from './dto/list-bookings.dto';
 import { Participant, ParticipantStatus } from './entities/participant.entity';
@@ -423,6 +424,20 @@ export class BookingsService {
       this.logger.log(
         `[BOOKING_FLOW] Booking created from payment - bookingId: ${booking.id}, paymentStatus: ${payment.status}`,
       );
+
+      // Whole-payment bookings capture money here (split creator payments are
+      // only a HOLD - no money captured, so no event for them).
+      if (payment.status === PaymentStatus.COMPLETED) {
+        runOnTransactionCommit(() => {
+          this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
+            booking,
+            userId: payment.userId,
+            paymentId: payment.id,
+            amount: Number(payment.amount),
+            currency: payment.currency,
+          } satisfies BookingPaymentCapturedEventPayload);
+        });
+      }
     } else {
       const booking = await this.findOne({ id: bookingId });
       if (!booking) {
@@ -449,6 +464,16 @@ export class BookingsService {
       this.logger.log(
         `[BOOKING_FLOW] Participant payment completed - bookingId: ${bookingId}, userId: ${userId}, participantStatus: ${participant.status}`,
       );
+
+      runOnTransactionCommit(() => {
+        this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
+          booking,
+          userId,
+          paymentId: payment.id,
+          amount: Number(payment.amount),
+          currency: payment.currency,
+        } satisfies BookingPaymentCapturedEventPayload);
+      });
 
       const freshParticipants = await this.participantsService.getParticipants(bookingId);
       const creator = freshParticipants.find((p) => p.isCreator);
@@ -1619,12 +1644,34 @@ export class BookingsService {
         actualDeduction,
       );
 
+      if (booking.userId && actualDeduction > 0) {
+        runOnTransactionCommit(() => {
+          this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
+            booking,
+            userId: booking.userId as string,
+            paymentId: creatorPayment.id,
+            amount: actualDeduction,
+            currency: booking.currency,
+          } satisfies BookingPaymentCapturedEventPayload);
+        });
+      }
+
       for (const participant of participantsWithPendingPayments) {
         if (participant.paymentId) {
           await this.paymentsService.completePayment(
             participant.paymentId,
             amountPerParticipant,
           );
+
+          runOnTransactionCommit(() => {
+            this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
+              booking,
+              userId: participant.userId,
+              paymentId: participant.paymentId as string,
+              amount: amountPerParticipant,
+              currency: booking.currency,
+            } satisfies BookingPaymentCapturedEventPayload);
+          });
         }
       }
 

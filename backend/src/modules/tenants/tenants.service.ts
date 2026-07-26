@@ -15,6 +15,12 @@ import { BranchEvent } from '../branches/branch.events';
 import { CourtEvent } from '../courts/courts.events';
 import { StaffEvent } from '../staff/staff.events';
 import { BookingEventType } from '../bookings/entities/event.entity';
+import type {
+  BookingPaymentCapturedEventPayload,
+  BookingPaymentRefundedEventPayload,
+} from '../bookings/bookings.events';
+import { Booking } from '../bookings/entities/booking.entity';
+import { BranchesService } from '../branches/branches.service';
 import { ReviewEvent, type ReviewEventPayload } from '../reviews/reviews.events';
 import { SessionUser } from '../auth/@types/session';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
@@ -31,11 +37,15 @@ export class TenantsService {
     private readonly tenantPreferencesRepository: Repository<TenantPreferences>,
     @InjectRepository(UnsuspendRequest)
     private readonly unsuspendRequestRepository: Repository<UnsuspendRequest>,
+    @InjectRepository(Booking)
+    private readonly bookingsRepository: Repository<Booking>,
     private readonly assetsService: AssetsService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly subscriptionsService: SubscriptionsService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
+    @Inject(forwardRef(() => BranchesService))
+    private readonly branchesService: BranchesService,
   ) { }
 
 
@@ -332,15 +342,50 @@ export class TenantsService {
     }
   }
 
-  @OnEvent(BookingEventType.PAYMENT_COMPLETED)
-  private async handleBookingPaymentCompleted({ booking }: any) {
-    if (booking.court.branch) {
-      await this.incrementCount(
-        booking.court.branch.tenantId,
-        booking.totalAmount,
-        'totalRevenue',
-      );
+  @OnEvent(BookingEventType.PAYMENT_CAPTURED)
+  private async handleBookingPaymentCaptured({
+    booking,
+    amount,
+  }: BookingPaymentCapturedEventPayload) {
+    const capturedAmount = Number(amount);
+    if (
+      !booking?.courtId ||
+      !Number.isFinite(capturedAmount) ||
+      capturedAmount <= 0
+    ) {
+      return;
     }
+
+    const tenantId = await this.branchesService.getTenantIdFromCourtId(
+      booking.courtId,
+    );
+    if (!tenantId) return;
+
+    await this.incrementCount(tenantId, capturedAmount, 'totalRevenue');
+  }
+
+  @OnEvent(BookingEventType.PAYMENT_REFUNDED)
+  private async handleBookingPaymentRefunded({
+    bookingId,
+    amount,
+  }: BookingPaymentRefundedEventPayload) {
+    const refundedAmount = Number(amount);
+    if (!bookingId || !Number.isFinite(refundedAmount) || refundedAmount <= 0) {
+      return;
+    }
+
+    const booking = await this.bookingsRepository.findOne({
+      where: { id: bookingId },
+      select: ['id', 'courtId'],
+    });
+    if (!booking) return;
+
+    const tenantId = await this.branchesService.getTenantIdFromCourtId(
+      booking.courtId,
+    );
+    if (!tenantId) return;
+
+    await this.incrementCount(tenantId, -refundedAmount, 'totalRevenue');
   }
 
   @OnEvent(ReviewEvent.REVIEW_CREATED)

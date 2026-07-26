@@ -22,6 +22,11 @@ export enum BookingEventType {
   CANCELLED = 'cancelled',
   MOMENT_POSTED = 'moment_posted',
   PAYMENT_COMPLETED = 'payment_completed',
+  // Event-emitter only (never persisted to the booking_events table, so the
+  // Postgres enum does not need a migration): fired when a payment actually
+  // captures money, and when a captured payment is refunded.
+  PAYMENT_CAPTURED = 'payment_captured',
+  PAYMENT_REFUNDED = 'payment_refunded',
 }
 
 @Entity('booking_events')

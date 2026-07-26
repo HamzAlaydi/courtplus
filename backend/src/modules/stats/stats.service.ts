@@ -21,11 +21,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 import type {
   BookingCreatedEventPayload,
   BookingCancelledEventPayload,
-  BookingPaymentCompletedEventPayload,
+  BookingPaymentCapturedEventPayload,
+  BookingPaymentRefundedEventPayload,
 } from '../bookings/bookings.events';
 import { BookingEventType } from '../bookings/entities/event.entity';
 import { BranchesService } from '../branches/branches.service';
-import { PaymentStatus } from '../payments/entities/payment.entity';
 import { dayjs } from '../shared/dayjs';
 import { CourtEvent, CourtEventPayload } from '../courts/courts.events';
 import {
@@ -319,15 +319,87 @@ export class StatsService {
     }
   }
 
-  @OnEvent(BookingEventType.PAYMENT_COMPLETED)
-  async handlePaymentCompleted({
+  @OnEvent(BookingEventType.PAYMENT_CAPTURED)
+  async handlePaymentCaptured({
     booking,
-  }: BookingPaymentCompletedEventPayload) {
+    amount,
+    paymentId,
+  }: BookingPaymentCapturedEventPayload) {
     try {
-      await this.updateBranchStatsForPaymentCompleted(booking);
-      await this.updateCourtStatsForPaymentCompleted(booking);
+      const capturedAmount = Number(amount);
+      if (
+        !booking?.courtId ||
+        !Number.isFinite(capturedAmount) ||
+        capturedAmount <= 0
+      ) {
+        this.logger.warn(
+          `Skipping revenue stats for captured payment - paymentId: ${paymentId}, courtId: ${booking?.courtId}, amount: ${amount}`,
+        );
+        return;
+      }
+
+      const branchId = await this.branchesService.getBranchIdFromCourtId(
+        booking.courtId,
+      );
+
+      await this.courtsService.increment(
+        booking.courtId,
+        'totalRevenue',
+        capturedAmount,
+      );
+
+      if (branchId) {
+        await this.branchesService.updateMatchStats(branchId, {
+          totalRevenue: capturedAmount,
+        });
+      }
     } catch (error) {
-      this.logger.error('Failed to update stats for payment completed', error);
+      this.logger.error('Failed to update stats for payment captured', error);
+    }
+  }
+
+  @OnEvent(BookingEventType.PAYMENT_REFUNDED)
+  async handlePaymentRefunded({
+    bookingId,
+    amount,
+    paymentId,
+  }: BookingPaymentRefundedEventPayload) {
+    try {
+      const refundedAmount = Number(amount);
+      if (
+        !bookingId ||
+        !Number.isFinite(refundedAmount) ||
+        refundedAmount <= 0
+      ) {
+        this.logger.warn(
+          `Skipping revenue stats for refunded payment - paymentId: ${paymentId}, bookingId: ${bookingId}, amount: ${amount}`,
+        );
+        return;
+      }
+
+      const booking = await this.bookingsRepository.findOne({
+        where: { id: bookingId },
+        select: ['id', 'courtId'],
+      });
+      if (!booking) return;
+
+      const branchId = await this.branchesService.getBranchIdFromCourtId(
+        booking.courtId,
+      );
+
+      await this.courtsService.decrement(
+        booking.courtId,
+        'totalRevenue',
+        refundedAmount,
+      );
+
+      if (branchId) {
+        await this.branchesService.updateMatchStats(branchId, {
+          totalRevenue: -refundedAmount,
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to update stats for payment refunded', error);
     }
   }
 
@@ -382,30 +454,9 @@ export class StatsService {
       stats.upcomingBookings = -1;
     }
 
-    if (booking.paymentStatus === PaymentStatus.COMPLETED) {
-      stats.totalRevenue = -booking.totalAmount;
-      if (isCurrentMonth) {
-        stats.currentMonthRevenue = -booking.totalAmount;
-      }
-    }
-
-    await this.branchesService.updateMatchStats(branchId, stats);
-  }
-
-  private async updateBranchStatsForPaymentCompleted(booking: Booking) {
-    const branchId = await this.branchesService.getBranchIdFromCourtId(
-      booking.courtId,
-    );
-    if (!branchId) return;
-
-    const now = dayjs();
-    const bookingDate = dayjs(booking.startDate);
-    const isCurrentMonth = bookingDate.isSame(now, 'month');
-
-    const stats = {
-      totalRevenue: booking.totalAmount,
-      ...(isCurrentMonth && { currentMonthRevenue: booking.totalAmount }),
-    };
+    // Revenue is NOT decremented here: revenue is tracked per captured
+    // payment, and the cancel flow refunds those payments - each refund emits
+    // PAYMENT_REFUNDED, which decrements revenue by the refunded amount.
 
     await this.branchesService.updateMatchStats(branchId, stats);
   }
@@ -446,22 +497,7 @@ export class StatsService {
         1,
       );
     }
-
-    if (booking.paymentStatus === PaymentStatus.COMPLETED) {
-      await this.courtsService.decrement(
-        booking.courtId,
-        'totalRevenue',
-        booking.totalAmount,
-      );
-    }
-  }
-
-  private async updateCourtStatsForPaymentCompleted(booking: Booking) {
-    await this.courtsService.increment(
-      booking.courtId,
-      'totalRevenue',
-      booking.totalAmount,
-    );
+    // Revenue decrements are handled per refunded payment (PAYMENT_REFUNDED).
   }
 
   private async updateBookmarkCounts(bookmark: Bookmark, value: number) {

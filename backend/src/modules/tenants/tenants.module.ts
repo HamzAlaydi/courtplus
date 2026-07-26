@@ -8,9 +8,11 @@ import { AssetsModule } from 'src/modules/assets/assets.module';
 import { TenantsController } from './tenants.controller';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { BranchesModule } from '../branches/branches.module';
+import { Booking } from '../bookings/entities/booking.entity';
 import { forwardRef } from '@nestjs/common';
 @Module({
-  imports: [TypeOrmModule.forFeature([Tenant, TenantPreferences, UnsuspendRequest]), AssetsModule, forwardRef(() => SubscriptionsModule), forwardRef(() => NotificationsModule)],
+  imports: [TypeOrmModule.forFeature([Tenant, TenantPreferences, UnsuspendRequest, Booking]), AssetsModule, forwardRef(() => SubscriptionsModule), forwardRef(() => NotificationsModule), forwardRef(() => BranchesModule)],
   controllers: [TenantsController],
   providers: [TenantsService],
   exports: [TenantsService],
