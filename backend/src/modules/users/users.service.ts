@@ -49,6 +49,8 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UserEvent } from './users.events';
 import { BookingEventType } from '../bookings/entities/event.entity';
 import type {
+  BookingCreatedEventPayload,
+  BookingCancelledEventPayload,
   BookingPaymentCapturedEventPayload,
   BookingPaymentRefundedEventPayload,
 } from '../bookings/bookings.events';
@@ -682,6 +684,35 @@ export class UsersService {
     ]);
   }
 
+  @OnEvent(BookingEventType.CREATED)
+  private async handleBookingCreated({ booking }: BookingCreatedEventPayload) {
+    try {
+      // Creator-only: staff-created bookings have booking.userId = null, and
+      // there is no single clean event covering every participant-join path
+      // (auto-join, invitation accept, join-request approval differ), so
+      // non-creator participants are intentionally not counted here.
+      if (!booking?.userId) return;
+      await this.incrementCount(booking.userId, 1, 'bookingsCount');
+    } catch (error) {
+      this.logger.error('Failed to update user stats for booking created', error);
+    }
+  }
+
+  @OnEvent(BookingEventType.CANCELLED)
+  private async handleBookingCancelled({
+    booking,
+  }: BookingCancelledEventPayload) {
+    try {
+      if (!booking?.userId) return;
+      await this.incrementCount(booking.userId, -1, 'bookingsCount');
+    } catch (error) {
+      this.logger.error(
+        'Failed to update user stats for booking cancelled',
+        error,
+      );
+    }
+  }
+
   @OnEvent(BookingEventType.PAYMENT_CAPTURED)
   private async handleBookingPaymentCaptured({
     userId,
@@ -697,7 +728,6 @@ export class UsersService {
         return;
       }
       await this.incrementCount(userId, capturedAmount, 'totalSpent');
-      await this.incrementCount(userId, 1, 'bookingsCount');
     } catch (error) {
       this.logger.error('Failed to update user stats for payment captured', error);
     }
@@ -718,7 +748,6 @@ export class UsersService {
         return;
       }
       await this.incrementCount(userId, -refundedAmount, 'totalSpent');
-      await this.incrementCount(userId, -1, 'bookingsCount');
     } catch (error) {
       this.logger.error('Failed to update user stats for payment refunded', error);
     }

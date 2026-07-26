@@ -26,6 +26,7 @@ import type {
 } from '../bookings/bookings.events';
 import { BookingEventType } from '../bookings/entities/event.entity';
 import { BranchesService } from '../branches/branches.service';
+import { PaymentStatus } from '../payments/entities/payment.entity';
 import { dayjs } from '../shared/dayjs';
 import { CourtEvent, CourtEventPayload } from '../courts/courts.events';
 import {
@@ -126,10 +127,17 @@ export class StatsService {
 
     const basicStats = await bookingsQb
       .clone()
+      .leftJoin(
+        'payments',
+        'payment',
+        'payment."bookingId" = booking.id AND payment.status = :capturedStatus',
+      )
       .select([
-        'SUM(booking.hourlyRate * booking.duration / 60) as revenue',
-        'COUNT(booking.id) as totalBookings',
+        'COALESCE(SUM(payment.amount), 0) as revenue',
+        // Postgres lowercases unquoted aliases - read this as row.totalbookings.
+        'COUNT(DISTINCT booking.id) as totalbookings',
       ])
+      .setParameter('capturedStatus', PaymentStatus.COMPLETED)
       .getRawOne();
 
     const upcomingBookings = await this.bookingsRepository
@@ -163,7 +171,7 @@ export class StatsService {
     return {
       totalRevenue: Number(basicStats.revenue) || 0,
       upcomingBookings,
-      totalBookings: Number(basicStats.totalBookings) || 0,
+      totalBookings: Number(basicStats.totalbookings) || 0,
       revenueChart,
       reviewsChart,
       upcomingBookingsChart,
@@ -178,9 +186,14 @@ export class StatsService {
   ): Promise<ChartStatsResponseDto> {
     const result = await this.bookingsRepository
       .createQueryBuilder('booking')
+      .leftJoin(
+        'payments',
+        'payment',
+        'payment."bookingId" = booking.id AND payment.status = :capturedStatus',
+      )
       .select([
         'DATE(booking.startDate) as date',
-        'SUM(booking.hourlyRate * booking.duration / 60) as revenue',
+        'COALESCE(SUM(payment.amount), 0) as revenue',
       ])
       .where('booking.courtId IN (:...courtIds)', { courtIds })
       .andWhere('booking.startDate >= :startDate', { startDate })
@@ -188,6 +201,7 @@ export class StatsService {
       .andWhere('booking.status != :cancelled', {
         cancelled: BookingStatus.CANCELLED,
       })
+      .setParameter('capturedStatus', PaymentStatus.COMPLETED)
       .groupBy('DATE(booking.startDate)')
       .orderBy('date', 'ASC')
       .getRawMany();
