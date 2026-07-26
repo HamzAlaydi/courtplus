@@ -54,11 +54,15 @@ export default function Users() {
   }, [localSearch]);
 
   // Users query
-  const { data: usersData, isLoading } = useQuery({
+  const { data: usersData, isLoading, isError } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: () => getUsers(queryParams),
     keepPreviousData: true,
   });
+
+  useEffect(() => {
+    if (isError) message.error("Failed to load users");
+  }, [isError]);
 
   const users = usersData?.items || [];
   const pagination = usersData?.pagination || { totalCount: 0, currentPage: 1 };

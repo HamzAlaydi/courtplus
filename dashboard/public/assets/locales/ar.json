@@ -354,13 +354,22 @@
     "payment": "الدفع",
     "payment_status": {
       "pending": "قيد الانتظار",
-      "paid": "مدفوع",
-      "completed": "مكتمل"
+      "completed": "مدفوع",
+      "failed": "فشل",
+      "refunded": "مسترد",
+      "partially_paid": "مدفوع جزئيًا",
+      "hold": "معلّق",
+      "released": "محصّل",
+      "cancelled": "ملغي"
     },
     "status": {
-      "pending": "قيد الانتظار",
-      "accepted": "مقبول",
-      "declined": "مرفوض"
+      "pending_response": "بانتظار الرد",
+      "pending_payment": "بانتظار الدفع",
+      "pending_approval": "بانتظار الموافقة",
+      "ready": "جاهز",
+      "entered": "تم الدخول",
+      "no_show": "لم يحضر",
+      "cancelled": "ملغي"
     },
     "cancel_confirm_title": "هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟",
     "cancel_warning": "لا يمكن التراجع عن هذا الإجراء.",

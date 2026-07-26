@@ -6,7 +6,7 @@ class AdminService {
   getUsers(params) {
     return apiRequest({
       method: "get",
-      url: `${API_URL}/users`,
+      url: "/users",
       params: params,
       customHeaders: authHeader(),
     });

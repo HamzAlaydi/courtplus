@@ -360,13 +360,22 @@
     "payment": "Payment",
     "payment_status": {
       "pending": "Pending",
-      "paid": "Paid",
-      "completed": "Completed"
+      "completed": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "partially_paid": "Partially paid",
+      "hold": "On hold",
+      "released": "Released",
+      "cancelled": "Cancelled"
     },
     "status": {
-      "pending": "Pending",
-      "accepted": "Accepted",
-      "declined": "Declined"
+      "pending_response": "Pending response",
+      "pending_payment": "Pending payment",
+      "pending_approval": "Pending approval",
+      "ready": "Ready",
+      "entered": "Entered",
+      "no_show": "No show",
+      "cancelled": "Cancelled"
     },
     "cancel_confirm_title": "Are you sure you want to cancel this booking?",
     "cancel_warning": "This action cannot be undone.",

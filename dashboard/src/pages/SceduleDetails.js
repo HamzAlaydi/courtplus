@@ -156,10 +156,10 @@ const ScheduleDetails = () => {
                     @{p.user?.username || "unknown"}{" "}
                     <Tag
                       color={
-                        p.status === "pending"
-                          ? "orange"
-                          : p.status === "accepted"
+                        p.status === "ready" || p.status === "entered"
                           ? "green"
+                          : p.status?.startsWith("pending")
+                          ? "orange"
                           : "red"
                       }
                     >
@@ -211,7 +211,11 @@ const ScheduleDetails = () => {
             </div>
             <div
               className={`status ${
-                match.paymentStatus === "pending" ? "pending" : "paid"
+                ["pending", "partially_paid", "hold"].includes(
+                  match.paymentStatus,
+                )
+                  ? "pending"
+                  : "paid"
               }`}
             >
               {t(`scheduleDetails.payment_status.${match.paymentStatus}`)}
