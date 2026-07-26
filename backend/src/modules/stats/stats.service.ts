@@ -303,6 +303,7 @@ export class StatsService {
   async handleBookingCreated({ booking }: BookingCreatedEventPayload) {
     try {
       await this.updateBranchStatsForBookingCreated(booking);
+      await this.updateCourtStatsForBookingCreated(booking);
     } catch (error) {
       this.logger.error('Failed to update stats for booking created', error);
     }
@@ -312,6 +313,7 @@ export class StatsService {
   async handleBookingCancelled({ booking }: BookingCancelledEventPayload) {
     try {
       await this.updateBranchStatsForBookingCancelled(booking);
+      await this.updateCourtStatsForBookingCancelled(booking);
     } catch (error) {
       this.logger.error('Failed to update stats for booking cancelled', error);
     }
@@ -323,6 +325,7 @@ export class StatsService {
   }: BookingPaymentCompletedEventPayload) {
     try {
       await this.updateBranchStatsForPaymentCompleted(booking);
+      await this.updateCourtStatsForPaymentCompleted(booking);
     } catch (error) {
       this.logger.error('Failed to update stats for payment completed', error);
     }
@@ -405,6 +408,60 @@ export class StatsService {
     };
 
     await this.branchesService.updateMatchStats(branchId, stats);
+  }
+
+  private async updateCourtStatsForBookingCreated(booking: Booking) {
+    const now = dayjs();
+    const bookingDate = dayjs(booking.startDate);
+    const isFuture = bookingDate.isAfter(now);
+
+    await this.courtsService.increment(
+      booking.courtId,
+      'minutesBooked',
+      booking.duration,
+    );
+    if (isFuture) {
+      await this.courtsService.increment(
+        booking.courtId,
+        'upcomingBookings',
+        1,
+      );
+    }
+  }
+
+  private async updateCourtStatsForBookingCancelled(booking: Booking) {
+    const now = dayjs();
+    const bookingDate = dayjs(booking.startDate);
+    const isFuture = bookingDate.isAfter(now);
+
+    await this.courtsService.decrement(
+      booking.courtId,
+      'minutesBooked',
+      booking.duration,
+    );
+    if (isFuture) {
+      await this.courtsService.decrement(
+        booking.courtId,
+        'upcomingBookings',
+        1,
+      );
+    }
+
+    if (booking.paymentStatus === PaymentStatus.COMPLETED) {
+      await this.courtsService.decrement(
+        booking.courtId,
+        'totalRevenue',
+        booking.totalAmount,
+      );
+    }
+  }
+
+  private async updateCourtStatsForPaymentCompleted(booking: Booking) {
+    await this.courtsService.increment(
+      booking.courtId,
+      'totalRevenue',
+      booking.totalAmount,
+    );
   }
 
   private async updateBookmarkCounts(bookmark: Bookmark, value: number) {

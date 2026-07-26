@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
@@ -7,15 +7,24 @@ import { TenantBalance } from '../entities/tenant-balance.entity';
 import { BalanceTransaction } from '../entities/balance-transaction.entity';
 import { TransactionType, PayoutConstants } from '../constants/payout.constants';
 import { BookingEventType } from 'src/modules/bookings/entities/event.entity';
+import type {
+  BookingPaymentCompletedEventPayload,
+  BookingEndedEventPayload,
+} from 'src/modules/bookings/bookings.events';
+import { BranchesService } from 'src/modules/branches/branches.service';
 
 @Injectable()
 export class BalanceService {
+  private readonly logger = new Logger(BalanceService.name);
+
   constructor(
     @InjectRepository(TenantBalance)
     private readonly balanceRepository: Repository<TenantBalance>,
     @InjectRepository(BalanceTransaction)
     private readonly transactionRepo: Repository<BalanceTransaction>,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(forwardRef(() => BranchesService))
+    private readonly branchesService: BranchesService,
   ) { }
 
   async getBalance(tenantId: string): Promise<TenantBalance> {
@@ -212,27 +221,50 @@ export class BalanceService {
   }
 
   @OnEvent(BookingEventType.PAYMENT_COMPLETED)
-  async handlePaymentCompleted(payload: {
-    bookingId: string;
-    userId: string;
-    amount: number;
-    currency: string;
-    paymentId: string;
-    tenantId: string;
-  }) {
-    await this.holdBookingRevenue(
-      payload.tenantId,
-      payload.bookingId,
-      payload.amount,
-      payload.currency,
-    );
+  async handlePaymentCompleted({
+    booking,
+  }: BookingPaymentCompletedEventPayload) {
+    try {
+      const tenantId = await this.branchesService.getTenantIdFromCourtId(
+        booking.courtId,
+      );
+      const amount = Number(booking.totalAmount);
+
+      if (!tenantId || !booking.id || !Number.isFinite(amount) || amount <= 0) {
+        this.logger.warn(
+          `Skipping holdBookingRevenue - unresolvable payload: bookingId: ${booking?.id}, tenantId: ${tenantId}, amount: ${booking?.totalAmount}`,
+        );
+        return;
+      }
+
+      await this.holdBookingRevenue(
+        tenantId,
+        booking.id,
+        amount,
+        booking.currency || PayoutConstants.DEFAULT_CURRENCY,
+      );
+    } catch (error) {
+      this.logger.error('Failed to hold booking revenue', error);
+    }
   }
 
   @OnEvent(BookingEventType.ENDED)
-  async handleBookingEnded(payload: {
-    bookingId: string;
-    tenantId: string;
-  }) {
-    await this.releaseHeldRevenue(payload.tenantId, payload.bookingId);
+  async handleBookingEnded({ booking }: BookingEndedEventPayload) {
+    try {
+      const tenantId = await this.branchesService.getTenantIdFromCourtId(
+        booking.courtId,
+      );
+
+      if (!tenantId || !booking.id) {
+        this.logger.warn(
+          `Skipping releaseHeldRevenue - unresolvable payload: bookingId: ${booking?.id}, tenantId: ${tenantId}`,
+        );
+        return;
+      }
+
+      await this.releaseHeldRevenue(tenantId, booking.id);
+    } catch (error) {
+      this.logger.error('Failed to release held booking revenue', error);
+    }
   }
 }

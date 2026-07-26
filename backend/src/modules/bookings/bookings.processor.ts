@@ -1,6 +1,7 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger, Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotificationType } from '../notifications/entities/notification.entity';
 import { BookingsService } from './bookings.service';
 import { BookingEventsService } from './events.service';
@@ -22,6 +23,7 @@ export class BookingsProcessor extends WorkerHost {
     private readonly bookingsService: BookingsService,
     private readonly eventsService: BookingEventsService,
     private readonly remindersService: RemindersService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -196,6 +198,10 @@ export class BookingsProcessor extends WorkerHost {
     await this.eventsService.create({
       bookingId: booking.id,
       event: BookingEventType.ENDED,
+    });
+
+    this.eventEmitter.emit(BookingEventType.ENDED, {
+      booking,
     });
 
     await this.bookingsService.notifyParticipants(

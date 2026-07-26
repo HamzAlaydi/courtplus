@@ -55,6 +55,11 @@ export class AdminController {
   }
 
   @Patch('users/:id/block')
+  @AuthorizedUserType.isStaff([
+    StaffRole.SUPER_ADMIN,
+    StaffRole.OWNER,
+    StaffRole.ADMIN,
+  ])
   @Audited(LogEntity.USER, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Block a user' })
@@ -67,6 +72,11 @@ export class AdminController {
   }
 
   @Patch('users/:id/unblock')
+  @AuthorizedUserType.isStaff([
+    StaffRole.SUPER_ADMIN,
+    StaffRole.OWNER,
+    StaffRole.ADMIN,
+  ])
   @Audited(LogEntity.USER, LogAction.UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Unblock a user' })

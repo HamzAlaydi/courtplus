@@ -681,6 +681,11 @@ export class BranchesService {
     return court?.branch?.id || null;
   }
 
+  async getTenantIdFromCourtId(courtId: string): Promise<string | null> {
+    const court = await this.courtsService.findOne(courtId, { branch: true });
+    return court?.branch?.tenantId || null;
+  }
+
   @OnEvent(BranchEvent.BRANCH_CREATED)
   private handleBranchCreated(event: BranchEventPayload) {
     this.logger.log('Branch created:', event);

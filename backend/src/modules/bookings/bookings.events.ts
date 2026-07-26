@@ -47,3 +47,7 @@ export interface BookingPaymentCompletedEventPayload {
   booking: Booking;
   userId: string;
 }
+
+export interface BookingEndedEventPayload {
+  booking: Booking;
+}

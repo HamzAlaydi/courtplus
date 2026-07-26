@@ -40,6 +40,15 @@ export interface SubscriptionSyncResult {
 export class PricingService {
   private readonly logger = new Logger(PricingService.name);
 
+  private readonly runningSyncs = new Map<
+    string,
+    Promise<SubscriptionSyncResult>
+  >();
+  private readonly queuedSyncs = new Map<
+    string,
+    Promise<SubscriptionSyncResult>
+  >();
+
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
@@ -101,6 +110,42 @@ export class PricingService {
   }
 
   /**
+   * Serializes per-tenant syncs: concurrent branch/court unit-change events
+   * for the same tenant run one after another, each reading fresh counts.
+   * While a sync is in flight at most one follow-up is queued — it reads
+   * fresh counts, so a single extra run covers every change queued behind
+   * it (callers that arrive while the follow-up is queued simply join it).
+   */
+  async syncTenantSubscription(
+    subscription: Subscription,
+  ): Promise<SubscriptionSyncResult> {
+    const tenantId = subscription.tenantId;
+
+    const running = this.runningSyncs.get(tenantId);
+    if (!running) {
+      const run = this.doSyncTenantSubscription(subscription).finally(() => {
+        this.runningSyncs.delete(tenantId);
+      });
+      this.runningSyncs.set(tenantId, run);
+      return run;
+    }
+
+    let queued = this.queuedSyncs.get(tenantId);
+    if (!queued) {
+      queued = running
+        .catch(() => undefined)
+        .then(() => {
+          // The follow-up starts here: late arrivals must queue a new one
+          // because this run may have already read its counts.
+          this.queuedSyncs.delete(tenantId);
+          return this.syncTenantSubscription(subscription);
+        });
+      this.queuedSyncs.set(tenantId, queued);
+    }
+    return queued;
+  }
+
+  /**
    * Recomputes the tenant's billable units from the actual branch/court
    * counts and syncs the Stripe subscription items:
    * base (qty 1) + branch_addon (qty) + court_addon (qty).
@@ -108,7 +153,7 @@ export class PricingService {
    * invoice.paid webhook can gate court approval; downgrades are
    * deferred to the next period (no proration credit).
    */
-  async syncTenantSubscription(
+  private async doSyncTenantSubscription(
     subscription: Subscription,
   ): Promise<SubscriptionSyncResult> {
     const breakdown = await this.computeTenantBreakdown(subscription.tenantId);

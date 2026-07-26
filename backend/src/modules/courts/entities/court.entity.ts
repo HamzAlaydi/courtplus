@@ -238,6 +238,7 @@ export class Court extends BaseEntity {
     description: 'The total number of bookings for the court',
     example: 100,
   })
+  @Column({ default: 0 })
   upcomingBookings: number;
 
   @ApiProperty({

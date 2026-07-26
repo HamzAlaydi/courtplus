@@ -34,7 +34,7 @@ import { BranchEvent, BranchEventPayload } from '../branches/branch.events';
 import { CourtEvent, CourtEventPayload } from '../courts/courts.events';
 import { CourtsService } from '../courts/courts.service';
 import { Court } from '../courts/entities/court.entity';
-import { PricingService, PRICING } from './pricing.service';
+import { PricingService, PRICING, PricingBreakdown } from './pricing.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { StaffService } from '../staff/staff.service';
 import { NotificationType } from '../notifications/entities/notification.entity';
@@ -634,10 +634,21 @@ export class SubscriptionsService {
       return;
     }
 
-    const { direction } =
+    const { breakdown } =
       await this.pricingService.syncTenantSubscription(subscription);
 
-    if (direction === 'increased') {
+    // The court only requires payment if it adds a NEW billable court
+    // add-on. A direction of 'increased' alone is not enough: it may come
+    // from a branch add-on while the court itself fits within the included
+    // units, and such a court must not sit in pending_payment.
+    const withoutThisCourt = this.pricingService.computeBreakdown(
+      breakdown.branchCount,
+      breakdown.courtCount - 1,
+    );
+    const addsBillableAddon =
+      breakdown.courtAddons > withoutThisCourt.courtAddons;
+
+    if (subscription.providerSubscriptionId && addsBillableAddon) {
       // New billable unit: the prorated charge is invoiced immediately and
       // the court stays pending_payment until invoice.paid confirms it.
       await this.notificationsService.notifyStaff(
@@ -678,12 +689,45 @@ export class SubscriptionsService {
       if (!subscription) {
         return;
       }
-      await this.pricingService.syncTenantSubscription(subscription);
+      const { breakdown } =
+        await this.pricingService.syncTenantSubscription(subscription);
+      await this.reconcilePendingCourts(tenantId, breakdown);
     } catch (error) {
       this.logger.error(
         `Failed to sync subscription quantities for tenant ${tenantId}`,
         error,
       );
+    }
+  }
+
+  /**
+   * After a sync with fresh counts, only courts beyond the included quota
+   * (breakdown.courtAddons) genuinely await a charge. Any other
+   * pending_payment court never required payment — move it to the same
+   * post-payment state (pending_approval + ops notification) that
+   * invoice.paid would have produced.
+   */
+  private async reconcilePendingCourts(
+    tenantId: string,
+    breakdown: PricingBreakdown,
+  ): Promise<void> {
+    const pendingCourts =
+      await this.courtsService.findPendingPaymentByTenant(tenantId);
+
+    const freeCount = pendingCourts.length - breakdown.courtAddons;
+    if (freeCount <= 0) {
+      return;
+    }
+
+    // Oldest courts fill the included quota first.
+    const freeCourtIds = pendingCourts
+      .slice(0, freeCount)
+      .map((court) => court.id);
+    const courts =
+      await this.courtsService.markCourtsPendingApproval(freeCourtIds);
+
+    for (const court of courts) {
+      await this.notifyOpsCourtPendingApproval(court);
     }
   }
 }

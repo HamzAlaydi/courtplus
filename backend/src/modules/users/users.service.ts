@@ -37,6 +37,9 @@ import { UsersSortBy, ListUsersDto } from './dto/list-users.dto';
 import { SortDirection } from 'src/common/sort';
 import { UserType } from 'src/modules/auth/@types/user.type';
 import { Friendship } from '../friendships/entities/friendship.entity';
+import { Booking } from '../bookings/entities/booking.entity';
+import { Court } from '../courts/entities/court.entity';
+import { Branch } from '../branches/entities/branch.entity';
 import { VerificationService } from '../auth/verification.service';
 import {
   VerificationChannel,
@@ -442,6 +445,30 @@ export class UsersService {
       query.andWhere('user.id != :uid', { uid: currentUser.id });
     }
 
+    // Tenant staff (non-SuperAdmin) only see customers who have bookings
+    // at branches belonging to their tenant.
+    if (
+      currentUser.type === UserType.Staff &&
+      currentUser.role !== StaffRole.SUPER_ADMIN &&
+      currentUser.tenantId
+    ) {
+      query.andWhere(
+        (qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select('1')
+            .from(Booking, 'booking')
+            .innerJoin(Court, 'court', 'court.id = booking.courtId')
+            .innerJoin(Branch, 'branch', 'branch.id = court.branchId')
+            .where('booking.userId = user.id')
+            .andWhere('branch.tenantId = :tenantId')
+            .getQuery();
+          return `EXISTS ${subQuery}`;
+        },
+        { tenantId: currentUser.tenantId },
+      );
+    }
+
     if (search) {
       query.andWhere(
         '(user.username ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
@@ -459,7 +486,7 @@ export class UsersService {
       query.andWhere('user.blockedAt IS NULL');
     }
 
-    if (currentUser.role === StaffRole.SUPER_ADMIN) {
+    if (currentUser.type === UserType.Staff) {
       if (sortBy === UsersSortBy.Spending) {
         query.orderBy('user.totalSpent', sortOrder);
       } else if (sortBy === UsersSortBy.Bookings) {

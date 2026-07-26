@@ -968,6 +968,7 @@ export class CourtsService {
         branch: { tenantId },
       },
       relations: ['branch'],
+      order: { createdAt: 'ASC' },
     });
   }
 

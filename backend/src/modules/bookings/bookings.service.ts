@@ -362,6 +362,18 @@ export class BookingsService {
       });
     });
 
+    // Whole-payment and staff-created bookings are already paid at creation,
+    // so emit PAYMENT_COMPLETED here to count their revenue exactly once.
+    // Split bookings stay PENDING and emit only when the last participant pays.
+    if (booking.paymentStatus === PaymentStatus.COMPLETED) {
+      runOnTransactionCommit(() => {
+        this.eventEmitter.emit(BookingEventType.PAYMENT_COMPLETED, {
+          booking,
+          userId: user.id,
+        } satisfies BookingPaymentCompletedEventPayload);
+      });
+    }
+
     this.logger.log(
       `[BOOKING_FLOW] Booking creation complete - bookingId: ${booking.id}, courtId: ${courtId}, userId: ${user.id}`,
     );

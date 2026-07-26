@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { PaginationInputDto } from 'src/common/pagination.input.dto';
 import { SortDirection } from 'src/common/sort';
 
@@ -20,6 +21,15 @@ export class ListUsersDto extends PaginationInputDto {
     example: 'John Doe',
   })
   search?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({
+    description: 'Filter by blocked status',
+    example: false,
+  })
+  blocked?: boolean;
 
   @IsEnum(UsersSortBy)
   @IsOptional()

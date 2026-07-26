@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TenantBalance } from './entities/tenant-balance.entity';
 import { BalanceTransaction } from './entities/balance-transaction.entity';
@@ -10,6 +10,7 @@ import { PayoutsService } from './services/payouts.service';
 import { BalanceService } from './services/balance.service';
 import { PayoutProviderFactory } from './providers/payout-provider.factory';
 import { StripePayoutProvider } from './providers/stripe-payout.provider';
+import { BranchesModule } from '../branches/branches.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { StripePayoutProvider } from './providers/stripe-payout.provider';
       Payout,
       TenantPayoutSettings,
     ]),
+    forwardRef(() => BranchesModule),
   ],
   controllers: [PayoutsController, PayoutsWebhookController],
   providers: [
