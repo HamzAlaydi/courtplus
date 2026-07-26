@@ -419,7 +419,11 @@
     "upAbove": "&Up",
     "ratingDescription": "In order to offer you better search results",
     "locationSearch": "Search for court",
-    "changeable": "Changeable"
+    "changeable": "Changeable",
+    "title": "Filters",
+    "sport": "Sport",
+    "availability": "Availability",
+    "duration": "Duration"
   },
   "booking": {
     "title": "Booking",

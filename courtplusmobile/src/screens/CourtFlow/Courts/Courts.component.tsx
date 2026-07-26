@@ -43,6 +43,7 @@ const CourtsScreen = () => {
     sortItem,
     onClearSort,
     onFilterPress,
+    isFiltersActive,
   } = useCourts();
 
   const renderCourtItem = useCallback(({ item }: ListRenderItemInfo<Court>) => {
@@ -77,9 +78,15 @@ const CourtsScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onFilterPress}
-          style={themedStyles.filterContainer}
+          style={[
+            themedStyles.filterContainer,
+            isFiltersActive && themedStyles.activeFilterContainer,
+          ]}
         >
-          <Image source={Images.filter} />
+          <Image
+            source={Images.filter}
+            style={isFiltersActive && themedStyles.activeFilterIcon}
+          />
         </TouchableOpacity>
       </View>
       <SportChips

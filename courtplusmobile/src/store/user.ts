@@ -27,6 +27,7 @@ interface UserState {
 interface UserActions {
   updateLocation: (newLocation: Location) => void;
   updateFilters: (newFilters: Filters) => void;
+  clearFilters: () => void;
   updateSearchFilters: (newFilters?: Filters) => void;
   updateBooking: (booking: BookingDataType) => void;
   clearBooking: () => void;
@@ -66,6 +67,11 @@ export const useUserStore = create<UserActions & UserState>((set) => ({
     set((state) => ({
       ...state,
       filters: { ...state.filters, ...newFilters },
+    })),
+  clearFilters: () =>
+    set((state) => ({
+      ...state,
+      filters: undefined,
     })),
   updateLocation: (newLocation: Location) =>
     set((state) => ({ ...state, location: newLocation })),

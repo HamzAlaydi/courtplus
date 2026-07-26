@@ -13,6 +13,11 @@ export interface CourtsRequestParams {
   lat?: number;
   radius?: number;
   currentLocation: string;
+  sortBy?: string;
+  sortDirection?: string;
+  minRating?: number;
+  startAt?: string;
+  duration?: number;
 }
 
 export interface CourtsResponse extends ApiResponse {

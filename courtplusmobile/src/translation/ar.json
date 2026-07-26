@@ -419,7 +419,11 @@
     "upAbove": "وما فوق",
     "ratingDescription": "لتحسين نتائج البحث، نحتاج إلى معرفة مستوى التقييم المفضل لديك",
     "locationSearch": "ابحث عن ملعب",
-    "changeable": "قابل للتغيير"
+    "changeable": "قابل للتغيير",
+    "title": "التصفية",
+    "sport": "الرياضة",
+    "availability": "التوفر",
+    "duration": "المدة"
   },
   "booking": {
     "title": "اختيار وقت الحجز",

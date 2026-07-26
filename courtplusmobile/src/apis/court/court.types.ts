@@ -14,6 +14,9 @@ export interface CourtsRequest {
   currentLocation?: string;
   sortBy?: string;
   sortDirection?: string;
+  minRating?: number;
+  startAt?: string;
+  duration?: number;
 }
 
 /** Default geo-filter radius in meters when the device location is known. */

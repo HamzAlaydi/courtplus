@@ -92,6 +92,9 @@ export type Filters = {
   search?: string;
   sortDirection?: string;
   sortBy?: string;
+  minRating?: number;
+  startAt?: string;
+  duration?: number;
 };
 
 export type PaginatedItems<T> = {

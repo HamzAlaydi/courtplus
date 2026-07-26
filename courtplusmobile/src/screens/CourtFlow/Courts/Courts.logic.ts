@@ -10,6 +10,7 @@ import { Item, SportFilterItem, sports } from "utils";
 
 export const useCourts = () => {
   const location = useUserStore((store) => store.location);
+  const filters = useUserStore((store) => store.filters);
   const [selectedSports, setSelectedSports] = useState<SportFilterItem[]>([
     sports[0],
   ]);
@@ -34,6 +35,12 @@ export const useCourts = () => {
     }
     return selectedSports.map((sport) => sport.value).join(",");
   }, [selectedSports]);
+
+  const isFiltersActive = useMemo(
+    () => !!filters && Object.values(filters).some(Boolean),
+    [filters]
+  );
+
   const {
     data: courts,
     isLoading,
@@ -47,7 +54,10 @@ export const useCourts = () => {
       page: 1,
       lat: location?.lat,
       lng: location?.long,
-      sport: sportQuery,
+      sport: filters?.sport ?? sportQuery,
+      minRating: filters?.minRating,
+      startAt: filters?.startAt,
+      duration: filters?.startAt ? filters?.duration : undefined,
       sortBy: sortQuery[0],
       sortDirection: sortQuery[1],
     },
@@ -104,5 +114,6 @@ export const useCourts = () => {
     onSelectSort,
     onClearSort,
     onFilterPress,
+    isFiltersActive,
   };
 };

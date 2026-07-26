@@ -30,6 +30,12 @@ export default (colors: ColorsType) =>
     sortContainer: {
       marginEnd: spacing[16],
     },
+    activeFilterContainer: {
+      backgroundColor: colors.GREEN,
+    },
+    activeFilterIcon: {
+      tintColor: colors.WHITE,
+    },
     searchContainer: {
       flex: 1,
       marginEnd: horizontalScale(21),
