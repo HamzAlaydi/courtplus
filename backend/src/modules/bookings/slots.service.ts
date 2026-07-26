@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In, LessThan, MoreThan, Not, Repository } from 'typeorm';
 import { Booking, BookingStatus } from './entities/booking.entity';
+import { BookingEventType } from './entities/event.entity';
 import { SlotReservation } from './entities/slot-reservation.entity';
 import { Schedule } from '../schedules/entities/schedule.entity';
 import { BOOKING } from './booking.constants';
