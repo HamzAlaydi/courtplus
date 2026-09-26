@@ -3595,7 +3595,7 @@ branches.controller.ts:324  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffR
 - **Evidence:**
 
 ```
-AddBranch.js:316  apiKey="AIzaSyBA82Tqljmxcixjt3dkrSMxYWHCF8Vxt9E"
+AddBranch.js:316  apiKey="AIza…REDACTED…"
 LocationSelector.js:8-13  export default function LocationSelector({ initialPlaceName = "", initialCoordinates = null, initialAddress = "", onChange })   // no apiKey
 ```
 - **Suggested fix (NOT applied):** Remove the prop, rotate/restrict the key in Google Cloud, purge from history if possible.

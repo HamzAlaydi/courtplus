@@ -5,7 +5,6 @@ import {
   timeZones,
   getOffsetLabel,
   getCurrentTime,
-  detectTimeZone,
   searchTextFor,
 } from "../modules/timeZones";
 import { useTranslation } from "react-i18next";
