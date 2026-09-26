@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import MyCalendar from "../components/Schedule/MyCalendar";
 import { Select, Spin } from "antd";
 import {
@@ -13,6 +14,7 @@ import { getBranches } from "../actions/branch_action";
 
 export default function Schedule() {
   const [viewType, setViewType] = useState("grid");
+  const { t } = useTranslation();
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -43,7 +45,7 @@ export default function Schedule() {
           onClick={() => setOpenModal(true)}
           className="toggle-btn active"
         >
-          + New Book
+          {t("schedule.new_booking")}
         </button>
 
         {/* Custom Toggle Buttons */}
@@ -56,7 +58,7 @@ export default function Schedule() {
               onClick={() => setViewType("list")}
             >
               <UnorderedListOutlined />
-              <span>List</span>
+              <span>{t("schedule.list")}</span>
             </button>
             <button
               className={
@@ -65,7 +67,7 @@ export default function Schedule() {
               onClick={() => setViewType("grid")}
             >
               <AppstoreOutlined />
-              <span>Grid</span>
+              <span>{t("schedule.grid")}</span>
             </button>
           </div>
 
@@ -73,7 +75,7 @@ export default function Schedule() {
           <Select
             showSearch
             allowClear
-            placeholder="Select a branch"
+            placeholder={t("schedule.select_branch")}
             suffixIcon={<EnvironmentOutlined />}
             size="large"
             value={selectedBranch}

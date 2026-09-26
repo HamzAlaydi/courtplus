@@ -184,6 +184,9 @@ export class Tenant extends BaseEntity {
   })
   logoURL?: string;
 
+  /** Not a column: filled from TenantPreferences so clients can format money. */
+  currency?: string;
+
   @ApiProperty({
     description: 'Staff members of the tenant',
     type: () => [Staffer],
@@ -212,6 +215,14 @@ export class Tenant extends BaseEntity {
   })
   @Column({ nullable: true })
   blockedAt?: Date;
+
+  @ApiProperty({
+    description:
+      'Set when the subscription is cancelled or unpaid: the venue stops taking NEW bookings and disappears from discovery, while bookings already paid for stand. Cleared automatically on payment. Separate from blockedAt, which is an ops decision.',
+    required: false,
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  subscriptionLapsedAt?: Date;
 
   @ApiProperty({
     description: 'The reason provided by ops when the tenant was blocked/suspended',

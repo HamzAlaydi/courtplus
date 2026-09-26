@@ -6,6 +6,8 @@ import type {
   LogEntity,
   OpsLog,
   Paginated,
+  Payout,
+  PayoutStatus,
   StaffRole,
   StaffUser,
   Tenant,
@@ -98,6 +100,16 @@ export async function resolveUnsuspendRequest(id: string): Promise<UnsuspendRequ
   return data;
 }
 
+export async function denyUnsuspendRequest(
+  id: string,
+  reason: string,
+): Promise<UnsuspendRequest> {
+  const { data } = await client.post(`/ops/unsuspend-requests/${id}/deny`, {
+    reason,
+  });
+  return data;
+}
+
 // --- Ops admins ---
 export async function listAdmins(params: PageParams): Promise<Paginated<StaffUser>> {
   const { data } = await client.get("/ops/admins", { params });
@@ -134,5 +146,33 @@ export async function listLogs(
   },
 ): Promise<Paginated<OpsLog>> {
   const { data } = await client.get("/ops/logs", { params });
+  return data;
+}
+
+// --- Payouts (vendor withdrawal requests) ---
+export async function listPayouts(
+  params: PageParams & { status?: PayoutStatus },
+): Promise<Paginated<Payout>> {
+  const { data } = await client.get("/payouts", { params });
+  return data;
+}
+
+export async function approvePayout(id: string): Promise<Payout> {
+  const { data } = await client.post(`/payouts/${id}/approve`);
+  return data;
+}
+
+export async function rejectPayout(id: string, reason: string): Promise<Payout> {
+  const { data } = await client.post(`/payouts/${id}/reject`, { reason });
+  return data;
+}
+
+/**
+ * Close out a bank transfer sent by hand. Manual payouts stay in `processing`
+ * until a human confirms the money actually moved — Stripe Connect cannot
+ * onboard vendors in every market, so this is the working payout path today.
+ */
+export async function markPayoutSent(id: string, reference?: string): Promise<Payout> {
+  const { data } = await client.post(`/payouts/${id}/mark-sent`, { reference });
   return data;
 }

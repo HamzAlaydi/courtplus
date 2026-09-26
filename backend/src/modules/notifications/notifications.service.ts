@@ -5,10 +5,24 @@ import {
   Logger,
   ForbiddenException,
 } from '@nestjs/common';
+import type { PayoutFailedEmailProps } from 'src/emails/payout-failed';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindOptionsWhere, In, Repository } from 'typeorm';
 import { FirebaseService, FIREBASE_INVALID_TOKENS_EVENT } from 'src/modules/shared/services/firebase.service';
+import { NotificationsRealtimeService } from './notifications-realtime.service';
+import type { MessageEvent } from '@nestjs/common';
+import {
+  Observable,
+  from,
+  fromEvent,
+  interval,
+  map,
+  merge,
+  takeUntil,
+  timer,
+} from 'rxjs';
 import { OnEvent } from '@nestjs/event-emitter';
+import { AuthEvent } from '../auth/auth.events';
 import { Session } from '../auth/entities/session.entity';
 import { Notification, NotificationType } from './entities/notification.entity';
 import { UsersService } from 'src/modules/users/users.service';
@@ -33,7 +47,41 @@ import { UserType } from '../auth/@types/user.type';
 type UserToken = {
   token: string;
   language: Language;
+  notifications?: Partial<Record<string, boolean>>;
 };
+
+/**
+ * Which Settings > Notifications toggle governs a type. Types not listed
+ * (payments, refunds, cancellations, reminders) are always delivered.
+ */
+const PREFERENCE_BY_TYPE: Partial<Record<NotificationType, string>> = {
+  [NotificationType.FOLLOW]: 'followers',
+  [NotificationType.POST_LIKE]: 'likes',
+  [NotificationType.MOMENT_POSTED]: 'updates',
+  [NotificationType.BOOKING_JOIN_REQUEST_SUBMITTED]: 'openBookings',
+  [NotificationType.BOOKING_JOIN_REQUEST_APPROVED]: 'openBookings',
+  [NotificationType.BOOKING_JOIN_REQUEST_REJECTED]: 'openBookings',
+  [NotificationType.BOOKING_INVITATION]: 'bookingActivity',
+  [NotificationType.BOOKING_INVITATION_ACCEPTED]: 'bookingActivity',
+  [NotificationType.BOOKING_INVITATION_REJECTED]: 'bookingActivity',
+  [NotificationType.BOOKING_JOINED]: 'bookingActivity',
+  [NotificationType.BOOKING_ENTERED]: 'bookingActivity',
+  [NotificationType.BOOKING_PARTICIPANT_ADDED]: 'bookingActivity',
+  [NotificationType.BOOKING_PARTICIPANT_REMOVED]: 'bookingActivity',
+  [NotificationType.BOOKING_PARTICIPANT_CANCELLED]: 'bookingActivity',
+  [NotificationType.BOOKING_STARTED]: 'bookingActivity',
+  [NotificationType.BOOKING_ENDED]: 'bookingActivity',
+  [NotificationType.RATE_REMINDER]: 'updates',
+};
+
+const allowedByPreference = (token: UserToken, type: NotificationType): boolean => {
+  const key = PREFERENCE_BY_TYPE[type];
+  if (!key || !token.notifications) return true;
+  return token.notifications[key] !== false;
+};
+
+/** Push-token cache lifetime; short so a stale device stops receiving. */
+const PUSH_TOKEN_CACHE_TTL_MS = 60_000;
 
 @Injectable()
 export class NotificationsService {
@@ -50,6 +98,12 @@ export class NotificationsService {
     [NotificationType.BRANCH_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,
     [NotificationType.TENANT_SUSPENDED]: EmailTemplate.RESOURCE_SUSPENDED,
     [NotificationType.COURT_PENDING_PAYMENT]: EmailTemplate.COURT_PENDING_PAYMENT,
+    // Billing and payouts reach the vendor by email now. Without an entry
+    // here `sendEmail` returned early and the `email: true` flag at the call
+    // site was a no-op that read like the mail was going out.
+    [NotificationType.SUBSCRIPTION_PAYMENT_FAILED]:
+      EmailTemplate.SUBSCRIPTION_PAYMENT_FAILED,
+    [NotificationType.PAYOUT_FAILED]: EmailTemplate.PAYOUT_FAILED,
   };
 
   private readonly participantEmailTemplates: Partial<Record<NotificationType, EmailTemplate>> = {
@@ -61,6 +115,10 @@ export class NotificationsService {
     [NotificationType.BOOKING_JOIN_REQUEST_REJECTED]: EmailTemplate.BOOKING_JOIN_REQUEST_REJECTED,
     [NotificationType.BOOKING_INVITATION_ACCEPTED]: EmailTemplate.BOOKING_INVITATION_ACCEPTED,
     [NotificationType.BOOKING_INVITATION_REJECTED]: EmailTemplate.BOOKING_INVITATION_REJECTED,
+    // The customer's own receipt. BOOKING_CREATED also appears in the staff
+    // map above, pointing at STAFF_BOOKING_CREATED - the two audiences get
+    // deliberately different emails for the same event.
+    [NotificationType.BOOKING_CREATED]: EmailTemplate.BOOKING_CONFIRMED,
   };
 
   constructor(
@@ -86,7 +144,96 @@ export class NotificationsService {
     private readonly emailService: EmailService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRedis() private readonly redis: Redis,
+    private readonly realtime: NotificationsRealtimeService,
   ) { }
+
+  /** Keeps proxies and browsers from timing out an otherwise silent stream. */
+  private static readonly STREAM_HEARTBEAT_MS = 25_000;
+  /**
+   * Streams are re-established by the client. Bounding their lifetime keeps
+   * a stream from outliving the access token it was opened with by more
+   * than this, and lets load balancers drain instances.
+   */
+  private static readonly STREAM_MAX_LIFETIME_MS = 15 * 60 * 1000;
+
+  /**
+   * Server-Sent Events for one signed-in user: the current unseen count on
+   * connect, then every change (new notification, mark-seen elsewhere) the
+   * moment it happens, plus a heartbeat. Before this the bells polled every
+   * 30 seconds, so "realtime" meant up to half a minute late.
+   */
+  stream(
+    user: SessionUser,
+    req: { on: (event: 'close', listener: () => void) => unknown },
+  ): Observable<MessageEvent> {
+    const snapshot$ = from(this.getUnseenCount(user.id, user.type)).pipe(
+      map(
+        (count): MessageEvent => ({
+          type: 'count',
+          data: {
+            kind: 'count',
+            recipientType: user.type,
+            recipientId: user.id,
+            unseenCount: count ?? 0,
+          },
+        }),
+      ),
+    );
+    const events$ = this.realtime
+      .subscribe({ id: user.id, type: user.type })
+      .pipe(map((event): MessageEvent => ({ type: event.kind, data: event })));
+    const heartbeat$ = interval(NotificationsService.STREAM_HEARTBEAT_MS).pipe(
+      map((): MessageEvent => ({ type: 'ping', data: { at: Date.now() } })),
+    );
+    const closed$ = fromEvent(req as any, 'close');
+    const expired$ = timer(NotificationsService.STREAM_MAX_LIFETIME_MS);
+
+    // Ends on client close, on the lifetime cap, and on instance shutdown —
+    // the last one is what lets the HTTP server actually close.
+    return merge(snapshot$, events$, heartbeat$).pipe(
+      takeUntil(merge(closed$, expired$, this.realtime.shutdown$)),
+    );
+  }
+
+  /**
+   * Push the new unseen count (and the item) to any open stream of these
+   * recipients. Best-effort, and only after the rows exist so a client that
+   * refetches on receipt sees them.
+   */
+  private async publishRealtime(
+    userIds: string[],
+    recipientType: UserType,
+    notification: {
+      type: NotificationType;
+      data?: Record<string, any>;
+      ids?: Array<{ id?: string }>;
+    },
+  ): Promise<void> {
+    await Promise.all(
+      userIds.map(async (userId, index) => {
+        try {
+          const unseenCount =
+            (await this.getUnseenCount(userId, recipientType)) ?? 0;
+          await this.realtime.publish({
+            kind: 'notification',
+            recipientType,
+            recipientId: userId,
+            unseenCount,
+            notification: {
+              id: notification.ids?.[index]?.id,
+              type: notification.type,
+              data: notification.data,
+              createdAt: new Date().toISOString(),
+            },
+          });
+        } catch (error) {
+          this.logger.warn(
+            `Realtime publish failed for ${recipientType} ${userId}: ${(error as Error).message}`,
+          );
+        }
+      }),
+    );
+  }
 
   async list(
     query: ListNotificationsDto,
@@ -216,6 +363,19 @@ export class NotificationsService {
     ]);
   }
 
+  @OnEvent(AuthEvent.SESSIONS_REVOKED)
+  private async handleSessionsRevoked({ userId }: { userId: string }) {
+    await this.invalidateTokens(userId);
+  }
+
+  /** Drop a user's cached push tokens (logout, session revoke, token reset). */
+  async invalidateTokens(userIdOrIds: string | string[]): Promise<void> {
+    const userIds = Array.isArray(userIdOrIds) ? userIdOrIds : [userIdOrIds];
+    await Promise.all(
+      userIds.map((userId) => this.cacheManager.del(`tokens#${userId}`)),
+    );
+  }
+
   private async getTokens(
     userIdOrIds: string | string[],
   ): Promise<UserToken[]> {
@@ -244,9 +404,19 @@ export class NotificationsService {
 
       for (const userId in usersTokens) {
         const userTokens = usersTokens[userId].map((session) => {
-          return { token: session.fcmToken, language: session.language };
+          const prefs = (session as any).preferences;
+          return {
+            token: session.fcmToken,
+            // The language lives on the mapped preferences row; reading
+            // session.language sent every push in English.
+            language: prefs?.language ?? session.language,
+            notifications: prefs?.notifications,
+          };
         });
-        this.cacheManager.set(`tokens#${userId}`, userTokens);
+        // Short TTL. This cache had none, so a logged-out device kept
+        // receiving another account's push notifications until the process
+        // restarted. The cache is also cleared explicitly on logout.
+        this.cacheManager.set(`tokens#${userId}`, userTokens, PUSH_TOKEN_CACHE_TTL_MS);
         tokens.push(...userTokens);
       }
     }
@@ -292,6 +462,16 @@ export class NotificationsService {
     }
   }
 
+  /** Marks every unread notification of the user read and clears the badge. */
+  async markAllAsRead(user: SessionUser): Promise<{ updated: number }> {
+    const result = await this.notificationRepository.update(
+      { userId: user.id, readAt: IsNull() },
+      { readAt: new Date() },
+    );
+    await this.markAllAsSeen(user);
+    return { updated: result.affected ?? 0 };
+  }
+
   async markAllAsSeen(user: SessionUser) {
     switch (user.type) {
       case UserType.Staff:
@@ -302,6 +482,13 @@ export class NotificationsService {
         break;
     }
     await this.redis.set(`notifications:seen:${user.id}`, new Date().toISOString());
+    // Other tabs/devices of the same user drop their badge too.
+    await this.realtime.publish({
+      kind: 'count',
+      recipientType: user.type,
+      recipientId: user.id,
+      unseenCount: 0,
+    });
   }
 
   async sendEmail(
@@ -340,10 +527,18 @@ export class NotificationsService {
       resourceId,
     }))
 
-    await this.notificationRepository.insert(notifications);
+    const inserted = await this.notificationRepository.insert(notifications);
     await this.usersService.incrementNotificationsCount(userIds);
+    await this.publishRealtime(userIds, UserType.Customer, {
+      type,
+      data,
+      ids: inserted.identifiers,
+    });
 
-    const tokens = await this.getTokens(userIds);
+    // Customer pushes honour Settings > Notifications (the toggles were a placebo).
+    const tokens = (await this.getTokens(userIds)).filter((t) =>
+      allowedByPreference(t, type),
+    );
 
     const pushPromise = tokens.length > 0
       ? Promise.allSettled(
@@ -422,6 +617,134 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Payout notifications.
+   *
+   * PayoutsService already emitted these events; nothing listened, so nobody
+   * was ever told: ops did not learn a vendor had requested a withdrawal, and
+   * the vendor heard nothing when it was approved, rejected or paid. Wired as
+   * event listeners rather than a direct call because PayoutsModule does not
+   * import NotificationsModule.
+   */
+  @OnEvent('payout.requested')
+  private async handlePayoutRequested({ payout }: { payout: any }) {
+    if (!payout?.tenantId) return;
+    try {
+      const tenantName = await this.resolveTenantName(payout.tenantId);
+      await this.notifyOps({
+        type: NotificationType.PAYOUT_REQUESTED,
+        resourceId: payout.id,
+        data: {
+          payoutId: payout.id,
+          tenantId: payout.tenantId,
+          tenantName,
+          amount: payout.amount,
+          currency: payout.currency,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to notify ops of payout ${payout?.id}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  @OnEvent('payout.approved')
+  private async handlePayoutApproved({ payout }: { payout: any }) {
+    await this.notifyVendorOfPayout(payout, NotificationType.PAYOUT_APPROVED);
+  }
+
+  @OnEvent('payout.rejected')
+  private async handlePayoutRejected({ payout }: { payout: any }) {
+    await this.notifyVendorOfPayout(payout, NotificationType.PAYOUT_REJECTED, {
+      reason: payout?.failureReason ?? '',
+    });
+  }
+
+  @OnEvent('payout.completed')
+  private async handlePayoutCompleted({ payout }: { payout: any }) {
+    await this.notifyVendorOfPayout(payout, NotificationType.PAYOUT_COMPLETED);
+  }
+
+  /**
+   * A payout the provider refuses used to be completely silent: 'payout.failed'
+   * had no listener here, and there was no PAYOUT_FAILED notification type at
+   * all. The money was quietly refunded to the vendor's balance with no
+   * explanation, so they retried straight into the same failure.
+   */
+  @OnEvent('payout.failed')
+  private async handlePayoutFailed({ payout }: { payout: any }) {
+    const reason = payout?.failureReason ?? '';
+    // Best-effort: the vendor's name is decoration, and a lookup failure must
+    // not be the reason they are never told their money did not arrive.
+    let tenantName = '';
+    try {
+      if (payout?.tenantId) {
+        tenantName = await this.resolveTenantName(payout.tenantId);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Could not resolve tenant ${payout?.tenantId} for a failed payout: ${(error as Error).message}`,
+      );
+    }
+    await this.notifyVendorOfPayout(
+      payout,
+      NotificationType.PAYOUT_FAILED,
+      { reason },
+      {
+        // 'A venue' is the ops-facing placeholder resolveTenantName falls back
+        // to; addressing the owner as "Hi A venue," reads like a broken mail
+        // merge, so drop the name entirely when it is not a real one.
+        vendorName:
+          tenantName && tenantName !== 'A venue' ? tenantName : 'there',
+        // numeric(14,2) comes back as a string; format it rather than
+        // printing the raw column, and never render an empty amount.
+        amount: Number(payout?.amount ?? 0).toFixed(2),
+        currency: payout?.currency ?? '',
+        reason: reason || undefined,
+      } satisfies PayoutFailedEmailProps,
+    );
+  }
+
+  private async notifyVendorOfPayout(
+    payout: any,
+    type: NotificationType,
+    extra: Record<string, unknown> = {},
+    emailData?: Record<string, unknown>,
+  ) {
+    if (!payout?.tenantId) return;
+    try {
+      await this.notifyStaff(
+        { tenantId: payout.tenantId },
+        {
+          type,
+          resourceId: payout.id,
+          emailData,
+          data: {
+            payoutId: payout.id,
+            amount: payout.amount,
+            currency: payout.currency,
+            ...extra,
+          },
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to notify tenant ${payout?.tenantId} about payout ${payout?.id}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  /** Venue name for the ops-facing payout notification. */
+  private async resolveTenantName(tenantId: string): Promise<string> {
+    const [row]: Array<{ name: string | null }> =
+      await this.notificationRepository.manager.query(
+        `SELECT name FROM tenants WHERE id = $1`,
+        [tenantId],
+      );
+    return row?.name || 'A venue';
+  }
+
   async notifyStaff(
     {
       tenantId,
@@ -492,15 +815,28 @@ export class NotificationsService {
       return;
     }
 
-    await this.notificationRepository.insert(notifications);
+    const inserted = await this.notificationRepository.insert(notifications);
     await this.staffService.incrementNotificationsCount(staffIds);
+    await this.publishRealtime(staffIds, UserType.Staff, {
+      type,
+      data,
+      ids: inserted.identifiers,
+    });
     await this.sendPushNotifications(staffIds, { data, type });
 
     if (email) {
       const emails = staff
         .map((staffer) => staffer.email)
         .filter((email): email is string => !!email);
-      await this.sendEmail(emails, { data: emailData, type });
+      try {
+        await this.sendEmail(emails, { data: emailData, type });
+      } catch (error) {
+        // The row is written and the push/SSE went out; a mail outage (SES
+        // sandbox, SMTP) used to turn an approved court into a 503 for ops.
+        this.logger.warn(
+          `Failed to send staff email for type ${type}: ${(error as Error).message}`,
+        );
+      }
     }
   }
 

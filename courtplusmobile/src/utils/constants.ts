@@ -45,6 +45,13 @@ export const sportList: Item[] = [
 ];
 
 export const genderItems: ListItem[] = [
+  // "Mixed" maps to the backend's Gender.OTHER. Without it an organiser had
+  // to pick male or female, and leaving the field untouched sent an empty
+  // string that failed validation with a generic error.
+  {
+    title: t("openMatch.mixedGender"),
+    value: "other",
+  },
   {
     title: t("general.male"),
     value: "male",
@@ -279,3 +286,41 @@ export const playersAside: Item[] = [
     title: t("openMatch.two"),
   },
 ];
+
+/**
+ * Match sizes offered per sport, as players-a-side (the API's `playersASide`;
+ * total seats are always twice this).
+ *
+ * The list used to be 1v1 and 2v2 for EVERY sport, which is right for padel
+ * and tennis and impossible for football — a five-a-side organiser could not
+ * express their match at all, and the backend refused a fifth joiner whatever
+ * they picked. Team sports now get the real formats; the totals they imply
+ * (10, 12, 14, 22) sit under the 22-player ceiling the API allows.
+ *
+ * Teams are only how the size is EXPRESSED. Nothing assigns players to a
+ * side — whoever turns up splits themselves at the venue.
+ */
+const TEAM_SPORT_SIZES: Item[] = [
+  { key: "5", title: t("openMatch.fiveASide") },
+  { key: "6", title: t("openMatch.sixASide") },
+  { key: "7", title: t("openMatch.sevenASide") },
+  { key: "11", title: t("openMatch.elevenASide") },
+];
+
+const RACKET_SPORTS = ["tennis", "paddle", "padel", "squash"];
+
+export const getMatchSizesForSport = (sport?: string): Item[] => {
+  if (!sport || RACKET_SPORTS.includes(sport.toLowerCase())) {
+    return playersAside;
+  }
+  return TEAM_SPORT_SIZES;
+};
+
+
+/**
+ * Split payment ("pay your part") is hidden for now: the organiser pays the
+ * whole booking. Flip this back to true to restore the per-seat split — the
+ * backend still accepts and settles `paymentType: "split"`, so nothing else
+ * has to change.
+ */
+export const SPLIT_PAYMENT_ENABLED = false;

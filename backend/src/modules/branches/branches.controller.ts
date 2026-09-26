@@ -1,3 +1,4 @@
+import { StaffRole } from 'src/modules/staff/entities/enum';
 import {
   Controller,
   Get,
@@ -120,7 +121,7 @@ export class BranchesController {
     },
   })
   @Audited(LogEntity.BRANCH, LogAction.CREATE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   create(
     @Body() createBranchDto: CreateBranchDto,
     @CurrentUser() user: SessionUser,
@@ -320,7 +321,7 @@ export class BranchesController {
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @Audited(LogEntity.BRANCH, LogAction.DELETE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   delete(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: SessionUser,

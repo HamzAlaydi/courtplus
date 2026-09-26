@@ -5,6 +5,7 @@ import {
   DashboardOutlined,
   LogoutOutlined,
   ShopOutlined,
+  BankOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -19,6 +20,7 @@ const MENU_ITEMS = [
   { key: "/approvals", icon: <CheckSquareOutlined />, label: "Court Approvals" },
   { key: "/vendors", icon: <ShopOutlined />, label: "Vendors" },
   { key: "/logs", icon: <AuditOutlined />, label: "Activity Log" },
+  { key: "/payouts", icon: <BankOutlined />, label: "Payouts" },
   { key: "/admins", icon: <TeamOutlined />, label: "Admins" },
 ];
 

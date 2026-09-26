@@ -31,7 +31,7 @@ export default function Branch() {
 
   useQuery({
     queryKey: ["staff", id],
-    queryFn: () => getAllStaff(id),
+    queryFn: () => getAllStaff({ branchId: id }),
   });
 
   const {
@@ -113,6 +113,15 @@ export default function Branch() {
 
   return (
     <div className="content">
+      {branch?.suspendedAt && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={t("branch.suspended_title", "This branch is suspended")}
+          description={branch.suspendedReason}
+        />
+      )}
       <div className="branch-header">
         <div className="cover-image">
           <img
@@ -172,29 +181,38 @@ export default function Branch() {
         </div>
 
         <div className="stats-cards">
+          {/* These three cards used to read branch.totalRevenue /
+              totalBookings / upcomingBookings — denormalised counters that
+              drift away from the real bookings and can even go negative, so
+              the page showed 0 for a branch that had taken money. The API
+              attaches a live-computed `monthStats` for staff, so read that
+              and say in the label that the figures cover the current month.
+              `minutesBooked` below has no live equivalent yet. */}
           <Card className="stat-card revenue">
             <div className="card-header">
-              <span>{t("branch.total_revenue")}</span> <InfoCircleOutlined />
+              <span>{t("branch.revenue_this_month")}</span>{" "}
+              <InfoCircleOutlined />
             </div>
             <h2>
-              {branch?.totalRevenue?.toLocaleString() ?? 0} <span>SAR</span>
+              {branch?.monthStats?.totalRevenue?.toLocaleString() ?? 0}{" "}
+              <span>{t("home.currency")}</span>
             </h2>
           </Card>
 
           <Card className="stat-card">
             <div className="card-header">
-              <span>{t("branch.total_bookings")}</span> <InfoCircleOutlined />
+              <span>{t("branch.bookings_this_month")}</span>{" "}
+              <InfoCircleOutlined />
             </div>
-            <h2>{branch?.totalBookings?.toLocaleString() ?? 0}</h2>
+            <h2>{branch?.monthStats?.totalBookings?.toLocaleString() ?? 0}</h2>
           </Card>
 
           <Card className="stat-card small">
             <div className="card-header">
-              <span>{t("branch.pending_matches")}</span> <InfoCircleOutlined />
+              <span>{t("branch.upcoming_this_month")}</span>{" "}
+              <InfoCircleOutlined />
             </div>
-            <h2>
-              {branch?.upcomingBookings ?? 0} <span>{t("branch.match")}</span>
-            </h2>
+            <h2>{branch?.monthStats?.upcomingBookings ?? 0}</h2>
           </Card>
 
           <Card className="stat-card small">
@@ -247,8 +265,12 @@ export default function Branch() {
           showSearch
         >
           {staffData?.items?.map((staff) => (
+            // The API returns firstName/lastName, never a `name` field, so
+            // every option used to render as a bare " – email".
             <Select.Option key={staff.id} value={staff.id}>
-              {staff.name} – {staff.email}
+              {[staff.firstName, staff.lastName].filter(Boolean).join(" ") ||
+                staff.email}{" "}
+              – {staff.email}
             </Select.Option>
           ))}
         </Select>

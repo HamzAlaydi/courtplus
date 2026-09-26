@@ -19,6 +19,7 @@ export enum LogEntity {
   SUBSCRIPTION = 'subscription',
   OPS_ADMIN = 'ops_admin',
   UNSUSPEND_REQUEST = 'unsuspend_request',
+  PAYOUT = 'payout',
 }
 
 @Entity('logs')

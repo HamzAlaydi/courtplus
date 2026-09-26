@@ -14,6 +14,23 @@ export class BranchAvailabilityResponseDto {
   })
   currentCount: number;
 
+  @ApiProperty({
+    description:
+      'What one more branch adds to the monthly bill, in minor units (0 when it fits the included units)',
+    example: 2000,
+  })
+  nextBranchChargeCents: number;
+
+  @ApiProperty({ example: 'usd' })
+  currency: string;
+
+  @ApiProperty({
+    description:
+      'True when the tenant has a live Stripe subscription, so the prorated add-on is charged immediately on creation',
+    example: true,
+  })
+  chargedNow: boolean;
+
   @ApiPropertyOptional({
     description:
       'Maximum number of branches allowed by subscription (null when billing is per-unit and there is no hard limit)',

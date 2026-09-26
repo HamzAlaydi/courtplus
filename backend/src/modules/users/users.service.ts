@@ -1,5 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsSelect, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { DistributedLockService } from 'src/common/distributed-lock.service';
+import { FindOptionsSelect, FindOptionsWhere, In, IsNull, Not, Repository, LessThan} from 'typeorm';
 import { User, type UserCountKey } from './entities/user.entity';
 import {
   Account,
@@ -10,6 +12,7 @@ import {
   Inject,
   Logger,
   forwardRef,
+  ForbiddenException,
 } from '@nestjs/common';
 import { SendPhoneCodeDto } from 'src/modules/auth/dto/send-code.dto';
 import type { SessionUser } from 'src/modules/auth/@types/session';
@@ -26,6 +29,8 @@ import {
   USER_NOT_FOUND,
   INVALID_PHONE_NUMBER,
   SPORT_NOT_FOUND,
+  ACCOUNT_HAS_UPCOMING_BOOKINGS,
+  NOT_ALLOWED,
 } from '../shared/error-codes';
 import { uniqueUsernameGenerator } from 'unique-username-generator';
 import { parsePhoneNumberWithError } from 'libphonenumber-js/max';
@@ -65,11 +70,18 @@ import { AuthService } from '../auth/auth.service';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { Session, SessionStatus } from '../auth/entities/session.entity';
 import { UserPreferences } from './entities/user-preferences.entity';
+import { TenantBlockedUser } from './entities/tenant-blocked-user.entity';
 import { UserPreferencesDto } from './dto/user-preferences.dto';
 import { Language } from './entities/enums';
 import { StaffRole } from '../staff/entities/enum';
 
 type RelationKey = 'sports';
+/**
+ * How long a deleted account can still be recovered before its phone
+ * number, e-mail and username are released for reuse.
+ */
+export const ACCOUNT_RECOVERY_WINDOW_DAYS = 30;
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -86,6 +98,9 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(TenantBlockedUser)
+    private readonly tenantBlockRepository: Repository<TenantBlockedUser>,
+    private readonly lockService: DistributedLockService,
     @InjectRepository(UserSport)
     private readonly sportsRepository: Repository<UserSport>,
     @InjectRepository(Session)
@@ -127,6 +142,9 @@ export class UsersService {
     }
 
     query.where('user.id = :id', { id });
+    // A deleted account must not be reachable by id (profile pages, follower
+    // lists); auth paths that need the row use the repository directly.
+    query.andWhere('user.deletedAt IS NULL');
 
     if (friendship) {
       query
@@ -187,19 +205,11 @@ export class UsersService {
 
     const update: any = { ...data };
     if (avatarAssetId) {
-      const assets = await this.assetsService.assignAssets(
-        avatarAssetId,
-        id,
-        AssetType.ProfilePicture,
-      );
+      const assets = await this.assetsService.assignAssets(avatarAssetId, id, AssetType.ProfilePicture, id);
       update.avatarUrl = assets[0]?.url;
     }
     if (coverAssetId) {
-      const assets = await this.assetsService.assignAssets(
-        coverAssetId,
-        id,
-        AssetType.CoverPicture,
-      );
+      const assets = await this.assetsService.assignAssets(coverAssetId, id, AssetType.CoverPicture, id);
       update.coverUrl = assets[0]?.url;
     }
 
@@ -429,6 +439,7 @@ export class UsersService {
   ): Promise<ListUsersResponseDto> {
     const query = this.usersRepository.createQueryBuilder('user');
     const isCustomer = currentUser.type === UserType.Customer;
+    query.where('user.deletedAt IS NULL');
 
     if (isCustomer) {
       query
@@ -450,6 +461,20 @@ export class UsersService {
         ]);
 
       query.andWhere('user.id != :uid', { uid: currentUser.id });
+
+      // Blocking was recorded and never enforced: a blocked person still
+      // showed up in search and in people lists for both sides. Excluded in
+      // BOTH directions — I do not see whom I blocked, and I do not appear to
+      // whoever blocked me. Queried directly rather than through
+      // BlocksService because BlocksModule already imports UsersModule.
+      query.andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM blocks b
+          WHERE (b."blockerId" = :blockViewerId AND b."blockedId" = user.id)
+             OR (b."blockedId" = :blockViewerId AND b."blockerId" = user.id)
+        )`,
+        { blockViewerId: currentUser.id },
+      );
     }
 
     // Tenant staff (non-SuperAdmin) only see customers who have bookings
@@ -487,10 +512,24 @@ export class UsersService {
       query.andWhere('user.id IN (:...ids)', { ids });
     }
 
-    if (blocked === true) {
-      query.andWhere('user.blockedAt IS NOT NULL');
-    } else if (blocked === false) {
-      query.andWhere('user.blockedAt IS NULL');
+    // For vendor staff "blocked" means blocked AT THIS VENUE; the global
+    // column is the platform-wide ban only SuperAdmin can set.
+    const isTenantScopedViewer =
+      currentUser.type === UserType.Staff &&
+      currentUser.role !== StaffRole.SUPER_ADMIN &&
+      !!currentUser.tenantId;
+
+    if (blocked !== undefined) {
+      if (isTenantScopedViewer) {
+        const existsBlock = `EXISTS (SELECT 1 FROM tenant_blocked_users tbu WHERE tbu."userId" = user.id AND tbu."tenantId" = :blockTenantId)`;
+        query.andWhere(blocked ? existsBlock : `NOT ${existsBlock}`, {
+          blockTenantId: currentUser.tenantId,
+        });
+      } else if (blocked === true) {
+        query.andWhere('user.blockedAt IS NOT NULL');
+      } else {
+        query.andWhere('user.blockedAt IS NULL');
+      }
     }
 
     if (currentUser.type === UserType.Staff) {
@@ -516,12 +555,38 @@ export class UsersService {
         .getRawAndEntities(),
     ]);
 
-    const items = isCustomer ? result.entities.map((user, index) => {
+    let items = isCustomer ? result.entities.map((user, index) => {
       const raw = result.raw[index];
       user.isFollowing = raw.isFollowing;
       user.isFollowed = raw.isFollowed;
       return user;
     }) : result.entities;
+
+    // Vendor staff see THEIR OWN block state, not the platform-wide flag they
+    // can no longer set. Without this the dashboard's Block button appeared to
+    // do nothing after blocking became tenant-scoped.
+    if (
+      currentUser.type === UserType.Staff &&
+      currentUser.role !== StaffRole.SUPER_ADMIN &&
+      currentUser.tenantId &&
+      items.length
+    ) {
+      const blocks = await this.tenantBlockRepository.find({
+        where: {
+          tenantId: currentUser.tenantId,
+          userId: In(items.map((u) => u.id)),
+        },
+      });
+      const blockedAtByUser = new Map(
+        blocks.map((b) => [b.userId, b.createdAt]),
+      );
+      // Report the venue's OWN block state, not the platform-wide flag. A
+      // customer banned by SuperAdmin is not something this vendor can lift,
+      // and showing them as blocked made the Unblock button look broken.
+      items = items.map((user) =>
+        Object.assign(user, { blockedAt: blockedAtByUser.get(user.id) ?? null }),
+      );
+    }
 
     return {
       items,
@@ -633,11 +698,86 @@ export class UsersService {
 
   @Transactional()
   async delete(currentUser: SessionUser) {
+    // A paid booking tomorrow must be cancelled (refunded) before the
+    // account goes; otherwise it is orphaned with no one to notify.
+    const [{ count }] = await this.usersRepository.manager.query(
+      `SELECT COUNT(*)::int AS count FROM bookings b
+       WHERE b."userId" = $1 AND b.status IN ('pending','in_progress') AND b."endDate" > NOW()`,
+      [currentUser.id],
+    );
+    if (Number(count) > 0) {
+      throw new BadRequestException(ACCOUNT_HAS_UPCOMING_BOOKINGS);
+    }
     await this.usersRepository.update(currentUser.id, {
       deletedAt: new Date(),
     });
+    // Every device, not only the one that pressed Delete.
+    await this.authService.revokeAllSessions(currentUser.id);
     await this.authService.logout(currentUser);
     this.invalidateUser(currentUser.id);
+  }
+
+  /**
+   * Release a deleted account's phone number, e-mail and username once the
+   * recovery window has passed.
+   *
+   * Deleting only set `deletedAt`, but those three columns carry unique
+   * indexes — so the number stayed claimed for ever and the person could
+   * never sign up again, while the username was burned for everybody. The row
+   * itself is kept so past bookings and reviews still resolve; only the
+   * identifying fields are cleared.
+   *
+   * ACCOUNT_RECOVERY_WINDOW_DAYS is the product knob: inside it "Start Fresh"
+   * can still restore the account, outside it the identifiers are released.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async purgeExpiredDeletedUsers(): Promise<void> {
+    await this.lockService.runExclusively(
+      'users:purge-deleted',
+      10 * 60 * 1000,
+      async () => {
+        const cutoff = new Date(
+          Date.now() - ACCOUNT_RECOVERY_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+        );
+
+        const expired = await this.usersRepository.find({
+          where: { deletedAt: LessThan(cutoff) },
+          select: { id: true },
+        });
+        const stale = expired.filter(Boolean);
+        if (!stale.length) {
+          return;
+        }
+
+        for (const { id } of stale) {
+          // Null, not a placeholder: the unique indexes allow many NULLs, so
+          // this frees the identifier without colliding with other purged
+          // rows.
+          await this.usersRepository.update(
+            { id, phoneNumber: Not(IsNull()) },
+            {
+              phoneNumber: null,
+              email: null,
+              username: null,
+              firstName: null,
+              lastName: null,
+              bio: null,
+              dateOfBirth: null,
+              avatarUrl: null,
+              coverUrl: null,
+              firebaseUid: null,
+              pendingEmail: null,
+              pendingPhoneNumber: null,
+            },
+          );
+          await this.invalidateUser(id);
+        }
+
+        this.logger.log(
+          `Released identifiers for ${stale.length} account(s) deleted before ${cutoff.toISOString()}`,
+        );
+      },
+    );
   }
 
   async resetNotificationsCount(userId: string) {
@@ -660,6 +800,11 @@ export class UsersService {
     await this.cacheManager.del(`user#${userId}`);
   }
 
+  /**
+   * PLATFORM-WIDE block. Locks the customer out of the whole marketplace, so
+   * it is restricted to SuperAdmin at the controller. Vendors use
+   * setTenantBlock() instead.
+   */
   async blockUser(userId: string, blocked: boolean): Promise<void> {
     const user = await this.exists({ id: userId });
     if (!user) {
@@ -670,6 +815,76 @@ export class UsersService {
       blockedAt: blocked ? new Date() : null,
     });
     await this.invalidateUser(userId);
+  }
+
+  /**
+   * Block or unblock a customer AT ONE VENUE. The customer keeps their
+   * account and can still book everywhere else.
+   *
+   * A vendor may only act on a customer who has actually booked with them,
+   * so a tenant cannot enumerate or touch strangers' accounts.
+   */
+  async setTenantBlock(
+    tenantId: string,
+    userId: string,
+    blocked: boolean,
+    blockedByStaffId?: string,
+    reason?: string,
+  ): Promise<void> {
+    const user = await this.exists({ id: userId });
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND);
+    }
+
+    if (!blocked) {
+      await this.tenantBlockRepository.delete({ tenantId, userId });
+      return;
+    }
+
+    const hasBooked = await this.hasBookingAtTenant(tenantId, userId);
+    if (!hasBooked) {
+      throw new ForbiddenException(NOT_ALLOWED);
+    }
+
+    // Idempotent: re-blocking an already blocked customer is a no-op rather
+    // than a unique-constraint 500.
+    await this.tenantBlockRepository
+      .createQueryBuilder()
+      .insert()
+      .into(TenantBlockedUser)
+      .values({ tenantId, userId, blockedByStaffId, reason })
+      .orIgnore()
+      .execute();
+  }
+
+  async isBlockedForTenant(tenantId: string, userId: string): Promise<boolean> {
+    return this.tenantBlockRepository.exists({ where: { tenantId, userId } });
+  }
+
+  /** Customer ids this tenant has blocked, for list rendering. */
+  async listTenantBlockedUserIds(tenantId: string): Promise<string[]> {
+    const rows = await this.tenantBlockRepository.find({
+      where: { tenantId },
+      select: ['userId'],
+    });
+    return rows.map((r) => r.userId);
+  }
+
+  private async hasBookingAtTenant(
+    tenantId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const found = await this.usersRepository.manager
+      .createQueryBuilder()
+      .select('1')
+      .from(Booking, 'booking')
+      .innerJoin(Court, 'court', 'court.id = booking.courtId')
+      .innerJoin(Branch, 'branch', 'branch.id = court.branchId')
+      .where('booking.userId = :userId', { userId })
+      .andWhere('branch.tenantId = :tenantId', { tenantId })
+      .limit(1)
+      .getRawOne();
+    return !!found;
   }
 
   @OnEvent(UserEvent.EMAIL_VERIFIED)

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Alert,
   Button,
@@ -14,7 +14,8 @@ import {
   ShopOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   createBillingPortal,
@@ -22,7 +23,10 @@ import {
   getBillingOverview,
   getPendingCharges,
 } from "../actions/billing_action";
-import { createCheckoutSession } from "../actions/subscription_action";
+import {
+  createCheckoutSession,
+  syncSubscription,
+} from "../actions/subscription_action";
 import { useNotification } from "../modules/NotificationProvider";
 import { notifyError } from "../utils/errorMessages";
 
@@ -34,6 +38,65 @@ const formatAmount = (cents, currency) =>
 export default function Billing() {
   const { t, i18n } = useTranslation();
   const notify = useNotification();
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const refetchBilling = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["billing-overview"] }),
+      queryClient.invalidateQueries({ queryKey: ["billing-invoices"] }),
+      queryClient.invalidateQueries({ queryKey: ["billing-pending-charges"] }),
+      queryClient.invalidateQueries({ queryKey: ["all-courts"] }),
+    ]);
+
+  // Confirm the subscription from Stripe on return from Checkout.
+  //
+  // The webhook that normally creates the local subscription row is
+  // asynchronous: it can land after this page has already rendered, and in
+  // local development it does not arrive at all unless `stripe listen` is
+  // running. Either way the vendor was shown "Subscribe" again seconds after
+  // paying. Handing the session id back lets the server pull the subscription
+  // from Stripe directly, so what is shown here never depends on timing.
+  const syncMutation = useMutation({
+    mutationFn: ({ sessionId }) => syncSubscription({ sessionId }),
+    onSuccess: async (res, { outcome }) => {
+      await refetchBilling();
+      if (outcome === "upgraded") {
+        notify("success", t("billing.upgraded_toast"));
+      } else if (res?.synced) {
+        notify("success", t("billing.success_toast"));
+      } else {
+        notify("warning", t("billing.sync_failed"));
+      }
+    },
+    onError: () => {
+      notify("warning", t("billing.sync_failed"));
+    },
+  });
+
+  const handledReturn = useRef(false);
+  useEffect(() => {
+    if (handledReturn.current) return;
+    const outcome = searchParams.get("subscription");
+    if (!outcome) return;
+    handledReturn.current = true;
+
+    const sessionId = searchParams.get("session_id") || undefined;
+
+    if (outcome === "success" || outcome === "upgraded") {
+      syncMutation.mutate({ sessionId, outcome });
+    } else if (outcome === "cancelled") {
+      notify("info", t("billing.cancelled_toast"));
+    }
+
+    // Strip the params so a reload does not re-run the confirmation or
+    // re-show the toast.
+    const next = new URLSearchParams(searchParams);
+    next.delete("subscription");
+    next.delete("session_id");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: overview, isError: overviewError } = useQuery({
     queryKey: ["billing-overview"],
@@ -53,7 +116,10 @@ export default function Billing() {
   const portalMutation = useMutation({
     mutationFn: () => createBillingPortal(window.location.href),
     onSuccess: (res) => {
-      if (res?.url) window.open(res.url, "_blank", "noopener,noreferrer");
+      // Navigate in place: window.open after an async call is a popup for
+      // most browsers and was blocked, so "Manage payment method" often did
+      // nothing. The portal returns to /billing on its own.
+      if (res?.url) window.location.href = res.url;
     },
     onError: (err) => {
       notifyError(notify, err, t, "billing.portal_failed");
@@ -79,7 +145,12 @@ export default function Billing() {
   const breakdown = overview?.breakdown;
   const pricing = overview?.pricing;
   const currency = pricing?.currency || breakdown?.currency;
-  const hasSubscription = !!overview?.subscription;
+  // Only a live subscription counts. Treating ANY row as "subscribed" hid the
+  // Subscribe button from cancelled and unpaid tenants, so they had no way to
+  // come back — and their courts stayed in pending_payment indefinitely.
+  const LIVE_STATUSES = ["active", "past_due", "trialing"];
+  const hasSubscription = LIVE_STATUSES.includes(overview?.subscription?.status);
+  const openInvoice = (invoices || []).find((inv) => inv.status === "open");
 
   const invoiceColumns = [
     {
@@ -144,10 +215,36 @@ export default function Billing() {
         )}
       </div>
 
+      {syncMutation.isPending && (
+        <Alert
+          type="info"
+          showIcon
+          message={t("billing.confirming")}
+          style={{ marginBottom: 24 }}
+        />
+      )}
+
       {overviewError && (
         <Alert
           type="error"
           message={t("billing.load_failed")}
+          style={{ marginBottom: 24 }}
+        />
+      )}
+
+      {/* Cancellation scheduled from the Stripe portal: say when the plan
+          ends and that it can still be resumed. Nothing surfaced this before. */}
+      {overview?.subscription?.cancelAtPeriodEnd && (
+        <Alert
+          type="warning"
+          showIcon
+          message={t("billing.ends_on", {
+            date: new Date(
+              overview.subscription.cancelAt ||
+                overview.subscription.currentPeriodEnd
+            ).toLocaleDateString(),
+          })}
+          description={t("billing.ends_on_hint")}
           style={{ marginBottom: 24 }}
         />
       )}
@@ -238,13 +335,21 @@ export default function Billing() {
                   loading={
                     portalMutation.isPending || checkoutMutation.isPending
                   }
-                  onClick={() =>
-                    hasSubscription
-                      ? portalMutation.mutate()
-                      : checkoutMutation.mutate()
-                  }
+                  onClick={() => {
+                    if (!hasSubscription) return checkoutMutation.mutate();
+                    // A pending court means Stripe issued a prorated invoice.
+                    // Send the vendor to THAT invoice, not the generic portal
+                    // where they would have to go looking for it.
+                    if (openInvoice?.hostedInvoiceUrl) {
+                      window.open(openInvoice.hostedInvoiceUrl, "_blank", "noopener,noreferrer");
+                      return;
+                    }
+                    portalMutation.mutate();
+                  }}
                 >
-                  {t("billing.pending_charges.pay_now")}
+                  {hasSubscription && openInvoice
+                    ? t("billing.pay_invoice")
+                    : t("billing.pending_charges.pay_now")}
                 </Button>
               </li>
             ))}

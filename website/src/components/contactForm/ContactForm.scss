@@ -27,15 +27,138 @@
   .ant-form-item {
     margin-bottom: 10px;
 
+    // antd's own `.ant-input-outlined` rules repaint the field white on
+    // :hover, :focus and .ant-input-status-error. The text colour below is not
+    // part of those rules, so it stayed #ffffff — white text on a white box,
+    // i.e. whatever you typed became invisible the moment you clicked in.
+    // Every state has to be pinned back to the dark surface, not just the
+    // default one.
     .ant-input {
       padding: 1.5rem;
       background-color: #0a1517;
       border: none;
       color: #ffffff;
+
       &::placeholder {
         color: #999999;
       }
+
+      &:hover,
+      &:focus,
+      &:focus-within,
+      &.ant-input-status-error,
+      &.ant-input-status-error:hover,
+      &.ant-input-status-error:focus,
+      &.ant-input-status-error:focus-within {
+        background-color: #0a1517;
+        color: #ffffff;
+      }
+
+      // Keep the invalid field visibly marked, since removing antd's white
+      // background also removes its main error cue.
+      &.ant-input-status-error {
+        box-shadow: inset 0 0 0 1px #ff4d4f;
+      }
+
+      &:focus,
+      &:focus-within {
+        box-shadow: inset 0 0 0 1px #bfff00;
+      }
+
+      &.ant-input-status-error:focus,
+      &.ant-input-status-error:focus-within {
+        box-shadow: inset 0 0 0 1px #ff4d4f;
+      }
+
+      // Chrome paints autofilled fields with its own near-white background,
+      // which plain `background-color` cannot override — only an inset shadow
+      // can. Without this the same white-on-white problem comes back as soon
+      // as the browser fills the form in.
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover,
+      &:-webkit-autofill:focus,
+      &:-webkit-autofill:active {
+        -webkit-text-fill-color: #ffffff;
+        -webkit-box-shadow: inset 0 0 0 1000px #0a1517;
+        box-shadow: inset 0 0 0 1000px #0a1517;
+        caret-color: #ffffff;
+        transition: background-color 9999s ease-in-out 0s;
+      }
     }
+  }
+
+
+  // Post-submit confirmation. Replaces the form rather than sitting beside it:
+  // once the request is in, the only useful next action is opening the inbox,
+  // and leaving a filled form on screen invites duplicate submissions.
+  .vendor-success {
+    // Explicit px: this site sets a 10px root font size, so `2rem` here would
+    // be 20px rather than the 32 it reads as.
+    padding: 40px 0 24px;
+    text-align: center;
+
+    &__icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background-color: #c0ff42;
+      color: #0a1517;
+      font-size: 26px;
+      line-height: 56px;
+      display: block;
+    }
+
+    &__title {
+      color: #ffffff;
+      font-size: 22px;
+      margin: 0 0 12px;
+    }
+
+    &__text {
+      color: #b9c2bf;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 6px;
+    }
+
+    &__email {
+      color: #c0ff42;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 20px;
+      word-break: break-all;
+    }
+
+    &__hint {
+      color: #8c9a97;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0 0 16px;
+    }
+
+    &__again.ant-btn-link {
+      color: #c0ff42;
+      padding: 0;
+      height: auto;
+
+      &:hover {
+        color: #98d61b;
+      }
+    }
+  }
+
+  // Inline error, so a failure is visible even if the toast is missed or the
+  // page is scrolled away from it.
+  .vendor-error {
+    background-color: rgba(255, 77, 79, 0.12);
+    border: 1px solid rgba(255, 77, 79, 0.45);
+    color: #ffb4b5;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   .submit-button {

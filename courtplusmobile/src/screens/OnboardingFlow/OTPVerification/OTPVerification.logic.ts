@@ -52,8 +52,10 @@ export const useOTPVerification = () => {
         response = await signupMutation({
           phoneNumber,
           code: otp,
-          firstName: signUpData?.fullName.split(" ")[0] || "",
-          lastName: signUpData?.fullName.split(" ")[1] || "",
+          firstName: signUpData?.fullName.trim().split(/\s+/)[0] || "",
+          // "" is not skipped by the API's @IsOptional; send undefined instead.
+          lastName:
+            signUpData?.fullName.trim().split(/\s+/).slice(1).join(" ") || undefined,
           username: signUpData?.username || "",
           dateOfBirth: signUpData?.dateOfBirth?.split("/").reverse().join("-"),
           gender: mapGenderTitle(signUpData?.gender ?? "")?.value || "",

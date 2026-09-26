@@ -35,6 +35,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypeGuard } from '../auth/guards/user-type.guard';
 import { Audited } from 'src/decorators/audited.decorator';
 import { LogAction, LogEntity } from '../logging/entities/log.entity';
+import { WebhookIdempotencyService } from 'src/modules/payments/webhook-idempotency.service';
+import {
+  SyncSubscriptionDto,
+  SyncSubscriptionResponseDto,
+} from './dto/sync-subscription.dto';
 
 @ApiTags('Subscriptions')
 @ApiBearerAuth()
@@ -46,6 +51,7 @@ export class SubscriptionsController {
     private readonly subscriptionsService: SubscriptionsService,
     private readonly paymentsService: PaymentsService,
     private readonly configService: ConfigService,
+    private readonly idempotency: WebhookIdempotencyService,
   ) { }
 
 
@@ -112,6 +118,22 @@ export class SubscriptionsController {
     );
   }
 
+  @Post('sync')
+  @Audited(LogEntity.SUBSCRIPTION, LogAction.UPDATE)
+  @AuthorizedUserType.isStaff([StaffRole.OWNER])
+  @ApiOperation({
+    summary: 'Confirm the subscription directly from Stripe',
+    description:
+      'Called by the billing page on return from Stripe Checkout (with the session id) or on demand. Pulls the subscription from Stripe and applies the same sync as the webhooks, so a delayed or missed webhook can never leave a paying tenant unsubscribed.',
+  })
+  @ApiResponse({ status: 200, type: SyncSubscriptionResponseDto })
+  async syncFromStripe(
+    @CurrentUser() user: SessionUser,
+    @Body() dto: SyncSubscriptionDto,
+  ): Promise<SyncSubscriptionResponseDto> {
+    return this.subscriptionsService.syncFromStripe(user.tenantId, dto.sessionId);
+  }
+
   @Get('branch-availability')
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
   @ApiOperation({ summary: 'Check if tenant can create new branch' })
@@ -143,6 +165,13 @@ export class SubscriptionsController {
       this.configService.get('stripe.subscriptionsWebhookSecret'),
     );
 
+    // Stripe delivers at-least-once and does not guarantee ordering. Without
+    // this, a retried invoice.paid could re-activate a cancelled subscription.
+    if (await this.idempotency.alreadyProcessed(event, 'subscriptions')) {
+      return { received: true };
+    }
+
+    try {
     switch (event.type) {
       case 'customer.subscription.created':
         await this.subscriptionsService.handleSubscriptionCreated(event);
@@ -163,6 +192,12 @@ export class SubscriptionsController {
       case 'checkout.session.completed':
         await this.subscriptionsService.handleCheckoutSessionCompleted(event);
         break;
+    }
+    } catch (error) {
+      // Release the claim so Stripe's retry is not deduped away, then rethrow
+      // to return a non-2xx and trigger that retry.
+      await this.idempotency.release(event.id);
+      throw error;
     }
 
     return { received: true };

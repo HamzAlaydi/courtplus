@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Like, Not, Repository } from 'typeorm';
+import { IsNull, Like, Not, Repository, ILike } from 'typeorm';
 import { Tenant, type TenantCount } from './entities/tenant.entity';
 import { UnsuspendRequest } from './entities/unsuspend-request.entity';
 import { ListTenantsDto, ListTenantsResponseDto } from '../admin/dto/admin-tenants.dto';
@@ -143,7 +143,7 @@ export class TenantsService {
   }: ListTenantsDto): Promise<ListTenantsResponseDto> {
     const where: any = {};
     if (search) {
-      where.name = Like(`%${search}%`);
+      where.name = ILike(`%${search.replace(/[%_]/g, '\\$&')}%`);
     }
     if (blocked === true) {
       where.blockedAt = Not(IsNull());
@@ -181,6 +181,34 @@ export class TenantsService {
     };
   }
 
+  /**
+   * Resolve a tenant from its Stripe customer id. Used when a subscription
+   * reaches us without our tenantId in its metadata (e.g. created by ops in
+   * the Stripe dashboard) — previously such subscriptions were ignored
+   * forever and the vendor was paying without being subscribed here.
+   */
+  async findByProviderCustomerId(
+    providerCustomerId: string,
+  ): Promise<Tenant | null> {
+    if (!providerCustomerId) {
+      return null;
+    }
+    return this.tenantRepository.findOne({ where: { providerCustomerId } });
+  }
+
+  /**
+   * Flag or clear "this venue's subscription has lapsed".
+   *
+   * Courts of a lapsed tenant disappear from customer discovery and refuse
+   * NEW bookings; bookings already paid for are untouched. Kept separate from
+   * blockedAt so paying an invoice cannot lift an ops ban.
+   */
+  async setSubscriptionLapsed(tenantId: string, lapsed: boolean): Promise<void> {
+    await this.tenantRepository.update(tenantId, {
+      subscriptionLapsedAt: lapsed ? new Date() : null,
+    });
+  }
+
   async getTenant(tenantId: string): Promise<Tenant> {
     const tenant = await this.tenantRepository
       .createQueryBuilder('tenant')
@@ -201,6 +229,11 @@ export class TenantsService {
     tenant.logoURL = tenant.logoAsset
       ? this.assetsService.getUrl(tenant.logoAsset.id)
       : undefined;
+
+    // The dashboard formats every money column from this one response. Without
+    // it, pages fell back to a hard-coded "$" while the courts, bookings and
+    // balances were all in the tenant's own currency.
+    tenant.currency = (await this.getPreferences(tenantId)).currency;
 
     return tenant;
   }

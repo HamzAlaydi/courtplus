@@ -37,7 +37,7 @@ export interface SignupRequest {
   phoneNumber: string;
   code: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   username: string;
   dateOfBirth?: string;
   gender: string;

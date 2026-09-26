@@ -34,6 +34,7 @@ import { ListCourtsDto } from './dto/list-courts.dto';
 import { ListCourtsResponseDto } from './dto/list-courts-response.dto';
 import { GetCourtAvailabilityDto } from './dto/get-court-availability.dto';
 import { SlotsResponse } from './dto/slots-response.dto';
+import { StaffRole } from '../staff/entities/enum';
 import { GetCourtAvailableDaysResponseDto } from './dto/get-court-days-availability-response.dto';
 import { Location, UserLocation } from 'src/decorators/location.decorator';
 import { COURT_NOT_FOUND } from '../shared/error-codes';
@@ -71,7 +72,7 @@ export class CourtsController {
     description: 'Forbidden. User does not have staff privileges.',
   })
   @Audited(LogEntity.COURT, LogAction.CREATE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   create(
     @Body() createCourtDto: CreateCourtDto,
     @CurrentUser() user: SessionUser,
@@ -207,7 +208,7 @@ export class CourtsController {
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @Audited(LogEntity.COURT, LogAction.UPDATE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourtDto: UpdateCourtDto,
@@ -245,7 +246,7 @@ export class CourtsController {
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @Audited(LogEntity.COURT, LogAction.DELETE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   delete(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: SessionUser,
@@ -279,7 +280,7 @@ export class CourtsController {
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @Audited(LogEntity.COURT, LogAction.UPDATE)
-  @AuthorizedUserType.isStaff()
+  @AuthorizedUserType.isStaff([StaffRole.OWNER, StaffRole.ADMIN])
   resubmit(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: SessionUser,
@@ -335,6 +336,10 @@ export class CourtsController {
       const court = await this.courtsService.findOne(id, { schedule: true }, user);
       if (!court) {
         throw new NotFoundException(COURT_NOT_FOUND);
+      }
+      if (!court.schedule) {
+        // No working hours at all: nothing is bookable this month.
+        return { availableDays: [], unavailableDays: [] };
       }
       const availability = await this.courtsService.getDaysAvailability(
         court.schedule,

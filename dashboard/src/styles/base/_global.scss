@@ -1,5 +1,16 @@
 @use "variables" as *;
 
+// The app never declared a background, so it relied on the browser's default
+// white. Headings are #333, so anything that supplies a dark backdrop — a
+// dark-mode browser extension, an embedded webview, a forced-colors setting —
+// rendered dark text on dark. Declaring both colour and background keeps the
+// contrast pair intact wherever it renders.
+html,
+body {
+  background-color: #ffffff;
+  color: $color-text;
+}
+
 h1 {
   font-size: $font-size-xxl;
   line-height: $line-height-xxl;

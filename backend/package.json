@@ -24,7 +24,9 @@
     "migration:create": "npm run typeorm -- migration:create ./src/migrations/$npm_config_name",
     "migration:revert": "npm run typeorm -- -d ./ormconfig.db.ts migration:revert",
     "stripe:confirm": "stripe payment_intents confirm $npm_config_pi --payment-method pm_card_visa",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/payments/stripe"
+    "stripe:listen:payments": "stripe listen --events charge.succeeded,charge.failed,payment_intent.succeeded,payment_intent.payment_failed,charge.refunded --forward-to localhost:3000/payments/stripe",
+    "stripe:listen:subscriptions": "stripe listen --events checkout.session.completed,checkout.session.expired,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.paid,invoice.payment_failed --forward-to localhost:3000/subscriptions/webhook",
+    "stripe:listen:connect": "stripe listen --events transfer.created,transfer.reversed,account.updated --forward-to localhost:3000/webhooks/payouts/stripe --forward-connect-to localhost:3000/webhooks/payouts/stripe"
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "^3.799.0",

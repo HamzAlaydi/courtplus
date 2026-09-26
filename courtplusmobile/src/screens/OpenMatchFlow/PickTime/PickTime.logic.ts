@@ -1,3 +1,4 @@
+import { areSlotsContiguous } from "utils";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import { useGetCourtAvailability } from "apis";
 import { Slot } from "models";
@@ -35,7 +36,11 @@ export const usePickTime = () => {
 
   const timeSlots = data?.slots ?? [];
 
-  const isDisabled = (selectedSlots?.length ?? 0) === 0;
+  // Same rule as the court booking flow: a match is one start time plus a
+  // duration, so a gap in the selection would book (and charge for) the slot
+  // in between.
+  const hasGapInSelection = !areSlotsContiguous(selectedSlots ?? []);
+  const isDisabled = (selectedSlots?.length ?? 0) === 0 || hasGapInSelection;
 
   return {
     timeSlots,
@@ -43,6 +48,7 @@ export const usePickTime = () => {
     onTimeSlotPress,
     isDisabled,
     selectedSlots,
+    hasGapInSelection,
     onConfirmPress,
   };
 };

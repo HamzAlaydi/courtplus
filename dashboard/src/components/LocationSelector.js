@@ -30,6 +30,15 @@ export default function LocationSelector({
   const [searchOptions, setSearchOptions] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
 
+  // Edit pages mount this before the branch/court has loaded: without this
+  // the map stayed on the default location once the real one arrived.
+  useEffect(() => {
+    setPlaceName(initialPlaceName || "");
+    setAddress(initialAddress || "");
+    setCoordinates(parseGeo(initialCoordinates));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPlaceName, initialAddress, JSON.stringify(initialCoordinates)]);
+
   /** Debounced Nominatim search (OpenStreetMap, no API key needed) */
   useEffect(() => {
     const query = placeName.trim();

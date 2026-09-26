@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
@@ -20,6 +21,8 @@ export class CreateOpsAdminDto {
   lastName: string;
 
   @ApiProperty({ example: 'ops@courtplusapp.com' })
+  // Login lowercases; an admin created as "Ops.Lead@…" could never sign in.
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   email: string;
 

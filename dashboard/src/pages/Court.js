@@ -83,7 +83,9 @@ export default function Court() {
           </h5>
           <h5 className="info-item">
             <span>{t("court.hourly_rate")}</span>
-            <strong>{court?.hourlyRate} SAR</strong>
+            <strong>
+              {court?.hourlyRate} {t("home.currency")}
+            </strong>
           </h5>
           <h5 className="info-item">
             <span>{t("court.location")}</span>
@@ -121,6 +123,17 @@ export default function Court() {
 
   return (
     <div className="content">
+      {/* Ops decision + reason: the notification links here, but the page
+          showed neither the status nor why changes were requested. */}
+      {court?.status && ["changes_requested", "suspended", "pending_approval", "pending_payment"].includes(court.status) && (
+        <Alert
+          type={["changes_requested", "suspended"].includes(court.status) ? "warning" : "info"}
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={t(`courtCard.status.${court.status}`, court.status)}
+          description={court.rejectionReason ? `${t("courtCard.rejection_reason")}: ${court.rejectionReason}` : undefined}
+        />
+      )}
       <div className="content-header">
         <h4>{t("court.title")}</h4>
         <Link to="edit">

@@ -1,6 +1,12 @@
-import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  forwardRef,
+  Logger,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { runOnTransactionCommit } from 'typeorm-transactional';
+import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { StripeService } from './stripe.service';
 import {
   Payment,
@@ -22,6 +28,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PaymentJobType } from './payments.processor';
 import { PAYMENT } from './payment.constants';
+import { WebhookIdempotencyService } from './webhook-idempotency.service';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { PAYMENT_NOT_FOUND } from 'src/modules/shared/error-codes';
+import { toStripeAmount } from 'src/common/money';
 
 @Injectable()
 export class PaymentsService {
@@ -39,6 +49,7 @@ export class PaymentsService {
     @InjectQueue('payments')
     private readonly queue: Queue,
     private readonly eventEmitter: EventEmitter2,
+    private readonly idempotency: WebhookIdempotencyService,
   ) { }
 
   async processStripeEvent(req: Request) {
@@ -46,15 +57,27 @@ export class PaymentsService {
     this.logger.log(
       `[PAYMENT_FLOW] Webhook received - eventType: ${stripeEvent.type}, eventId: ${stripeEvent.id}`,
     );
+    // Stripe delivers at-least-once; a retried charge.succeeded would
+    // otherwise re-run the whole payment-completion path.
+    if (await this.idempotency.alreadyProcessed(stripeEvent, 'payments')) {
+      return;
+    }
+
+    try {
     switch (stripeEvent.type) {
       case 'charge.failed':
       case 'charge.succeeded':
-        return this.processPayment(stripeEvent);
+        return await this.processPayment(stripeEvent);
       default:
         this.logger.log(
           `[PAYMENT_FLOW] Webhook ignored - unhandled eventType: ${stripeEvent.type}`,
         );
         return;
+    }
+    } catch (error) {
+      // Release the claim so Stripe's retry is not deduped away.
+      await this.idempotency.release(stripeEvent.id);
+      throw error;
     }
   }
 
@@ -65,6 +88,15 @@ export class PaymentsService {
       const charge = stripeEvent.data.object as Stripe.Charge;
       paymentIntentId = charge.payment_intent as string;
       paymentIntentStatus = charge.status == 'succeeded' ? PaymentStatus.COMPLETED : PaymentStatus.FAILED;
+    } else if (stripeEvent.type === 'charge.failed') {
+      // processStripeEvent routes charge.failed here, but there was no branch
+      // for it, so paymentIntentId stayed undefined. TypeORM omits an
+      // undefined value from the WHERE clause, turning the lookup below into
+      // `SELECT ... FROM payments LIMIT 1` — an ARBITRARY, unrelated payment,
+      // which was then marked FAILED and had its booking cancelled.
+      const charge = stripeEvent.data.object as Stripe.Charge;
+      paymentIntentId = charge.payment_intent as string;
+      paymentIntentStatus = PaymentStatus.FAILED;
     } else if (stripeEvent.type === 'payment_intent.succeeded') {
       const paymentIntent = stripeEvent.data.object as Stripe.PaymentIntent;
       paymentIntentId = paymentIntent.id;
@@ -78,6 +110,17 @@ export class PaymentsService {
     this.logger.log(
       `[PAYMENT_FLOW] Processing webhook - stripePaymentIntentId: ${paymentIntentId}, resolvedStatus: ${paymentIntentStatus}, eventId: ${stripeEvent.id}`,
     );
+
+    // Defence in depth for the class of bug above: never run the lookup with
+    // an undefined id. TypeORM would silently drop it from the WHERE clause
+    // and return an arbitrary row, so a single unhandled event type could
+    // corrupt an unrelated customer's payment and booking.
+    if (!paymentIntentId || !paymentIntentStatus) {
+      this.logger.error(
+        `[PAYMENT_FLOW] Webhook ignored - could not resolve a payment intent id or status from eventType: ${stripeEvent.type}, eventId: ${stripeEvent.id}`,
+      );
+      return;
+    }
 
     const payment = await this.paymentsRepository.findOne({
       where: { providerPaymentId: paymentIntentId },
@@ -118,7 +161,15 @@ export class PaymentsService {
       this.logger.log(
         `[PAYMENT_FLOW] Processing successful payment - paymentId: ${payment.id}, bookingId: ${payment.bookingId}`,
       );
-      await this.bookingsService.processParticipantPayment(payment);
+      try {
+        await this.bookingsService.processParticipantPayment(payment);
+      } catch (error) {
+        if (this.isUnbookable(payment, error)) {
+          await this.refundUnbookablePayment(payment, error as HttpException);
+          return;
+        }
+        throw error;
+      }
       await this.notificationsService.sendNotification(payment.userId, {
         type: NotificationType.PAYMENT_SUCCEEDED,
         data: {
@@ -208,6 +259,40 @@ export class PaymentsService {
     };
   }
 
+  /**
+   * A payment whose booking does not exist yet and whose creation failed for
+   * a business reason (4xx: slot taken meanwhile, court hidden, schedule
+   * gone). Retrying can never succeed.
+   */
+  private isUnbookable(payment: Payment, error: unknown): boolean {
+    return (
+      !payment.bookingId &&
+      error instanceof HttpException &&
+      error.getStatus() < 500
+    );
+  }
+
+  /**
+   * The card was charged but the booking can no longer be created. Before,
+   * the handler threw, the idempotency claim was released and Stripe retried
+   * the same hopeless event for three days — then gave up, leaving the
+   * customer charged with no booking and no refund. Refund immediately.
+   */
+  @Transactional()
+  private async refundUnbookablePayment(
+    payment: Payment,
+    reason: HttpException,
+  ): Promise<void> {
+    this.logger.error(
+      `[PAYMENT_FLOW] Booking cannot be created for paid payment ${payment.id} (${reason.message}); refunding the customer`,
+    );
+    // refund() only accepts COMPLETED payments — and the money WAS captured.
+    await this.paymentsRepository.update(payment.id, {
+      status: PaymentStatus.COMPLETED,
+    });
+    await this.refund(payment.id);
+  }
+
   async refund(paymentId: string) {
     this.logger.log(
       `[PAYMENT_FLOW] Initiating refund - paymentId: ${paymentId}`,
@@ -262,13 +347,18 @@ export class PaymentsService {
       throw error;
     }
 
+    // `refund` is null when Stripe reported the charge as already refunded —
+    // a retried cancellation. That is success, but the row must not be
+    // dereferenced: doing so threw and rolled the whole cancellation back.
     this.logger.log(
-      `[PAYMENT_FLOW] Stripe refund successful - paymentId: ${paymentId}, stripeRefundId: ${refund.id}, refundAmount: ${refund.amount / 100}`,
+      refund
+        ? `[PAYMENT_FLOW] Stripe refund successful - paymentId: ${paymentId}, stripeRefundId: ${refund.id}, refundAmount: ${refund.amount / 100}`
+        : `[PAYMENT_FLOW] Stripe reported this charge as already refunded - paymentId: ${paymentId}`,
     );
 
     await this.paymentsRepository.update(paymentId, {
       status: PaymentStatus.REFUNDED,
-      refundId: refund.id,
+      ...(refund ? { refundId: refund.id } : {}),
     });
 
     this.logger.log(
@@ -381,10 +471,59 @@ export class PaymentsService {
       `[PAYMENT_FLOW] Initiating payment capture - paymentId: ${paymentId}, captureAmount: ${amount}`,
     );
 
-    await this.stripeService.capturePayment(paymentId, {
-      amount_to_capture: amount,
-      final_capture: true,
+    // Two bugs lived on the next line.
+    //
+    // 1. `paymentId` is our internal Payment UUID (the callers in
+    //    BookingsService pass creatorPayment.id / participant.paymentId, and
+    //    the repository update below keys off it). Stripe's capture API needs
+    //    the PaymentIntent id (`pi_...`), so every capture failed with
+    //    "No such payment_intent: <uuid>" — no held payment was ever captured.
+    // 2. `amount_to_capture` is in MINOR units; `amount` is in major units, so
+    //    even with a valid id it would have captured 1/100th of the sum.
+    const payment = await this.paymentsRepository.findOne({
+      where: { id: paymentId },
     });
+
+    if (!payment) {
+      this.logger.error(
+        `[PAYMENT_FLOW] Capture failed - payment not found: ${paymentId}`,
+      );
+      throw new NotFoundException(PAYMENT_NOT_FOUND);
+    }
+
+    if (!payment.providerPaymentId) {
+      this.logger.error(
+        `[PAYMENT_FLOW] Capture failed - payment ${paymentId} has no Stripe PaymentIntent id`,
+      );
+      throw new BadRequestException(PAYMENT_NOT_FOUND);
+    }
+
+    let providerPaymentId = payment.providerPaymentId;
+    try {
+      // No `final_capture`: that flag is only valid for multicapture
+      // PaymentIntents and Stripe rejected every partial capture with it —
+      // so a split booking's organiser share could never be collected and the
+      // webhook that carried a participant's payment failed (rolling their
+      // paid seat back to unpaid). A plain partial capture releases the
+      // remainder of the authorisation by itself.
+      await this.stripeService.capturePayment(providerPaymentId, {
+        amount_to_capture: toStripeAmount(amount, payment.currency),
+      });
+    } catch (error) {
+      // Card authorisations expire after 7 days and Stripe then cancels the
+      // PaymentIntent, so a split booking made further ahead than that could
+      // never be settled and the unpaid seats were simply lost. The card was
+      // saved at authorisation time (setup_future_usage: off_session), so
+      // charge it afresh for the same amount instead of giving up.
+      const replacement = await this.rechargeExpiredAuthorization(
+        payment,
+        amount,
+      );
+      if (!replacement) {
+        throw error;
+      }
+      providerPaymentId = replacement;
+    }
 
     this.logger.log(
       `[PAYMENT_FLOW] Stripe capture successful - paymentId: ${paymentId}, capturedAmount: ${amount}`,
@@ -393,11 +532,68 @@ export class PaymentsService {
     await this.paymentsRepository.update(paymentId, {
       status: PaymentStatus.COMPLETED,
       amount,
+      providerPaymentId,
     });
 
     this.logger.log(
       `[PAYMENT_FLOW] Payment completed - paymentId: ${paymentId}, finalAmount: ${amount}`,
     );
+  }
+
+  /**
+   * When a capture failed because Stripe already cancelled the (expired)
+   * authorisation, charge the saved card off-session for `amount` and return
+   * the new PaymentIntent id. Returns null for any other kind of failure so
+   * the caller rethrows the original error.
+   */
+  private async rechargeExpiredAuthorization(
+    payment: Payment,
+    amount: number,
+  ): Promise<string | null> {
+    let original: Stripe.PaymentIntent;
+    try {
+      original = await this.stripeService.retrievePaymentIntent(
+        payment.providerPaymentId,
+      );
+    } catch {
+      return null;
+    }
+    if (original.status !== 'canceled') {
+      return null;
+    }
+    const paymentMethod =
+      typeof original.payment_method === 'string'
+        ? original.payment_method
+        : original.payment_method?.id;
+    const customer =
+      typeof original.customer === 'string'
+        ? original.customer
+        : original.customer?.id;
+    if (!paymentMethod || !customer) {
+      return null;
+    }
+
+    this.logger.warn(
+      `[PAYMENT_FLOW] Authorisation ${original.id} is cancelled (${original.cancellation_reason}); charging the saved card off-session for payment ${payment.id}`,
+    );
+    const fresh = await this.stripeService.chargeOffSession({
+      amount: toStripeAmount(amount, payment.currency),
+      currency: payment.currency,
+      customer,
+      paymentMethod,
+      metadata: {
+        paymentId: payment.id,
+        bookingId: payment.bookingId ?? '',
+        replaces: original.id,
+      },
+    });
+    if (fresh.status !== 'succeeded') {
+      this.logger.error(
+        `[PAYMENT_FLOW] Off-session recharge ${fresh.id} for payment ${payment.id} ended in status ${fresh.status}`,
+      );
+      return null;
+    }
+    return fresh.id;
   }
 
   async cancelPayment(paymentId: string): Promise<void> {
@@ -437,6 +633,24 @@ export class PaymentsService {
       this.logger.warn(
         `[PAYMENT_FLOW] Stripe cancel failed - paymentId: ${paymentId}, stripePaymentIntentId: ${payment.providerPaymentId}, error: ${error.message}`,
       );
+      // Stripe refuses to cancel a PaymentIntent that already succeeded or is
+      // mid-confirmation — i.e. the customer paid right at the reservation
+      // deadline. Marking the row CANCELLED here made the following
+      // charge.succeeded webhook a no-op (CANCELLED is terminal), so the
+      // customer was charged with no booking and no refund. Leave it PENDING
+      // and let the webhook finish the booking.
+      const live = await this.stripeService
+        .retrievePaymentIntent(payment.providerPaymentId)
+        .catch(() => null);
+      if (
+        live &&
+        ['succeeded', 'processing', 'requires_capture'].includes(live.status)
+      ) {
+        this.logger.warn(
+          `[PAYMENT_FLOW] Cancellation aborted - PaymentIntent ${live.id} is ${live.status}; leaving payment ${paymentId} pending for the webhook`,
+        );
+        return;
+      }
     }
 
     await this.paymentsRepository.update(paymentId, {
@@ -499,8 +713,7 @@ export class PaymentsService {
 
   async createCheckoutSession(params: {
     customerId: string;
-    priceId: string;
-    quantity: number;
+    lineItems: Array<{ price: string; quantity: number }>;
     successUrl: string;
     cancelUrl: string;
     metadata: Record<string, string>;
@@ -515,6 +728,10 @@ export class PaymentsService {
     email: string;
   }): Promise<{ id: string }> {
     return this.stripeService.createTenantCustomer(params);
+  }
+
+  async retrievePrice(priceId: string) {
+    return this.stripeService.retrievePrice(priceId);
   }
 
   async retrieveSetupIntent(setupIntentId: string) {
@@ -539,6 +756,18 @@ export class PaymentsService {
 
   async retrieveSubscription(subscriptionId: string) {
     return this.stripeService.retrieveSubscription(subscriptionId);
+  }
+
+  async retrieveCheckoutSession(sessionId: string) {
+    return this.stripeService.retrieveCheckoutSession(sessionId);
+  }
+
+  async searchSubscriptionsByTenant(tenantId: string) {
+    return this.stripeService.searchSubscriptionsByTenant(tenantId);
+  }
+
+  async findCustomerByTenant(tenantId: string) {
+    return this.stripeService.findCustomerByTenant(tenantId);
   }
 
   async listInvoices(customerId: string, limit = 24) {

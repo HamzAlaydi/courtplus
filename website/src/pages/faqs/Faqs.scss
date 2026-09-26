@@ -175,6 +175,24 @@
           &.ant-input-focused {
             border-color: #bfff00;
             box-shadow: 0 0 0 2px rgba(191, 255, 0, 0.2);
+            // Pin the surface too: antd repaints outlined inputs white on
+            // focus, and the white `color` above would then be invisible.
+            background-color: #222;
+            color: #ffffff;
+          }
+
+          // Chrome paints autofilled fields with its own near-white background
+          // that `background-color` cannot override — only an inset shadow can.
+          // Without this, autofilling name/email gives white text on white.
+          &:-webkit-autofill,
+          &:-webkit-autofill:hover,
+          &:-webkit-autofill:focus,
+          &:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff;
+            -webkit-box-shadow: inset 0 0 0 1000px #222;
+            box-shadow: inset 0 0 0 1000px #222;
+            caret-color: #ffffff;
+            transition: background-color 9999s ease-in-out 0s;
           }
         }
       }

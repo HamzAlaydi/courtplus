@@ -1,13 +1,16 @@
 import * as React from 'react';
 import { Container, Heading, Hr, Section, Text } from '@react-email/components';
 import { BaseEmail } from './components/base-email';
+import { VERIFICATION_CODE_TTL_MINUTES } from 'src/modules/auth/verification.constants';
 
 export function EmailVerificationEmail({
   name,
   otp,
+  expiresInMinutes = VERIFICATION_CODE_TTL_MINUTES,
 }: {
   name: string;
   otp: string;
+  expiresInMinutes?: number;
 }) {
   return (
     <BaseEmail preview={`Verify your email with code: ${otp}`}>
@@ -29,7 +32,7 @@ export function EmailVerificationEmail({
       </Section>
 
       <Text className="text-[16px] text-gray-700 mb-[12px]">
-        This code will expire in 60 minutes. If you didn't request to update
+        This code will expire in {expiresInMinutes} minutes. If you didn't request to update
         your email address, please ignore this email or contact support if you
         have concerns.
       </Text>

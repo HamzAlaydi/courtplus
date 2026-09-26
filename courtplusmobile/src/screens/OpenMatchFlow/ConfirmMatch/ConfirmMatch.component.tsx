@@ -65,7 +65,12 @@ const ConfirmMatchScreen = () => {
           <View style={themedStyles.locationContainer}>
             <Image source={Images.location} />
             <CustomText
-              text={court?.branch.location.name ?? ""}
+              text={
+                court?.branch?.location?.name ??
+                court?.location?.name ??
+                court?.branch?.name ??
+                ""
+              }
               font="chip"
               weight="semiBold"
               overrideStyle={themedStyles.locationText}
@@ -89,7 +94,7 @@ const ConfirmMatchScreen = () => {
       </View>
       <View style={themedStyles.bottomContainer}>
         <CustomButton
-          title="Continue to payment"
+          title={t("openMatch.continueToPayment")}
           variant="dark"
           onPress={onCreateBooking}
         />

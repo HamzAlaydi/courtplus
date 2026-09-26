@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  ArrayMinSize,
   IsNumber,
   IsString,
   IsTimeZone,
@@ -17,7 +18,9 @@ export class CreateUpdateScheduleDto {
   timeZone: string;
 
   @IsArray()
-  @IsNotEmpty()
+  // IsNotEmpty([]) is true for an empty array: courts were created with no
+  // working hours at all and could never be booked.
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => AvailabilityDto)
   availabilities: AvailabilityDto[];

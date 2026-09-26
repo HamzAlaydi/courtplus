@@ -25,6 +25,9 @@ const ChooseTimeScreen = () => {
   const {
     onNextPress,
     courtData,
+    selectedDurationMinutes,
+    selectedTotalCost,
+    hasGapInSelection,
     setSelectedDate,
     slots,
     slotsLoading,
@@ -55,7 +58,7 @@ const ChooseTimeScreen = () => {
               <WidgetWrapper overrideStyle={themedStyles.infoWidget}>
                 <Image source={Images.clock} />
                 <CustomText
-                  text={`30 ${t("general.mins")}`}
+                  text={`${selectedDurationMinutes} ${t("general.mins")}`}
                   font="headline3"
                   weight="semiBold"
                 />
@@ -69,7 +72,7 @@ const ChooseTimeScreen = () => {
               />
               <WidgetWrapper overrideStyle={themedStyles.infoWidget}>
                 <CustomText
-                  text={`SR ${courtData.hourlyRate}`}
+                  text={`${courtData.currency ?? "SAR"} ${selectedTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   font="headline3"
                   weight="semiBold"
                 />
@@ -89,6 +92,16 @@ const ChooseTimeScreen = () => {
               weight="medium"
             />
           </View>
+          {hasGapInSelection && (
+            // Explains why Next is disabled; otherwise the button just looks
+            // broken after the customer skips a slot.
+            <CustomText
+              text={t("booking.selectionMustBeContiguous")}
+              font="text"
+              weight="medium"
+              overrideStyle={{ color: "#D4380D", paddingHorizontal: 24 }}
+            />
+          )}
           <TimeSlots
             overrideStyle={themedStyles.timeSlotsContainer}
             onTimeSlotPress={onTimeSlotPress}

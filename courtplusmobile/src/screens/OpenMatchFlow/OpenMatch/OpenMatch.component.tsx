@@ -28,7 +28,7 @@ const OpenMatchScreen = () => {
     refetch,
     onStartMatchPress,
     profileId,
-    handlePay,
+    handleBookNow,
   } = useOpenMatch();
 
   const renderItem = ({ item }: ListRenderItemInfo<Booking>) => {
@@ -39,7 +39,7 @@ const OpenMatchScreen = () => {
       <OpenMatchItem
         showBookNowButton={!isMyBooking}
         booking={item}
-        onBookNowPress={() => handlePay(item)}
+        onBookNowPress={() => handleBookNow(item)}
       />
     );
   };
@@ -65,10 +65,9 @@ const OpenMatchScreen = () => {
             </View>
           }
           trailingComponent={
-            <View style={themedStyles.actionContainer}>
-              <ActionIcon icon="filter" onPress={() => {}} />
-              <ActionIcon icon="filter2" onPress={() => {}} />
-            </View>
+            // Filters for open matches do not exist yet; the two icons did
+            // nothing when tapped.
+            <View style={themedStyles.actionContainer} />
           }
           overrideStyle={{
             justifyContent: "space-between",

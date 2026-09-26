@@ -20,10 +20,14 @@ class staffService {
     });
   }
 
-  getAllStaff(branchId) {
+  // GET /staff also accepts page/pageSize/search/role, and the server
+  // defaults to 10 rows — passing only a branch id silently truncated any
+  // longer list. Take the whole query object like the other services do.
+  getAllStaff(params) {
     return apiRequest({
       method: "get",
-      url: branchId ? `${API_URL}?branchId=${branchId}` : API_URL,
+      url: API_URL,
+      params,
       customHeaders: authHeader(),
     });
   }
@@ -92,6 +96,24 @@ class staffService {
     return apiRequest({
       method: "post",
       url: `${API_URL}/assign`,
+      data: data,
+      customHeaders: authHeader(),
+    });
+  }
+
+  unassignStaffFromBranch(data) {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/unassign`,
+      data: data,
+      customHeaders: authHeader(),
+    });
+  }
+
+  updateStaffRole(id, data) {
+    return apiRequest({
+      method: "patch",
+      url: `${API_URL}/${id}/role`,
       data: data,
       customHeaders: authHeader(),
     });

@@ -26,9 +26,14 @@ export const useConfirmMatch = () => {
   // Matches the backend: court.hourlyRate * (duration / 60)
   const totalAmount = (court?.hourlyRate ?? 0) * (duration / 60);
 
-  const totalParticipants = participants?.length ? participants?.length + 1 : 1;
+  // An open match is shared by every seat on the court, not just the friends
+  // invited up front (usually none). Dividing by `invited + 1` showed the
+  // organiser the WHOLE court price as "your part", and the backend charged
+  // exactly that before any joiner had paid.
+  const seats = Math.max(2, (Number(gameType) || 1) * 2);
 
-  const totalAmountSplitted = totalAmount / totalParticipants;
+  const totalAmountSplitted =
+    Math.round((totalAmount / seats + Number.EPSILON) * 100) / 100;
 
   const onCreateBooking = async () => {
     try {

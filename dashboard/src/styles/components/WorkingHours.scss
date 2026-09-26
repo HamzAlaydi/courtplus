@@ -18,13 +18,68 @@
 
   .days-grid {
     display: grid;
-    grid-template-columns: 5rem 1fr 12rem 3rem 12rem; // Ensures uniform column spacing
+    // Last column is the per-day 24h toggle.
+    grid-template-columns: 5rem 1fr 12rem 3rem 12rem 7rem;
     gap: 1.2rem;
     align-items: center;
   }
 
   .day-row {
     display: contents; // Keeps grid structure without affecting row styling
+  }
+
+  // In 24-hour mode the two pickers and the "to" label are replaced by a
+  // single tag, so it has to span the three cells they occupied or every row
+  // below it would shift out of alignment.
+  .full-day-tag {
+    grid-column: span 3;
+    justify-self: start;
+    margin: 0;
+    padding: 0.4rem 1.2rem;
+    border-radius: 999px;
+    font-size: 1.3rem;
+  }
+
+  .full-day-btn {
+    justify-self: start;
+    border-radius: 999px;
+    font-size: 1.2rem;
+  }
+
+  .working-hours-quick {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.2rem;
+
+    .open-247-btn {
+      border-radius: 999px;
+      font-size: 1.2rem;
+    }
+  }
+
+  // Dropdown rows for the time-zone picker: city first, then country, with the
+  // live local time and offset trailing so the choice can be sanity-checked.
+  .tz-option {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+
+    &__city {
+      font-weight: 600;
+    }
+
+    &__country {
+      color: $color-text-light;
+      font-size: 1.2rem;
+    }
+
+    &__meta {
+      margin-inline-start: auto;
+      color: $color-text-light;
+      font-size: 1.2rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
   }
 }
 

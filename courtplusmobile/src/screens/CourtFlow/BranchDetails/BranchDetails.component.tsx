@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { CourtStackNavigationProp } from "navigation/types";
 import { BranchHeader, BranchTabs, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { ScrollView, View } from "react-native";
@@ -13,6 +15,7 @@ import { Images } from "theme";
 const BranchDetailsScreen = () => {
   const { data, isLoading, tabs } = useBranchDetails();
   const { t } = useTranslation();
+  const { navigate } = useNavigation<CourtStackNavigationProp>();
   const {
     currentTheme: { colors },
   } = useThemeContext();
@@ -56,7 +59,7 @@ const BranchDetailsScreen = () => {
           />
           <View style={themedStyles.locationContainer}>
             <CustomText
-              text="Location"
+              text={t("general.location")}
               overrideStyle={themedStyles.locationText}
               font="headline3"
               weight="bold"
@@ -87,17 +90,21 @@ const BranchDetailsScreen = () => {
               {
                 title: `30 ${t("general.mins")}`,
                 image: Images.clock,
-                subtitle: "min time",
+                subtitle: t("branchDetails.minTime"),
               },
               {
                 title: `${data?.totalBookings}`,
                 image: Images.clipboard,
-                subtitle: "sessions",
+                subtitle: t("branchDetails.sessions"),
               },
             ]}
           />
         </View>
-        <BranchTabs tabs={tabs} courts={data?.courts ?? []} />
+        <BranchTabs
+          tabs={tabs}
+          courts={data?.courts ?? []}
+          onCourtPress={(court) => navigate("CourtDetails", { id: court.id })}
+        />
       </ScrollView>
     </View>
   );

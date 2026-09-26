@@ -33,7 +33,17 @@ export class BookingsProcessor extends WorkerHost {
     this.logger.log(`Processing job ${job.id} - type: ${jobType}, reminder: ${reminderType}`);
 
     try {
-      const booking = await this.bookingsService.findOne({ id: bookingId });
+      // Explicit relations: the default only loads participants, so every
+      // reminder fell back to `booking.court?.schedule?.timeZone || 'UTC'`
+      // and told customers a time in UTC, with the court and branch names
+      // blank in the notification body.
+      const booking = await this.bookingsService.findOne(
+        { id: bookingId },
+        {
+          court: { branch: true, schedule: true },
+          participants: { payment: true },
+        },
+      );
 
       if (!booking) {
         this.logger.warn(`Booking ${bookingId} not found, skipping job`);
@@ -193,6 +203,22 @@ export class BookingsProcessor extends WorkerHost {
     if (!updated) {
       this.logger.log(`Booking ${booking.id} is not pending or in progress (status: ${booking.status}), skipping end`);
       return;
+    }
+
+    // Safety net for the organiser's hold. Settlement used to run ONLY from
+    // the 30-minute reminder, which is never scheduled for a match created
+    // less than 30 minutes before kick-off — the authorisation then simply
+    // expired at Stripe and the venue was never paid for the unpaid seats.
+    // Runs before ENDED so the revenue is credited, then released.
+    if (booking.paymentType === PaymentType.SPLIT) {
+      try {
+        await this.bookingsService.processPendingPayments(booking.id);
+      } catch (error) {
+        this.logger.error(
+          `Failed to settle pending payments for booking ${booking.id} at end: ${(error as Error).message}`,
+          (error as Error).stack,
+        );
+      }
     }
 
     await this.eventsService.create({

@@ -14,7 +14,7 @@ export const useBookingHistory = () => {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = useGetBookings({ page: 1, status: "completed" });
+  } = useGetBookings({ page: 1, status: "completed,cancelled" });
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
 
   const bookingsData = flattenData(data);

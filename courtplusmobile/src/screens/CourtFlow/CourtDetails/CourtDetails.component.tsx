@@ -10,6 +10,8 @@ import { Images } from "theme";
 import { useCourtDetails } from "./CourtDetails.logic";
 import { CourtStackNavigationProp } from "navigation/types";
 import { useNavigation } from "@react-navigation/native";
+import { openInMaps } from "utils";
+import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
 
 const CourtDetailsScreen = () => {
   const { t } = useTranslation();
@@ -33,12 +35,38 @@ const CourtDetailsScreen = () => {
     navigate("BranchDetails", { id: data?.branch?.id ?? "" });
   };
 
+  const courtLocation = data?.branch?.location ?? data?.location;
+
+  const onLocationPress = async () => {
+    const opened = await openInMaps(courtLocation);
+    if (!opened) {
+      showSnackbar({ message: t("court.locationUnavailable") });
+    }
+  };
+
   if (isLoading) {
     return (
       <MainWrapper whiteBackground>
         <View style={themedStyles.infoContainer}>
           <Header whiteColor title={t("court.courtDetails")} />
           <SkeletonLoader />
+        </View>
+      </MainWrapper>
+    );
+  }
+
+  // Suspended / unpublished / deleted court (404): render a message instead
+  // of crashing on `data!!`.
+  if (!data) {
+    return (
+      <MainWrapper whiteBackground>
+        <View style={themedStyles.infoContainer}>
+          <Header whiteColor title={t("court.courtDetails")} />
+          <CustomText
+            text={t("court.notAvailable")}
+            font="headline3"
+            overrideStyle={{ textAlign: "center", marginTop: 48 }}
+          />
         </View>
       </MainWrapper>
     );
@@ -109,22 +137,27 @@ const CourtDetailsScreen = () => {
                 sport={courtSport}
                 overrideStyle={themedStyles.widgetWrapper}
               />
-              <View style={themedStyles.locationContainer}>
+              <TouchableOpacity
+                style={themedStyles.locationContainer}
+                onPress={onLocationPress}
+                accessibilityRole="button"
+                accessibilityLabel={t("court.openInMaps")}
+              >
                 <Image source={Images.outlinedLocation} />
                 <CustomText
-                  text={data?.branch?.location?.address || ""}
+                  text={courtLocation?.address || ""}
                   font="chip"
                   weight="medium"
                   overrideStyle={themedStyles.locationText}
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 />
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        <CourtTabs court={data!!} />
+        <CourtTabs court={data} />
       </MainWrapper>
       <Chip
         isSelected

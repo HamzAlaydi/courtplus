@@ -50,12 +50,18 @@ export const useStripePayment = () => {
     }
   };
 
+  /**
+   * Returns true only when the customer actually completed the payment, so
+   * callers can stop offering "Pay" again. It used to return nothing, so the
+   * Booking Details screen kept showing the Pay button after a successful
+   * payment and a second tap charged the card twice.
+   */
   const showPaymentOverlay = async (
     courtImage: string,
     shouldNavigate: boolean = true
-  ) => {
+  ): Promise<boolean> => {
     if (isPaymentSheetPresenting) {
-      return;
+      return false;
     }
     isPaymentSheetPresenting = true;
     try {
@@ -64,18 +70,19 @@ export const useStripePayment = () => {
       // pressing Pay again re-initializes and re-presents a fresh sheet.
       const isCancelled = didCancel || error?.code === "Canceled";
       if (isCancelled) {
-        return;
+        return false;
       }
       if (error) {
         showSnackbar({ message: error.message || t("general.error") });
         if (shouldNavigate) {
           navigate("CourtStack", { screen: "BookingFailed" });
         }
-        return;
+        return false;
       }
       if (shouldNavigate) {
         navigate("CourtStack", { screen: "BookingSuccess" });
       }
+      return true;
     } finally {
       isPaymentSheetPresenting = false;
     }

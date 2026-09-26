@@ -9,6 +9,8 @@ import { BookingsModule } from '../bookings/bookings.module';
 import { UsersModule } from '../users/users.module';
 import { BullModule } from '@nestjs/bullmq';
 import { PaymentsProcessor } from './payments.processor';
+import { ProcessedWebhookEvent } from './entities/processed-webhook-event.entity';
+import { WebhookIdempotencyService } from './webhook-idempotency.service';
 
 @Module({
   imports: [
@@ -24,13 +26,18 @@ import { PaymentsProcessor } from './payments.processor';
         },
       },
     }),
-    TypeOrmModule.forFeature([Payment]),
+    TypeOrmModule.forFeature([Payment, ProcessedWebhookEvent]),
     forwardRef(() => NotificationsModule),
     forwardRef(() => BookingsModule),
     forwardRef(() => UsersModule),
   ],
   controllers: [PaymentsController],
-  providers: [PaymentsService, StripeService, PaymentsProcessor],
-  exports: [PaymentsService],
+  providers: [
+    PaymentsService,
+    StripeService,
+    PaymentsProcessor,
+    WebhookIdempotencyService,
+  ],
+  exports: [PaymentsService, WebhookIdempotencyService],
 })
 export class PaymentsModule { }

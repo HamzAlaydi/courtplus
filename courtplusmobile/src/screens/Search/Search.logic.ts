@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import { useGetCourts } from "apis";
 import { Court } from "models";
@@ -8,13 +9,14 @@ import { useDebounce } from "use-debounce";
 import { Item, SportFilterItem, sports } from "utils";
 
 export const useSearch = () => {
+  const { t } = useTranslation();
   const location = useUserStore((store) => store.location);
 
   const tabs = useMemo(
     () => [
       {
         key: "courts",
-        title: "Courts",
+        title: t("tabs.courts"),
       },
     ],
     []

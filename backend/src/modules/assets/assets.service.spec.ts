@@ -12,6 +12,7 @@ import { ASSET_NOT_FOUND } from '../shared/error-codes';
 import { AssetEvent } from './assets.events';
 import type { SessionUser } from '../auth/@types/session';
 import { UserType } from '../auth/@types/user.type';
+import { DistributedLockService } from 'src/common/distributed-lock.service';
 import {
   initializeTransactionalContext,
   addTransactionalDataSource,
@@ -92,6 +93,10 @@ describe('AssetsService', () => {
         {
           provide: EventEmitter2,
           useValue: mockEventEmitter,
+        },
+        {
+          provide: DistributedLockService,
+          useValue: { runExclusively: jest.fn(async (_k, _t, fn) => { await fn(); return true; }) },
         },
       ],
     }).compile();

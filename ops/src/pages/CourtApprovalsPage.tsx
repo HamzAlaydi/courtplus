@@ -222,8 +222,11 @@ export default function CourtApprovalsPage() {
                 : []),
             ]} />
 
+            {/* Only the actions the backend accepts for this status: the
+                old drawer offered Approve/Suspend on every court and every
+                click outside the right state was a 400. */}
             <Space style={{ marginTop: 24 }} wrap>
-              {selected.status === "suspended" ? (
+              {selected.status === "suspended" && (
                 <Popconfirm
                   title="Unsuspend this court?"
                   onConfirm={() => unsuspendMutation.mutate(selected.id)}
@@ -232,26 +235,37 @@ export default function CourtApprovalsPage() {
                     Unsuspend
                   </Button>
                 </Popconfirm>
-              ) : (
-                <Popconfirm
-                  title="Approve this court?"
-                  description="It will become visible to customers."
-                  onConfirm={() => approveMutation.mutate(selected.id)}
-                >
-                  <Button type="primary" loading={approveMutation.isPending}>
-                    Approve
-                  </Button>
-                </Popconfirm>
               )}
-              {selected.status !== "suspended" && (
+              {selected.status === "pending_approval" && (
                 <>
+                  <Popconfirm
+                    title="Approve this court?"
+                    description="It will become visible to customers."
+                    onConfirm={() => approveMutation.mutate(selected.id)}
+                  >
+                    <Button type="primary" loading={approveMutation.isPending}>
+                      Approve
+                    </Button>
+                  </Popconfirm>
                   <Button onClick={() => setReasonAction("request-changes")}>
                     Request Changes
                   </Button>
-                  <Button danger onClick={() => setReasonAction("suspend")}>
-                    Suspend
-                  </Button>
                 </>
+              )}
+              {selected.status === "available" && (
+                <Button danger onClick={() => setReasonAction("suspend")}>
+                  Suspend
+                </Button>
+              )}
+              {selected.status === "changes_requested" && (
+                <Typography.Text type="secondary">
+                  Waiting for the vendor to resubmit.
+                </Typography.Text>
+              )}
+              {selected.status === "pending_payment" && (
+                <Typography.Text type="secondary">
+                  Waiting for the vendor's payment.
+                </Typography.Text>
               )}
             </Space>
           </>

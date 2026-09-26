@@ -10,9 +10,18 @@ import { AuthModule } from '../auth/auth.module';
 import { Session } from '../auth/entities/session.entity';
 import { Account } from '../auth/entities/account.entity';
 import { UserPreferences } from './entities/user-preferences.entity';
+import { TenantBlockedUser } from './entities/tenant-blocked-user.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Address, UserSport, Session, Account, UserPreferences]),
+    TypeOrmModule.forFeature([
+      User,
+      Address,
+      UserSport,
+      Session,
+      Account,
+      UserPreferences,
+      TenantBlockedUser,
+    ]),
     AssetsModule,
     forwardRef(() => AuthModule),
   ],

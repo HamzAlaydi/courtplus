@@ -5,6 +5,7 @@ import {
   Empty,
   Input,
   Popconfirm,
+  Space,
   Table,
   Tabs,
   Typography,
@@ -13,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import {
+  denyUnsuspendRequest,
   listTenants,
   listUnsuspendRequests,
   resolveUnsuspendRequest,
@@ -150,6 +152,7 @@ function UnsuspendRequestsTab() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [denyTarget, setDenyTarget] = useState<UnsuspendRequest | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["ops", "unsuspend-requests", { page, pageSize }],
@@ -157,68 +160,102 @@ function UnsuspendRequestsTab() {
     refetchInterval: 30_000,
   });
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["ops", "unsuspend-requests"] });
+    queryClient.invalidateQueries({ queryKey: ["ops", "tenants"] });
+  };
+
   const resolveMutation = useMutation({
     mutationFn: resolveUnsuspendRequest,
     onSuccess: () => {
-      message.success("Request resolved");
-      queryClient.invalidateQueries({ queryKey: ["ops", "unsuspend-requests"] });
+      message.success("Request approved — vendor unsuspended");
+      invalidate();
     },
     onError: (e) => message.error(apiErrorMessage(e, "Failed to resolve request")),
   });
 
+  const denyMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      denyUnsuspendRequest(id, reason),
+    onSuccess: () => {
+      message.success("Request denied — vendor stays suspended");
+      setDenyTarget(null);
+      invalidate();
+    },
+    onError: (e) => message.error(apiErrorMessage(e, "Failed to deny request")),
+  });
+
   return (
-    <Table<UnsuspendRequest>
-      rowKey="id"
-      loading={isLoading}
-      dataSource={data?.items}
-      locale={{ emptyText: <Empty description="Inbox zero — no pending requests" /> }}
-      pagination={{
-        current: page,
-        pageSize,
-        total: data?.pagination.totalCount,
-        showSizeChanger: true,
-        onChange: (p, ps) => {
-          setPage(p);
-          setPageSize(ps);
-        },
-      }}
-      columns={[
-        {
-          title: "Vendor",
-          render: (_, r) => r.tenant?.name ?? r.tenantId,
-        },
-        {
-          title: "Message",
-          dataIndex: "message",
-          render: (m: string) => (
-            <Typography.Paragraph style={{ margin: 0, maxWidth: 480 }} ellipsis={{ rows: 2, expandable: true }}>
-              {m}
-            </Typography.Paragraph>
-          ),
-        },
-        {
-          title: "Requested",
-          dataIndex: "createdAt",
-          width: 170,
-          render: (d: string) => dayjs(d).format("MMM D, YYYY HH:mm"),
-        },
-        {
-          title: "Actions",
-          width: 110,
-          render: (_, r) => (
-            <Popconfirm
-              title="Mark this request as resolved?"
-              description="Unsuspend the vendor from the Vendors tab if appropriate."
-              onConfirm={() => resolveMutation.mutate(r.id)}
-            >
-              <Button size="small" type="primary">
-                Resolve
-              </Button>
-            </Popconfirm>
-          ),
-        },
-      ]}
-    />
+    <>
+      <Table<UnsuspendRequest>
+        rowKey="id"
+        loading={isLoading}
+        dataSource={data?.items}
+        locale={{ emptyText: <Empty description="Inbox zero — no pending requests" /> }}
+        pagination={{
+          current: page,
+          pageSize,
+          total: data?.pagination.totalCount,
+          showSizeChanger: true,
+          onChange: (p, ps) => {
+            setPage(p);
+            setPageSize(ps);
+          },
+        }}
+        columns={[
+          {
+            title: "Vendor",
+            render: (_, r) => r.tenant?.name ?? r.tenantId,
+          },
+          {
+            title: "Message",
+            dataIndex: "message",
+            render: (m: string) => (
+              <Typography.Paragraph style={{ margin: 0, maxWidth: 480 }} ellipsis={{ rows: 2, expandable: true }}>
+                {m}
+              </Typography.Paragraph>
+            ),
+          },
+          {
+            title: "Requested",
+            dataIndex: "createdAt",
+            width: 170,
+            render: (d: string) => dayjs(d).format("MMM D, YYYY HH:mm"),
+          },
+          {
+            title: "Actions",
+            width: 220,
+            render: (_, r) => (
+              <Space size="small">
+                <Popconfirm
+                  title="Approve this request and unsuspend the vendor?"
+                  description="The vendor's account is reinstated and their staff are notified."
+                  onConfirm={() => resolveMutation.mutate(r.id)}
+                >
+                  <Button size="small" type="primary">
+                    Approve & unsuspend
+                  </Button>
+                </Popconfirm>
+                <Button size="small" danger onClick={() => setDenyTarget(r)}>
+                  Deny
+                </Button>
+              </Space>
+            ),
+          },
+        ]}
+      />
+      <ReasonModal
+        open={!!denyTarget}
+        title={`Deny unsuspend request — ${denyTarget?.tenant?.name ?? ""}`}
+        confirmText="Deny request"
+        danger
+        loading={denyMutation.isPending}
+        onConfirm={(reason) =>
+          denyTarget && denyMutation.mutate({ id: denyTarget.id, reason })
+        }
+        onCancel={() => setDenyTarget(null)}
+      />
+    </>
   );
 }
 

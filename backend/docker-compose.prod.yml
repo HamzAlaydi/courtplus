@@ -1,24 +1,55 @@
 # Production stack for the Court+ backend on a single EC2 instance.
 # Usage (on the server): docker compose -f docker-compose.prod.yml up -d --build
+#
+# Every service pins a log rotation policy and a memory limit. Without them a
+# single runaway container can fill the 20 GB disk or starve Postgres, and the
+# whole stack — app AND database — lives on this one box.
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    # Docker's default is unbounded. The runbook already documents this disk
+    # filling up; container logs were one of the ways it got there.
+    max-size: "10m"
+    max-file: "5"
+
 services:
   db:
     image: postgis/postgis:16-3.4-alpine
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME:-courtplus}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Backups land on the host so they can be shipped off-box.
+      - ./backups:/backups
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1g
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    logging: *default-logging
+    # Redis holds BullMQ jobs (must survive), the throttler state and the cache.
+    # With no maxmemory it will grow until it OOMs the box; with a naive
+    # allkeys-LRU it would silently evict queued jobs. noeviction keeps jobs
+    # safe and surfaces pressure as a write error instead of as lost work.
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy noeviction
+      --appendonly yes
+      --appendfsync everysec
     volumes:
       - redisdata:/data
     healthcheck:
@@ -26,10 +57,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 384m
 
   api:
     build: .
     restart: unless-stopped
+    logging: *default-logging
     env_file: .env
     environment:
       DATABASE_HOST: db
@@ -39,12 +75,31 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "3000:3000"
+    # No published host port. This previously published 3000:3000, which binds
+    # 0.0.0.0 on the host and — because Docker writes its own iptables rules —
+    # can bypass the security group, serving the API (and Swagger) in plaintext
+    # alongside the Caddy TLS endpoint. Only Caddy needs to reach it.
+    expose:
+      - "3000"
+    healthcheck:
+      # Readiness probe: verifies Postgres and Redis are actually reachable,
+      # so a hung-but-alive API gets restarted instead of blackholing traffic.
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/health/ready',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # Give the app time to drain in-flight requests and BullMQ jobs on deploy.
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "80:80"
       - "443:443"
@@ -54,6 +109,10 @@ services:
       - caddyconfig:/config
     depends_on:
       - api
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
 volumes:
   pgdata:

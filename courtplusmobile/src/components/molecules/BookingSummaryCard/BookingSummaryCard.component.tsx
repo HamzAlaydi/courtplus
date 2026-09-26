@@ -46,19 +46,8 @@ const BookingSummaryCard = ({
       );
     }
 
-    if (
-      currentParticipant?.status === ParticipantStatus.ENTERED &&
-      item.status !== MatchStatus.COMPLETED
-    ) {
-      return (
-        <CustomButton
-          title={t("activity.captureMoment")}
-          onPress={() => {}}
-          overrideStyle={themedStyles.button}
-          leftIcon={<Image source={Images.capture} />}
-        />
-      );
-    }
+    // "Capture moment" has no create-moment flow behind it yet; a button
+    // that does nothing during a live match is worse than none.
 
     if (item.status === MatchStatus.COMPLETED && !item.review) {
       return (

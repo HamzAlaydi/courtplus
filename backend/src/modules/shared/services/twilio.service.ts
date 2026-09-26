@@ -17,6 +17,7 @@ export class TwilioService {
   private readonly twilioClient: Twilio;
   private readonly env: string;
   private readonly verificationService: ServiceContext;
+  private readonly otpBypassCode?: string;
   private readonly logger = new Logger(TwilioService.name);
   constructor(
     private readonly configService: ConfigService,
@@ -27,12 +28,35 @@ export class TwilioService {
       configService.get('twilio.authToken'),
     );
     this.env = configService.get('env');
+
+    // Fail fast rather than silently ignoring the flag: if someone ships a
+    // production image with the bypass set, refuse to boot instead of serving
+    // an authentication bypass for every phone number on the platform.
+    const bypass = configService.get<string>('auth.devOtpBypassCode');
+    if (bypass && this.env === 'production') {
+      throw new Error(
+        'DEV_OTP_BYPASS_CODE is set while NODE_ENV=production. Refusing to start: this would let any caller sign in as any phone number.',
+      );
+    }
+    this.otpBypassCode = bypass || undefined;
     this.verificationService = this.twilioClient.verify.v2.services(
       this.configService.get('twilio.serviceSid'),
     );
   }
 
   async sendVerificationCode(phoneNumber: string, deviceIp: string) {
+    // Local development only. Twilio trial accounts can only message numbers
+    // verified in the Twilio console, so without this the whole sign-in flow
+    // is untestable locally for any other number. Gated on the same flag that
+    // makes the service refuse to boot under NODE_ENV=production, so this can
+    // never skip a real SMS in production.
+    if (this.otpBypassCode) {
+      this.logger.warn(
+        `Skipping Twilio send for ${phoneNumber} — DEV_OTP_BYPASS_CODE is set. Use code ${this.otpBypassCode}.`,
+      );
+      return;
+    }
+
     await this.invalidateVerification(phoneNumber);
 
     try {
@@ -63,10 +87,14 @@ export class TwilioService {
 
   async checkVerificationCode(phoneNumber: string, code: string) {
     try {
-      if (['development', 'dev'].includes(this.env)) {
-        if (code === '123456') {
-          return 'approved';
-        }
+      // Local-only OTP bypass. Gated on an explicit opt-in flag rather than on
+      // NODE_ENV so that a mistyped NODE_ENV can never turn a fixed code into a
+      // universal login. The flag is rejected outright when NODE_ENV=production.
+      if (this.otpBypassCode && code === this.otpBypassCode) {
+        this.logger.warn(
+          `OTP bypass code accepted for ${phoneNumber} — DEV_OTP_BYPASS_CODE is set. This must never be set in production.`,
+        );
+        return 'approved';
       }
       const verification = await this.twilioClient.verify.v2
         .services(this.configService.get('twilio.serviceSid'))

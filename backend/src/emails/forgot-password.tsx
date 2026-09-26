@@ -1,8 +1,15 @@
 import * as React from 'react';
 import { Container, Heading, Hr, Section, Text } from '@react-email/components';
 import { BaseEmail } from './components/base-email';
+import { VERIFICATION_CODE_TTL_MINUTES } from 'src/modules/auth/verification.constants';
 
-export function ForgotPasswordEmail({ otp }: { otp: string }) {
+export function ForgotPasswordEmail({
+  otp,
+  expiresInMinutes = VERIFICATION_CODE_TTL_MINUTES,
+}: {
+  otp: string;
+  expiresInMinutes?: number;
+}) {
   return (
     <BaseEmail preview={`Reset your password with code: ${otp}`}>
       <Heading className="text-[24px] font-bold text-center text-black my-[30px]">
@@ -23,7 +30,7 @@ export function ForgotPasswordEmail({ otp }: { otp: string }) {
       </Section>
 
       <Text className="text-[16px] text-gray-700 mb-[12px]">
-        This code will expire in 10 minutes. If you didn't request this
+        This code will expire in {expiresInMinutes} minutes. If you didn't request this
         verification, please ignore this email.
       </Text>
 
