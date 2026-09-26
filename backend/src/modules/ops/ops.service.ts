@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -14,8 +14,13 @@ import { NotificationType } from '../notifications/entities/notification.entity'
 import { LogsService } from '../logging/logging.service';
 import { AssetsService } from '../assets/assets.service';
 import { AssetType } from '../assets/entities/asset.entity';
-import { UnsuspendRequest } from '../tenants/entities/unsuspend-request.entity';
-import { UNSUSPEND_REQUEST_NOT_FOUND } from '../shared/error-codes';
+import {
+  UnsuspendRequest,
+  UnsuspendRequestOutcome,
+} from '../tenants/entities/unsuspend-request.entity';
+import { UNSUSPEND_REQUEST_NOT_FOUND,
+  CANNOT_DEACTIVATE_SELF,
+} from '../shared/error-codes';
 import type { SessionUser } from '../auth/@types/session';
 import { ListPendingCourtsDto } from './dto/list-pending-courts.dto';
 import { ListOpsLogsDto } from './dto/list-ops-logs.dto';
@@ -316,13 +321,62 @@ export class OpsService {
     if (!request) {
       throw new NotFoundException(UNSUSPEND_REQUEST_NOT_FOUND);
     }
-    if (!request.resolvedAt) {
-      await this.unsuspendRequestRepository.update(id, {
-        resolvedAt: new Date(),
-      });
+    // Claim the request atomically. Read-then-write let two admins (or one
+    // double-click) both pass the "still pending" check and each send the
+    // vendor an account-unsuspended notification.
+    const claimed = await this.unsuspendRequestRepository.update(
+      { id, resolvedAt: IsNull() },
+      { resolvedAt: new Date(), outcome: UnsuspendRequestOutcome.APPROVED },
+    );
+    if (claimed.affected === 1) {
       // Resolving a request approves it: lift the suspension and notify the
       // tenant staff (unsuspendTenant emits TENANT_UNSUSPENDED).
       await this.unsuspendTenant(request.tenantId);
+    }
+    return this.unsuspendRequestRepository.findOne({ where: { id } });
+  }
+
+  /**
+   * Close a request ops decided against.
+   *
+   * Approving was the only way out of the inbox, so a request that ops did not
+   * intend to grant had to stay pending for ever. A denial resolves the
+   * request without touching the suspension, and tells the vendor why —
+   * otherwise it is indistinguishable from ops never having looked at it.
+   */
+  async denyUnsuspendRequest(id: string, reason: string) {
+    const request = await this.unsuspendRequestRepository.findOne({
+      where: { id },
+      relations: ['tenant'],
+    });
+    if (!request) {
+      throw new NotFoundException(UNSUSPEND_REQUEST_NOT_FOUND);
+    }
+
+    const claimed = await this.unsuspendRequestRepository.update(
+      { id, resolvedAt: IsNull() },
+      {
+        resolvedAt: new Date(),
+        outcome: UnsuspendRequestOutcome.DENIED,
+        resolutionReason: reason,
+      },
+    );
+    if (claimed.affected === 1) {
+      await this.notificationsService.notifyStaff(
+        { tenantId: request.tenantId },
+        {
+          // In-app + push only: no email template is mapped for this type.
+          email: false,
+          type: NotificationType.TENANT_UNSUSPEND_DENIED,
+          data: {
+            kind: NotificationType.TENANT_UNSUSPEND_DENIED,
+            tenantId: request.tenantId,
+            tenantName: request.tenant?.name,
+            reason,
+          },
+          resourceId: request.id,
+        },
+      );
     }
     return this.unsuspendRequestRepository.findOne({ where: { id } });
   }
@@ -335,7 +389,10 @@ export class OpsService {
     return this.staffService.createSuperAdmin(dto);
   }
 
-  async deactivateAdmin(id: string) {
+  async deactivateAdmin(id: string, actor?: SessionUser) {
+    if (actor && actor.id === id) {
+      throw new BadRequestException(CANNOT_DEACTIVATE_SELF);
+    }
     await this.staffService.deactivateSuperAdmin(id);
   }
 

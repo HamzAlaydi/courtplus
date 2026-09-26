@@ -57,7 +57,7 @@ const CourtItem = ({
           <CustomText
             font="headline3"
             weight="semiBold"
-            text={`${item.avgRating}`}
+            text={Number(item.avgRating ?? 0).toFixed(1)}
             overrideStyle={themedStyles.rating}
           />
         </View>

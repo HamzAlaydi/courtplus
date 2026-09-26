@@ -11,3 +11,6 @@ export const markAllNotificationsSeen = async () =>
 
 export const getUnseenNotificationCount = async () =>
   await notificationService.getUnseenCount();
+
+export const markAllNotificationsRead = async () =>
+  await notificationService.markAllNotificationsRead();

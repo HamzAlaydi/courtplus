@@ -74,8 +74,18 @@ const MobileController = ({
   );
 
   const handleGetDeviceCountryCode = async () => {
-    const countryCode = await getDeviceCountryCode();
-    const callingCode = getCountryCallingCode(countryCode as CountryCode);
+    // Without location permission the device country is unknown; the old
+    // code then threw inside getCountryCallingCode and the phone was sent as
+    // "undefined01…" — nobody could log in or register.
+    let countryCode: string | undefined;
+    let callingCode: string;
+    try {
+      countryCode = (await getDeviceCountryCode()) || "EG";
+      callingCode = getCountryCallingCode(countryCode as CountryCode);
+    } catch {
+      countryCode = "EG";
+      callingCode = "20";
+    }
     // global use this code to get the country code for the selected country
     setSelectedCountryCode(`+${callingCode}`);
     setSelectedCountry({

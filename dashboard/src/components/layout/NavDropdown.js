@@ -1,3 +1,4 @@
+import authService from "../../service/auth.service";
 import {
   DownOutlined,
   MailOutlined,
@@ -6,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Spin, Modal, Button, Descriptions, Tag } from "antd";
 import { useDispatch } from "react-redux";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { logout } from "../../context/auth";
@@ -31,9 +32,16 @@ const NavDropdown = () => {
     queryFn: getTenant,
   });
 
+  const queryClient = useQueryClient();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authService.logoutStaff();
+    } catch (e) {
+      // Best effort: the local session is dropped regardless.
+    }
+    queryClient.clear(); // never show the previous user's cached data
     dispatch(logout());
     setIsModalVisible(false);
   };

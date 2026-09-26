@@ -11,6 +11,11 @@ export interface CreatePayoutDto {
   currency: string;
   destinationAccount: string;
   metadata?: Record<string, any>;
+  /**
+   * Stable key so a retried approval returns the ORIGINAL transfer instead
+   * of sending the vendor a second one.
+   */
+  idempotencyKey?: string;
 }
 
 export interface PayoutResult {
@@ -29,6 +34,9 @@ export interface IPayoutProvider {
   getAccountStatus(
     accountId: string,
   ): Promise<{ isActive: boolean; capabilities: string[] }>;
+
+  /** A fresh onboarding link for an account that has not finished onboarding. */
+  createOnboardingLink?(accountId: string): Promise<string>;
 
   createPayout(dto: CreatePayoutDto): Promise<PayoutResult>;
 

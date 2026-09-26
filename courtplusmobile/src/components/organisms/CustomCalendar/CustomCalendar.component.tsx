@@ -1,4 +1,5 @@
 import { useThemeContext } from "contexts";
+import { addMonths, startOfMonth, subMonths } from "date-fns";
 import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
@@ -36,16 +37,15 @@ const CalendarAvailability = ({
   }, [currentDate]);
 
   const onPressArrowRight = (onAddMonth: () => void) => {
-    const nextMonthDate = new Date(currentDate);
-    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+    // setMonth(+1) on the 31st skips a month; anchor on the 1st instead.
+    const nextMonthDate = addMonths(startOfMonth(currentDate), 1);
     setCurrentDate(nextMonthDate);
     onAddMonth();
     onMonthChange?.(nextMonthDate);
   };
 
   const onPressArrowLeft = (onSubtractMonth: () => void) => {
-    const prevMonthDate = new Date(currentDate);
-    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+    const prevMonthDate = subMonths(startOfMonth(currentDate), 1);
     setCurrentDate(prevMonthDate);
     onSubtractMonth();
     onMonthChange?.(prevMonthDate);

@@ -10,6 +10,7 @@ import CourtApprovalsPage from "@/pages/CourtApprovalsPage";
 import VendorsPage from "@/pages/VendorsPage";
 import ActivityLogPage from "@/pages/ActivityLogPage";
 import AdminsPage from "@/pages/AdminsPage";
+import PayoutsPage from "@/pages/PayoutsPage";
 import { theme } from "@/theme";
 
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ export default function App() {
                     <Route path="/approvals" element={<CourtApprovalsPage />} />
                     <Route path="/vendors" element={<VendorsPage />} />
                     <Route path="/logs" element={<ActivityLogPage />} />
+                    <Route path="/payouts" element={<PayoutsPage />} />
                     <Route path="/admins" element={<AdminsPage />} />
                   </Route>
                 </Route>

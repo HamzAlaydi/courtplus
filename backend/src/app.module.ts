@@ -36,10 +36,41 @@ import { AuditInterceptor } from './modules/logging/audit.interceptor';
       load: [configuration],
       validationSchema,
     }),
+    // Structured JSON in production so logs are parseable/searchable, with
+    // timestamps and stack traces. format.simple() produced untimestamped,
+    // unparseable lines with no level filtering, which made post-incident
+    // analysis on the EC2 box essentially guesswork.
     WinstonModule.forRoot({
+      level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
       transports: [
         new winston.transports.Console({
-          format: winston.format.simple(),
+          format:
+            process.env.NODE_ENV === 'production'
+              ? winston.format.combine(
+                  winston.format.timestamp(),
+                  winston.format.errors({ stack: true }),
+                  // Redact anything that looks like a credential before it
+                  // reaches stdout — container logs are readable by anyone
+                  // with shell access to the box.
+                  winston.format((info) => {
+                    const REDACT = /(password|token|secret|authorization|otp|code|card|cvv)/i;
+                    const scrub = (v: unknown, depth = 0): unknown => {
+                      if (depth > 4 || v === null || typeof v !== 'object') return v;
+                      const out: Record<string, unknown> = Array.isArray(v) ? [] as any : {};
+                      for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+                        out[k] = REDACT.test(k) ? '[REDACTED]' : scrub(val, depth + 1);
+                      }
+                      return out;
+                    };
+                    return scrub(info) as winston.Logform.TransformableInfo;
+                  })(),
+                  winston.format.json(),
+                )
+              : winston.format.combine(
+                  winston.format.timestamp({ format: 'HH:mm:ss' }),
+                  winston.format.colorize(),
+                  winston.format.simple(),
+                ),
         }),
       ],
     }),
@@ -67,6 +98,13 @@ import { AuditInterceptor } from './modules/logging/audit.interceptor';
         migrations: [__dirname + '/migrations/*{.ts,.js}'],
         migrationsTableName: '_migrations',
         migrationsRun: true,
+        // 'each' (rather than the default 'all') runs every migration in its
+        // own transaction. A failure then leaves earlier migrations applied
+        // instead of rolling back the whole batch, and it lets an individual
+        // migration opt out entirely — required for CREATE INDEX CONCURRENTLY,
+        // which cannot run inside a transaction block but is how indexes get
+        // added to a live table without an ACCESS EXCLUSIVE lock.
+        migrationsTransactionMode: 'each' as const,
       }),
     }),
     EventEmitterModule.forRoot(),
@@ -81,10 +119,7 @@ import { AuditInterceptor } from './modules/logging/audit.interceptor';
             blockDuration: ms('1h'),
           },
           {
-            name: 'phone',
-            ttl: ms('15m'),
-            limit: 6,
-            blockDuration: ms('1h'),
+            name: 'phone', ttl: ms('15m'), limit: 6, blockDuration: ms('15m'),
           },
         ],
         errorMessage(context, throttlerLimitDetail) {

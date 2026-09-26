@@ -130,8 +130,11 @@ export class FriendshipsService {
 
     const transformedItems = result.entities.map((item, index) => {
       const raw = result.raw[index];
+      // `item` carries the hydrated follower/following User (phone, e-mail,
+      // DOB, Stripe id) — never send it; the public shape is built below.
+      const { follower: _f, following: _g, ...publicItem } = item as any;
       return {
-        ...item,
+        ...publicItem,
         user: {
           id: raw.userId,
           firstName: raw.firstName,

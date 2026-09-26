@@ -12,9 +12,10 @@ import { ActionMenuItems, convertMinutesToHours, flattenData } from "utils";
 export const useProfile = () => {
   const { id } =
     useRoute<RouteProp<AuthenticatedStackParamList, "Profile">>()?.params ?? {};
-  const { data, isFetching, refetch } = id
-    ? useGetUserById({ id })
-    : useGetProfile();
+  // Both hooks always run (stable hook order); `me` decides ownership.
+  const me = useGetProfile();
+  const other = useGetUserById({ id: id ?? "" }, { enabled: !!id });
+  const { data, isFetching, refetch } = id ? other : me;
   const updateProfileId = useUserStore((state) => state.updateProfileId);
   const profileId = useUserStore((state) => state.profileId);
   const [isContextActionMenuVisible, setIsContextActionMenuVisible] =
@@ -22,8 +23,8 @@ export const useProfile = () => {
   const reportModalRef = useRef<BottomSheetModal>(null);
 
   const isVisitingProfile = useMemo(() => {
-    return id === profileId || !id;
-  }, [id, profileId]);
+    return !id || id === me.data?.id;
+  }, [id, me.data?.id]);
 
   const { t } = useTranslation();
   const {
@@ -37,27 +38,32 @@ export const useProfile = () => {
   const reportSubmittedModalRef = useRef<BottomSheetModal>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // The API only ever returns `bookingsCount` and `minutesBookedCount` on a
+  // user. `matchesPlayedCount` / `minutesPlayedCount` are not fields it sends,
+  // so those two tiles read 0 for every account — and the empty dependency
+  // array froze the whole row at its first render anyway.
+  const stats = data as
+    | { bookingsCount?: number; minutesBookedCount?: number }
+    | undefined;
+  const bookingsCount = stats?.bookingsCount ?? 0;
+  const minutesBookedCount = stats?.minutesBookedCount ?? 0;
+
   const sessions = useMemo(
     () => [
       {
-        title: `${data?.matchesPlayedCount ?? "0"}`,
+        title: `${bookingsCount}`,
         subtitle: t("profile.courtsPlayed"),
         image: Images.court,
       },
       {
-        title: `${convertMinutesToHours(data?.minutesPlayedCount ?? 0)} ${t(
+        title: `${convertMinutesToHours(minutesBookedCount)} ${t(
           "general.hours"
         )}`,
         subtitle: t("profile.courtsTimes"),
         image: Images.clock,
       },
-      {
-        title: `${data?.bookingsCount ?? "0"}`,
-        subtitle: t("profile.sessions"),
-        image: Images.clipboard,
-      },
     ],
-    []
+    [bookingsCount, minutesBookedCount, t]
   );
 
   const onReportPress = () => {
@@ -67,11 +73,6 @@ export const useProfile = () => {
 
   const contextActionMenuItems: ActionMenuItems = useMemo(
     () => [
-      {
-        text: t("general.share"),
-        icon: "share",
-        onPress: () => {},
-      },
       {
         text: t("general.report"),
         icon: "flag",
@@ -110,10 +111,11 @@ export const useProfile = () => {
   const flattenPostsData = flattenData(postsData);
 
   useEffect(() => {
-    if (!profileId) {
-      updateProfileId(data?.id ?? "");
+    // Opening a stranger's profile first used to mark THEM as "me".
+    if (me.data?.id && profileId !== me.data.id) {
+      updateProfileId(me.data.id);
     }
-  }, [data?.id]);
+  }, [me.data?.id]);
 
   return {
     profile: data,

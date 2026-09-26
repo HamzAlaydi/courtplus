@@ -39,10 +39,14 @@ export const useFollow = () => {
   return { mutateAsync };
 };
 
-export const useGetUserById = (request: GetUserByIdRequest) => {
+export const useGetUserById = (
+  request: GetUserByIdRequest,
+  options: { enabled?: boolean } = {}
+) => {
   const { data, isFetching, isLoading, refetch } = useQuery({
     queryKey: [queryKeys.getUserById, request.id],
     queryFn: () => getUserById(request),
+    enabled: options.enabled ?? !!request.id,
   });
   return { data, isFetching, isLoading, refetch };
 };

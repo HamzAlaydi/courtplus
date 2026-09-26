@@ -73,7 +73,7 @@ const CourtCard = ({ name, id, image, status, court }) => {
         <div className="stat">
           <span>{t("courtCard.income_month")}</span>
           <h3>
-            {court?.totalRevenue?.toLocaleString() ?? 0} <span>SAR</span>
+            {court?.totalRevenue?.toLocaleString() ?? 0} <span>{t("home.currency")}</span>
           </h3>
         </div>
 

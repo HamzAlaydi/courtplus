@@ -62,6 +62,8 @@ export type Booking = {
   userId: string;
   courtId: string;
   startDate: string;
+  /** IANA zone of the court; API top-level field. */
+  timeZone?: string;
   endDate: string;
   open: boolean;
   duration: number;
@@ -74,4 +76,16 @@ export type Booking = {
   court: Court;
   participants: Participant[];
   review?: Review;
+  /**
+   * Open-match fields. The API has always returned these; without them on the
+   * model the match card could not show WHY a join would be refused, so
+   * "Book now" answered with a level/gender rejection the player had no way
+   * to see coming.
+   */
+  level?: string;
+  gender?: string;
+  playersASide?: number;
+  /** Frozen seat count the organiser's share was divided by. */
+  splitSeats?: number;
+  autoAccept?: boolean;
 };

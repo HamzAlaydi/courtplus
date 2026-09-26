@@ -11,7 +11,6 @@
   "faqs_subtitle": "Everything court owners and players need to know about using Court+.",
   "sports_facility_owners": "Sports Facility Owners",
   "load_more": "Load more",
-
   "seo": {
     "home_title": "Court+ | Sports Facility Management & Court Booking in Saudi Arabia",
     "home_description": "Court+ is the ultimate platform to manage and grow your sports facility in Saudi Arabia. Online court booking, payments, scheduling and analytics — all in one dashboard.",
@@ -27,7 +26,6 @@
     "privacy_title": "Court+ | Privacy Policy",
     "privacy_description": "Learn how Court+ collects, uses, stores, and protects your personal data in line with Saudi Arabia's Personal Data Protection Law (PDPL)."
   },
-
   "hero": {
     "title_active": "The ultimate platform",
     "title_rest": "to manage and grow your sports facility",
@@ -35,13 +33,11 @@
     "owner_question": "Sports Facility Owner?",
     "subscribe_now": "Subscribe Now"
   },
-
   "about": {
     "title": "About Court+",
     "text": "Court+ is a smart booking and management platform built for businesses that operate sports courts. Simplify operations, attract players and manage every court from one intuitive dashboard.",
     "learn_more": "Learn More"
   },
-
   "run": {
     "title": "Run your courts. Grow your business.",
     "subtitle": "Court+ gives sports business owners full control over bookings, schedules, payments, and customer engagement — all from one dashboard.",
@@ -72,7 +68,6 @@
       }
     ]
   },
-
   "works": {
     "tag": "Set up your courts",
     "title": "How Court+ Works for You",
@@ -96,12 +91,10 @@
       }
     ]
   },
-
   "manage": {
     "title": "Manage everything from one powerful dashboard",
     "subtitle": "Simple, smart, and built for growth."
   },
-
   "plans": {
     "title": "Choose the plan that fits your Sports Facility.",
     "subtitle": "Whether you manage a single court or operate multiple locations, Court+ offers flexible plans to help your sports business grow with confidence.",
@@ -131,13 +124,11 @@
       "Coaches"
     ]
   },
-
   "power": {
     "title_pre": "Power your sports business with",
     "title_highlight": "Court+.",
     "text": "Simplify management, attract more players, and grow your business, all from one platform."
   },
-
   "contact_form": {
     "title": "Ready to grow your business with Court+",
     "subtitle": "Leave your details and our team will get in touch to expand your facility.",
@@ -155,7 +146,6 @@
     "quote": "I had a dream that someday, I could help the finest organization in professional sports, and now...",
     "quote_author": "- Mike Brown"
   },
-
   "journal_page": {
     "hero_title": "Our Journal",
     "hero_subtitle": "Insights, stories, and tips from the world of sports and court management.",
@@ -224,7 +214,6 @@
       }
     ]
   },
-
   "faqs_page": {
     "hero_title_active": "Find answers to the most",
     "hero_title_rest": "common questions about using Court+.",
@@ -328,187 +317,186 @@
       }
     ]
   },
-
-    "terms_page": {
-      "hero_title": "Terms and Conditions",
-      "hero_subtitle": "These Terms and Conditions (“Terms”) govern your access to and use of the Court+ website, mobile application, and all related services. By using Court+, you agree to these Terms. Please read them carefully before continuing.",
-      "sections": [
-        {
-          "key": "getting-started",
-          "category": "Getting Started",
-          "items": [
-            {
-              "question": "What is Court+?",
-              "answer": "Court+ is a sports booking platform that helps players find, book, and manage courts across multiple cities."
-            },
-            {
-              "question": "How do I create an account?",
-              "answer": "Download the Court+ app or visit our website. Click Sign Up and complete your profile information."
-            },
-            {
-              "question": "Is the app free to use?",
-              "answer": "Yes, it’s completely free to download and browse available courts."
-            },
-            {
-              "question": "Which sports are supported?",
-              "answer": "We support tennis, basketball, football, padel, volleyball, and more. Availability varies by region."
-            },
-            {
-              "question": "Is Court+ available in my city?",
-              "answer": "Court+ continues to expand. Enter your location in the app to see nearby venues."
-            },
-            {
-              "question": "Can I use Court+ without creating an account?",
-              "answer": "You can browse facilities without an account, but booking requires signing up."
-            },
-            {
-              "question": "How do I update my profile information?",
-              "answer": "Go to the Profile tab in the app and tap Edit Profile to update your details."
-            },
-            {
-              "question": "How do I list my facility?",
-              "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
-            },
-            {
-              "question": "Is there a fee for listing my facility?",
-              "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
-            },
-            {
-              "question": "How do I manage bookings?",
-              "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
-            },
-            {
-              "question": "Can I disable or block certain time slots?",
-              "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
-            }
-          ]
-        },
-        {
-          "key": "for-sports-facility-owners",
-          "category": "For Sports Facility Owners",
-          "items": [
-            {
-              "question": "How do I list my facility?",
-              "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
-            },
-            {
-              "question": "Is there a fee for listing my facility?",
-              "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
-            },
-            {
-              "question": "How do I manage bookings?",
-              "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
-            },
-            {
-              "question": "Can I disable or block certain time slots?",
-              "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
-            },
-            {
-              "question": "How do I receive payouts?",
-              "answer": "Payouts are automatically transferred to your registered bank account every week."
-            },
-            {
-              "question": "Can multiple staff manage the same facility?",
-              "answer": "Yes, the owner can add staff accounts with custom permissions."
-            }
-          ]
-        },
-        {
-          "key": "for-players",
-          "category": "For Players",
-          "items": [
-            {
-              "question": "How do I book a court?",
-              "answer": "Search for a venue, choose a court and time slot, then confirm your booking."
-            },
-            {
-              "question": "Can I cancel a booking?",
-              "answer": "Yes, cancellation is allowed depending on the venue’s policy. Refunds may vary."
-            },
-            {
-              "question": "Can I reschedule my booking?",
-              "answer": "Many courts allow rescheduling before the session starts. Check the venue’s rules."
-            },
-            {
-              "question": "Do I need to bring my own equipment?",
-              "answer": "Some facilities offer equipment rentals. Check details on the court's page."
-            },
-            {
-              "question": "Can I book multiple courts at once?",
-              "answer": "Yes, depending on availability and the venue’s rules."
-            },
-            {
-              "question": "Can I invite other players to my booking?",
-              "answer": "You can share booking details with your friends or team members."
-            },
-            {
-              "question": "Do I need to pay in advance?",
-              "answer": "Most facilities require online payment when confirming your booking."
-            }
-          ]
-        },
-        {
-          "key": "payments-security",
-          "category": "Payments & Security",
-          "items": [
-            {
-              "question": "What payment methods are accepted?",
-              "answer": "Credit cards, debit cards, Apple Pay, Google Pay, and select digital wallets."
-            },
-            {
-              "question": "Is my payment information safe?",
-              "answer": "Yes. Court+ uses bank-level encryption and certified payment gateways."
-            },
-            {
-              "question": "Can I request a refund?",
-              "answer": "Refunds depend on the venue’s cancellation policy. Most refunds are processed within 5–7 business days."
-            },
-            {
-              "question": "Do you store my card information?",
-              "answer": "We do not store card details. All payments are processed by secure third-party providers."
-            },
-            {
-              "question": "Why was my payment declined?",
-              "answer": "This could be due to insufficient funds, incorrect card information, or a bank restriction."
-            },
-            {
-              "question": "Is there a service fee?",
-              "answer": "Some bookings may include a small platform service fee."
-            }
-          ]
-        },
-        {
-          "key": "technical-support",
-          "category": "Technical Support",
-          "items": [
-            {
-              "question": "How do I contact support?",
-              "answer": "Use in-app chat or email support@courtplusapp.com for assistance."
-            },
-            {
-              "question": "My app is not loading. What should I do?",
-              "answer": "Try restarting the app, updating it, or checking your internet connection."
-            },
-            {
-              "question": "I didn’t receive a confirmation email or SMS.",
-              "answer": "Check your spam folder or update your phone number/email in your profile."
-            },
-            {
-              "question": "The app keeps crashing. How do I fix it?",
-              "answer": "Clear cache, reinstall the app, or ensure your device software is up to date."
-            },
-            {
-              "question": "My booking is not showing in the app.",
-              "answer": "Log out and log back in, or contact support if the issue persists."
-            },
-            {
-              "question": "I’m having trouble with payments.",
-              "answer": "Make sure your card is valid and try again. If the issue continues, contact support."
-            }
-          ]
-        }
-      ]
-    },
+  "terms_page": {
+    "hero_title": "Terms and Conditions",
+    "hero_subtitle": "These Terms and Conditions (“Terms”) govern your access to and use of the Court+ website, mobile application, and all related services. By using Court+, you agree to these Terms. Please read them carefully before continuing.",
+    "sections": [
+      {
+        "key": "getting-started",
+        "category": "Getting Started",
+        "items": [
+          {
+            "question": "What is Court+?",
+            "answer": "Court+ is a sports booking platform that helps players find, book, and manage courts across multiple cities."
+          },
+          {
+            "question": "How do I create an account?",
+            "answer": "Download the Court+ app or visit our website. Click Sign Up and complete your profile information."
+          },
+          {
+            "question": "Is the app free to use?",
+            "answer": "Yes, it’s completely free to download and browse available courts."
+          },
+          {
+            "question": "Which sports are supported?",
+            "answer": "We support tennis, basketball, football, padel, volleyball, and more. Availability varies by region."
+          },
+          {
+            "question": "Is Court+ available in my city?",
+            "answer": "Court+ continues to expand. Enter your location in the app to see nearby venues."
+          },
+          {
+            "question": "Can I use Court+ without creating an account?",
+            "answer": "You can browse facilities without an account, but booking requires signing up."
+          },
+          {
+            "question": "How do I update my profile information?",
+            "answer": "Go to the Profile tab in the app and tap Edit Profile to update your details."
+          },
+          {
+            "question": "How do I list my facility?",
+            "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
+          },
+          {
+            "question": "Is there a fee for listing my facility?",
+            "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
+          },
+          {
+            "question": "How do I manage bookings?",
+            "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
+          },
+          {
+            "question": "Can I disable or block certain time slots?",
+            "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
+          }
+        ]
+      },
+      {
+        "key": "for-sports-facility-owners",
+        "category": "For Sports Facility Owners",
+        "items": [
+          {
+            "question": "How do I list my facility?",
+            "answer": "Sign up as an owner and complete the onboarding steps to list your courts."
+          },
+          {
+            "question": "Is there a fee for listing my facility?",
+            "answer": "Listing is free, but Court+ charges a small commission on successful bookings."
+          },
+          {
+            "question": "How do I manage bookings?",
+            "answer": "Owners receive access to an admin dashboard where they can manage schedules and reservations."
+          },
+          {
+            "question": "Can I disable or block certain time slots?",
+            "answer": "Yes, owners can temporarily disable specific time slots through the dashboard."
+          },
+          {
+            "question": "How do I receive payouts?",
+            "answer": "Payouts are automatically transferred to your registered bank account every week."
+          },
+          {
+            "question": "Can multiple staff manage the same facility?",
+            "answer": "Yes, the owner can add staff accounts with custom permissions."
+          }
+        ]
+      },
+      {
+        "key": "for-players",
+        "category": "For Players",
+        "items": [
+          {
+            "question": "How do I book a court?",
+            "answer": "Search for a venue, choose a court and time slot, then confirm your booking."
+          },
+          {
+            "question": "Can I cancel a booking?",
+            "answer": "Yes, cancellation is allowed depending on the venue’s policy. Refunds may vary."
+          },
+          {
+            "question": "Can I reschedule my booking?",
+            "answer": "Many courts allow rescheduling before the session starts. Check the venue’s rules."
+          },
+          {
+            "question": "Do I need to bring my own equipment?",
+            "answer": "Some facilities offer equipment rentals. Check details on the court's page."
+          },
+          {
+            "question": "Can I book multiple courts at once?",
+            "answer": "Yes, depending on availability and the venue’s rules."
+          },
+          {
+            "question": "Can I invite other players to my booking?",
+            "answer": "You can share booking details with your friends or team members."
+          },
+          {
+            "question": "Do I need to pay in advance?",
+            "answer": "Most facilities require online payment when confirming your booking."
+          }
+        ]
+      },
+      {
+        "key": "payments-security",
+        "category": "Payments & Security",
+        "items": [
+          {
+            "question": "What payment methods are accepted?",
+            "answer": "Credit cards, debit cards, Apple Pay, Google Pay, and select digital wallets."
+          },
+          {
+            "question": "Is my payment information safe?",
+            "answer": "Yes. Court+ uses bank-level encryption and certified payment gateways."
+          },
+          {
+            "question": "Can I request a refund?",
+            "answer": "Refunds depend on the venue’s cancellation policy. Most refunds are processed within 5–7 business days."
+          },
+          {
+            "question": "Do you store my card information?",
+            "answer": "We do not store card details. All payments are processed by secure third-party providers."
+          },
+          {
+            "question": "Why was my payment declined?",
+            "answer": "This could be due to insufficient funds, incorrect card information, or a bank restriction."
+          },
+          {
+            "question": "Is there a service fee?",
+            "answer": "Some bookings may include a small platform service fee."
+          }
+        ]
+      },
+      {
+        "key": "technical-support",
+        "category": "Technical Support",
+        "items": [
+          {
+            "question": "How do I contact support?",
+            "answer": "Use in-app chat or email support@courtplusapp.com for assistance."
+          },
+          {
+            "question": "My app is not loading. What should I do?",
+            "answer": "Try restarting the app, updating it, or checking your internet connection."
+          },
+          {
+            "question": "I didn’t receive a confirmation email or SMS.",
+            "answer": "Check your spam folder or update your phone number/email in your profile."
+          },
+          {
+            "question": "The app keeps crashing. How do I fix it?",
+            "answer": "Clear cache, reinstall the app, or ensure your device software is up to date."
+          },
+          {
+            "question": "My booking is not showing in the app.",
+            "answer": "Log out and log back in, or contact support if the issue persists."
+          },
+          {
+            "question": "I’m having trouble with payments.",
+            "answer": "Make sure your card is valid and try again. If the issue continues, contact support."
+          }
+        ]
+      }
+    ]
+  },
   "privacy_page": {
     "hero_title": "Privacy Policy",
     "hero_subtitle": "Court+ (“we”, “our”, or “us”) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our website, mobile app, and related services, in line with Saudi Arabia's Personal Data Protection Law (PDPL). By using Court+, you agree to this Privacy Policy.",
@@ -667,50 +655,36 @@
       }
     ]
   },
-
   "player_hero_title_active": "Book your next",
   "player_hero_title_rest": "game in seconds.",
   "player_hero_subtitle": "Discover and book top-rated courts…",
-
   "player_how_title": "How It Works",
   "player_how_subtitle": "Discover nearby courts, book instantly…",
-
   "player_step1_title": "Download & Sign Up",
   "player_step1_text": "Search by location, sport, or available slots.",
-
   "player_step2_title": "Find Courts Near You",
   "player_step2_text": "Create your player profile…",
-
   "player_step3_title": "Book Instantly",
   "player_step3_text": "Confirm your preferred court…",
-
   "player_step4_title": "Join or Create Matches",
   "player_step4_text": "Invite friends or join public games.",
-
   "player_step5_title": "Track Your Activity",
   "player_step5_text": "View bookings, history, and upcoming matches.",
-
   "player_why_title": "Playing your favorite sport should be easy,",
   "player_why_highlight1": "that’s why",
   "player_why_highlight2": "puts every step of the game in your hands.",
   "player_why_p1": "Discover nearby courts, book quickly…",
   "player_why_p2": "No calls or delays…",
-
   "faq_q1": "How can I find and book a court?",
   "faq_a1": "You can browse nearby courts, check availability, and book instantly through the app.",
-
   "faq_q2": "Can I manage multiple locations under one account?",
   "faq_a2": "Yes, Court+ allows owners to manage several branches in one dashboard.",
-
   "faq_q3": "How do I track payments and bookings?",
   "faq_a3": "We provide detailed analytics, payment logs, and booking history in real time.",
-
   "faq_q4": "Is there a commission on each booking?",
   "faq_a4": "Court+ charges a small service fee per completed booking.",
-
   "faq_q5": "Can I promote offers or discounts?",
   "faq_a5": "Yes, you can create promo campaigns and seasonal offers for your customers.",
-
   "pricing": {
     "basic": "Basic",
     "enterprise": "Enterprise",
@@ -718,7 +692,6 @@
     "perMonth": "per month (VAT excl.)",
     "subscribe": "Subscribe now",
     "contact": "Contact us for pricing",
-
     "basic_features": [
       "Court information display",
       "Matches Reservation",
@@ -728,7 +701,6 @@
       "Invoices",
       "48h response time"
     ],
-
     "enterprise_features": [
       "Everything in Basic",
       "Money wallet",
@@ -737,5 +709,14 @@
       "Leagues",
       "Coaches"
     ]
+  },
+  "vendor_form": {
+    "success": "Check your email — we've sent you a link to finish setting up your facility.",
+    "success_title": "Check your inbox",
+    "success_body": "We've sent a link to finish setting up your facility to:",
+    "success_hint": "The link works once and expires in 7 days. Don't see it? Check your spam folder.",
+    "register_another": "Register another facility",
+    "error": "Something went wrong. Please try again in a moment.",
+    "rate_limited": "You've sent a few requests already. Please wait a little while before trying again."
   }
 }

@@ -1,11 +1,17 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import styles from "./AmountDisplay.styles";
 import { AmountDisplayProps } from "./AmountDisplay.types";
 
-const AmountDisplay = ({ amount, overrideStyle }: AmountDisplayProps) => {
+const AmountDisplay = ({
+  amount,
+  currency,
+  overrideStyle,
+}: AmountDisplayProps) => {
+  const { t } = useTranslation();
   const {
     currentTheme: { colors },
   } = useThemeContext();
@@ -14,7 +20,7 @@ const AmountDisplay = ({ amount, overrideStyle }: AmountDisplayProps) => {
   return (
     <View style={[themedStyles.container, overrideStyle]}>
       <CustomText
-        text="SAR"
+        text={currency ?? t("general.currency")}
         font="text"
         weight="semiBold"
         overrideStyle={themedStyles.text}

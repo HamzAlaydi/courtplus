@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  App,
   Badge,
   Button,
   List,
@@ -17,10 +18,12 @@ import dayjs from "dayjs";
 import {
   getUnseenCount,
   listNotifications,
+  markAllNotificationsRead,
   markAllNotificationsSeen,
   markNotificationRead,
 } from "@/api/notifications";
 import type { AppNotification } from "@/api/types";
+import { useNotificationStream } from "@/hooks/useNotificationStream";
 import { LIME } from "@/theme";
 
 /** Deep-link a notification to the relevant console page by data.kind. */
@@ -51,17 +54,46 @@ export default function NotificationsBell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const { message } = App.useApp();
+
   const { data: unseen = 0 } = useQuery({
     queryKey: ["notifications", "unseen-count"],
     queryFn: getUnseenCount,
-    refetchInterval: 30_000,
+    // Fallback only: the stream below updates the badge the moment a
+    // notification is created. Polling covers a dropped stream.
+    refetchInterval: 60_000,
   });
 
   const { data, isLoading } = useQuery({
     queryKey: ["notifications", "list"],
     queryFn: () => listNotifications({ page: 1, pageSize: 15 }),
-    refetchInterval: 30_000,
+    refetchInterval: 60_000,
     enabled: open,
+  });
+
+  // Realtime: the server pushes the new unseen count (and the item) over
+  // SSE. Write the count straight into the cache so the badge changes
+  // without a request, then refresh the list so it is current when opened.
+  useNotificationStream((event) => {
+    if (event.type !== "count" && event.type !== "notification") return;
+    const count = Number(event.data.unseenCount);
+    if (Number.isFinite(count)) {
+      queryClient.setQueryData(["notifications", "unseen-count"], count);
+    }
+    if (event.type === "notification") {
+      queryClient.invalidateQueries({ queryKey: ["notifications", "list"] });
+      const n = event.data.notification;
+      if (n) {
+        message.info(
+          notificationText({
+            id: n.id ?? "",
+            type: n.type,
+            data: n.data,
+            createdAt: n.createdAt,
+          } as AppNotification),
+        );
+      }
+    }
   });
 
   const unreadItems = (data?.items ?? []).filter((n) => !n.readAt);
@@ -79,9 +111,8 @@ export default function NotificationsBell() {
     onSuccess: invalidate,
   });
 
-  // No bulk mark-read endpoint exists — loop the per-item PATCH /:id/read.
   const markAllReadMutation = useMutation({
-    mutationFn: (ids: string[]) => Promise.all(ids.map(markNotificationRead)),
+    mutationFn: markAllNotificationsRead,
     onSuccess: invalidate,
   });
 
@@ -105,7 +136,7 @@ export default function NotificationsBell() {
         style={{ padding: 0 }}
         disabled={unreadItems.length === 0}
         loading={markAllReadMutation.isPending}
-        onClick={() => markAllReadMutation.mutate(unreadItems.map((n) => n.id))}
+        onClick={() => markAllReadMutation.mutate()}
       >
         Mark all as read
       </Button>

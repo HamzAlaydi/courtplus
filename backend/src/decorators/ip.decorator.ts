@@ -6,16 +6,23 @@ export const IpAddress = createParamDecorator(
     return getIpAddress(ctx);
   },
 );
-export function getIpAddress(ctx: ExecutionContext) {
+
+/**
+ * Resolve the client IP.
+ *
+ * Uses Express's `req.ip`, which honours X-Forwarded-For ONLY according to the
+ * `trust proxy` setting configured in main.ts (one hop — Caddy). That makes the
+ * value trustworthy.
+ *
+ * This previously read `x-forwarded-for` straight off the raw headers and took
+ * the first entry. Caddy *appends* to that header rather than replacing it, so
+ * the first entry was whatever the client sent — fully attacker-controlled.
+ * Two things depended on it:
+ *   - rate-limit keys for login/OTP (an attacker rotated the header to get
+ *     unlimited attempts), and
+ *   - the audit trail (an attacker could forge any source IP in the logs).
+ */
+export function getIpAddress(ctx: ExecutionContext): string | undefined {
   const request: Request = ctx.switchToHttp().getRequest();
-  const ip =
-    request.headers['x-forwarded-for'] ||
-    request.headers['x-real-ip'] ||
-    request.socket.remoteAddress;
-
-  if (typeof ip === 'string' && ip.includes(',')) {
-    return ip.split(',')[0].trim();
-  }
-
-  return ip;
+  return request.ip ?? request.socket?.remoteAddress;
 }

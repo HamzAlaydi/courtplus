@@ -55,10 +55,18 @@ export interface EnterMatchRequest {
 
 export interface EventsRequest {
   id: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface EventsResponse extends ApiResponse {
   items: MatchEvent[];
+  pagination: Pagination;
+}
+
+export interface EventsPage {
+  items: MatchEvent[];
+  pagination?: Pagination;
 }
 
 export interface RespondMatchRequest {
@@ -86,4 +94,34 @@ export interface PayMatchResponse extends ApiResponse {
   clientSecret: string;
   publishableKey: string;
   customerId: string;
+}
+
+export interface CancelMatchRequest {
+  id: string;
+  reason?: string;
+}
+
+export interface JoinMatchRequest {
+  id: string;
+}
+
+export interface RespondJoinRequestRequest {
+  id: string;
+  participantId: string;
+  accept: boolean;
+  rejectionReason?: string;
+}
+
+/**
+ * `POST /bookings/:id/join` answers with the Stripe payload only when the
+ * joiner owes money right away (a split match that auto-accepts). A whole-
+ * payment match, or one whose host must approve the request first, answers
+ * with an empty body, so every payment field is optional here.
+ */
+export interface JoinMatchResponse extends ApiResponse {
+  paymentId?: string;
+  ephemeralKey?: string;
+  clientSecret?: string;
+  publishableKey?: string;
+  customerId?: string;
 }

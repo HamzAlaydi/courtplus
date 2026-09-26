@@ -1,3 +1,5 @@
+import { NormalizePhone } from 'src/common/phone.transform';
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
@@ -19,6 +21,8 @@ export class VerifyPhoneCodeDto {
     description: 'The phone number to verify',
     example: '+201000000000',
   })
+  @NormalizePhone()
+  @IsPhoneNumber(undefined, { message: INVALID_PHONE_NUMBER })
   phoneNumber: string;
 
   @ApiProperty({
@@ -37,6 +41,7 @@ export class VerifyEmailCodeDto {
     description: 'email address',
     example: 'test@test.com',
   })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail(undefined, { message: INVALID_EMAIL })
   email: string;
 

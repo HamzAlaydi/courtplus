@@ -17,6 +17,15 @@ export class BillingSubscriptionDto {
 
   @ApiPropertyOptional({ nullable: true })
   cancelledAt?: Date;
+
+  @ApiPropertyOptional({
+    description: 'True when the plan is scheduled to end at the period end',
+    example: false,
+  })
+  cancelAtPeriodEnd?: boolean;
+
+  @ApiPropertyOptional({ nullable: true, description: 'When the plan ends' })
+  cancelAt?: Date | null;
 }
 
 export class PricingBreakdownDto {

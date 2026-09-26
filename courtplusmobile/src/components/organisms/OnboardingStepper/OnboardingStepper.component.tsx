@@ -1,90 +1,146 @@
-import React, { useMemo, useRef, useState, useCallback } from "react";
+import React, { useRef, useState } from "react";
 import {
   ImageBackground,
-  useWindowDimensions,
   View,
-  StatusBar,
-  Pressable,
   Image,
-  Text,
+  Pressable,
 } from "react-native";
 import { OnboardingStepperProps } from "./OnboardingStepper.types";
-import { OnboardingItem } from "types";
 import { CustomText, CustomButton } from "atoms/index";
 import { useTranslation } from "react-i18next";
-import { useThemeContext } from "contexts";
-import styles from "./OnboardingStepper.styles";
 import PagerView from "react-native-pager-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Images } from "theme";
 import { horizontalScale, verticalScale } from "utils";
 
+/**
+ * First-launch walkthrough.
+ *
+ * The previous version rendered a single static image, ignored `steps`
+ * entirely, showed hard-coded English legal text twice and had a Skip
+ * button that did nothing — the very first screen a customer saw.
+ */
 const OnboardingStepper = ({
   steps,
   onComplete,
   onSkip,
 }: OnboardingStepperProps) => {
   const { t } = useTranslation();
-  const {
-    currentTheme: { colors },
-  } = useThemeContext();
-  const themedStyles = useMemo(() => styles(colors), [colors]);
   const { top, bottom } = useSafeAreaInsets();
+  const pagerRef = useRef<PagerView>(null);
+  const [page, setPage] = useState(0);
+  const isLast = page >= steps.length - 1;
+
+  const onNext = () => {
+    if (isLast) {
+      onComplete?.();
+      return;
+    }
+    pagerRef.current?.setPage(page + 1);
+  };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#0A1517",
-      }}
-    >
+    <View style={{ flex: 1, backgroundColor: "#0A1517" }}>
       <View
         style={{
           paddingHorizontal: 24,
           flexDirection: "row",
           alignItems: "center",
-          gap: horizontalScale(20),
-          paddingTop: top,
+          justifyContent: "space-between",
+          paddingTop: top + verticalScale(8),
         }}
       >
-        <View
-          style={{
-            height: 40,
-            width: 40,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#142326",
-            borderRadius: 40,
-          }}
-        >
-          {/* <ArrowLeft /> */}
-        </View>
         <Image
           source={Images.horizontalLogo}
-          style={{ width: 207, height: 60 }}
+          style={{ width: 160, height: 46 }}
+          resizeMode="contain"
         />
+        <Pressable onPress={onSkip} hitSlop={12} accessibilityRole="button">
+          <CustomText
+            text={t("general.skip")}
+            font="body"
+            weight="semiBold"
+            overrideStyle={{ color: "#C0FF42" }}
+          />
+        </Pressable>
       </View>
-      <ImageBackground
-        style={{ flex: 1, justifyContent: "center" }}
-        source={Images.onboarding1}
-        imageStyle={{
-          width: "100%",
-          height: "100%",
+
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={0}
+        onPageSelected={(e) => setPage(e.nativeEvent.position)}
+      >
+        {steps.map((step, index) => (
+          <View key={index} style={{ flex: 1 }}>
+            <ImageBackground
+              style={{ flex: 1, justifyContent: "flex-end" }}
+              source={step.image}
+              imageStyle={{ width: "100%", height: "100%" }}
+            >
+              <View
+                style={{
+                  paddingHorizontal: 24,
+                  paddingVertical: verticalScale(24),
+                  gap: verticalScale(8),
+                  backgroundColor: "rgba(10, 21, 23, 0.55)",
+                }}
+              >
+                <CustomText
+                  text={step.title}
+                  font="headline3"
+                  weight="bold"
+                  overrideStyle={{ color: "white" }}
+                />
+                <CustomText
+                  text={step.description}
+                  font="body"
+                  overrideStyle={{ color: "white", opacity: 0.85 }}
+                />
+              </View>
+            </ImageBackground>
+          </View>
+        ))}
+      </PagerView>
+
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: horizontalScale(8),
+          paddingVertical: verticalScale(16),
         }}
       >
-        <Text style={{ color: "white", marginHorizontal: 24 }}>
-          By starting, you agree to our Terms of Service Privacy Policy
-        </Text>
-      </ImageBackground>
+        {steps.map((_, index) => (
+          <View
+            key={index}
+            style={{
+              width: index === page ? 24 : 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: index === page ? "#C0FF42" : "#2B3B3E",
+            }}
+          />
+        ))}
+      </View>
 
       <CustomButton
-        title={t("general.skip")}
-        onPress={() => {}}
-        overrideStyle={{ marginHorizontal: 24, marginBottom: 24 }}
+        title={isLast ? t("onboarding.getStarted") : t("general.next")}
+        onPress={onNext}
+        overrideStyle={{ marginHorizontal: 24 }}
       />
-      <Text style={{ color: "white", marginHorizontal: 24 }}>
-        By starting, you agree to our Terms of Service Privacy Policy
-      </Text>
+      <CustomText
+        text={t("onboarding.terms")}
+        font="body"
+        overrideStyle={{
+          color: "white",
+          opacity: 0.7,
+          textAlign: "center",
+          marginHorizontal: 24,
+          marginTop: verticalScale(12),
+          marginBottom: bottom + verticalScale(12),
+        }}
+      />
     </View>
   );
 };

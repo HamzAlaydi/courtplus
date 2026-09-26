@@ -5,6 +5,22 @@ import { PermissionsAndroid } from "react-native";
 import { isAndroid, Location, reverseGeocode } from "utils";
 import { useUserStore } from "store";
 
+// Riyadh, until the customer picks a location.
+//
+// The radius is in KM and must match DEFAULT_COURTS_RADIUS (500 km). It was
+// set to 5, which the court query treats as an explicit choice — so every
+// customer silently searched a 5 km circle and saw nothing unless a venue was
+// almost next door. The filter still overrides this when the customer picks
+// their own radius.
+const DEFAULT_SEARCH_RADIUS_KM = 500;
+
+const FALLBACK_LOCATION = {
+  address: "",
+  lat: 24.7136,
+  long: 46.6753,
+  radius: DEFAULT_SEARCH_RADIUS_KM,
+};
+
 export const useLocation = () => {
   const updateLocation = useUserStore((store) => store.updateLocation);
 
@@ -39,13 +55,17 @@ export const useLocation = () => {
             address: "",
             lat: pos.coords.latitude,
             long: pos.coords.longitude,
-            radius: 5,
+            radius: DEFAULT_SEARCH_RADIUS_KM,
           });
         },
-        (error) => error
+        // GPS off / timeout: fall back so lists still load.
+        () => updateLocation(FALLBACK_LOCATION),
+        { timeout: 15000, maximumAge: 60000 }
       );
       return true;
     }
+    // Permission denied: same fallback instead of an endless spinner.
+    updateLocation(FALLBACK_LOCATION);
     return false;
   };
 

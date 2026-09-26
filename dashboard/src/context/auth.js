@@ -18,18 +18,18 @@ const loadAuthFromStorage = () => {
   const role = localStorage.getItem("role");
 
   if (accessToken && refreshToken && userData && tokenExpiry) {
-    const currentTime = Math.floor(Date.now() / 1000);
-
-    if (parseInt(tokenExpiry) > currentTime) {
-      return {
-        token: accessToken,
-        refreshToken,
-        user: JSON.parse(userData),
-        role,
-        isAuthenticated: true,
-        tokenExpiry: parseInt(tokenExpiry),
-      };
-    }
+    // An expired ACCESS token is not a logged-out user: the 30-day refresh
+    // token is still there and the request interceptor refreshes on the
+    // first call. Treating expiry as logout forced a new login after every
+    // 15-minute break.
+    return {
+      token: accessToken,
+      refreshToken,
+      user: JSON.parse(userData),
+      role,
+      isAuthenticated: true,
+      tokenExpiry: parseInt(tokenExpiry),
+    };
   }
 
   return initialState;

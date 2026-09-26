@@ -1,4 +1,11 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  forwardRef,
+} from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
@@ -36,9 +43,26 @@ export interface SubscriptionSyncResult {
   direction: SyncDirection;
 }
 
+export interface PlanPricing {
+  baseAmountCents: number;
+  addonAmountCents: number;
+  currency: string;
+}
+
 @Injectable()
-export class PricingService {
+export class PricingService implements OnModuleInit {
   private readonly logger = new Logger(PricingService.name);
+
+  /**
+   * Live copy of the Stripe Price objects, refreshed hourly.
+   *
+   * PRICING is what the code assumes; the Stripe prices are what the card is
+   * actually charged. Every quoted figure (overview, next invoice, add-court
+   * confirmation) used the constants, so an edit to a price in the Stripe
+   * dashboard silently made the app quote the wrong number. Live amounts win
+   * and a mismatch is logged for ops.
+   */
+  private livePricing: PlanPricing | null = null;
 
   private readonly runningSyncs = new Map<
     string,
@@ -61,12 +85,86 @@ export class PricingService {
     private readonly configService: ConfigService,
   ) { }
 
+  onModuleInit(): void {
+    // Not awaited: boot must not wait on Stripe. Constants apply until then.
+    void this.refreshLivePricing();
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async refreshLivePricing(): Promise<void> {
+    const baseId = this.configService.get('stripe.branchPriceId');
+    const branchAddonId = this.configService.get('stripe.branchAddonPriceId');
+    const courtAddonId = this.configService.get('stripe.courtAddonPriceId');
+    if (!baseId || !branchAddonId || !courtAddonId) {
+      return;
+    }
+    try {
+      const [base, branchAddon, courtAddon] = await Promise.all([
+        this.paymentsService.retrievePrice(baseId),
+        this.paymentsService.retrievePrice(branchAddonId),
+        this.paymentsService.retrievePrice(courtAddonId),
+      ]);
+      const prices = { base, branchAddon, courtAddon };
+      for (const [name, price] of Object.entries(prices)) {
+        if (
+          !price.active ||
+          price.recurring?.interval !== 'month' ||
+          typeof price.unit_amount !== 'number'
+        ) {
+          this.logger.error(
+            `[BILLING] Stripe price ${name} (${price.id}) is not an active monthly unit price — quoting PRICING constants instead`,
+          );
+          return;
+        }
+      }
+      if (
+        branchAddon.unit_amount !== courtAddon.unit_amount ||
+        new Set([base.currency, branchAddon.currency, courtAddon.currency]).size !== 1
+      ) {
+        this.logger.error(
+          `[BILLING] Stripe add-on prices disagree (branch ${branchAddon.unit_amount} ${branchAddon.currency}, court ${courtAddon.unit_amount} ${courtAddon.currency}, base ${base.currency}); the app assumes one add-on rate in one currency`,
+        );
+      }
+      this.livePricing = {
+        baseAmountCents: base.unit_amount,
+        addonAmountCents: courtAddon.unit_amount,
+        currency: base.currency,
+      };
+      if (
+        base.unit_amount !== PRICING.BASE_AMOUNT_CENTS ||
+        courtAddon.unit_amount !== PRICING.ADDON_AMOUNT_CENTS ||
+        base.currency !== PRICING.CURRENCY
+      ) {
+        this.logger.error(
+          `[BILLING] Stripe prices (${base.unit_amount}/${courtAddon.unit_amount} ${base.currency}) differ from PRICING constants (${PRICING.BASE_AMOUNT_CENTS}/${PRICING.ADDON_AMOUNT_CENTS} ${PRICING.CURRENCY}); live values are being quoted — align the constants`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        '[BILLING] Could not load Stripe prices; quoting PRICING constants',
+        error as Error,
+      );
+    }
+  }
+
+  /** Amounts to quote: live Stripe prices when loaded, else the constants. */
+  getPricing(): PlanPricing {
+    return (
+      this.livePricing ?? {
+        baseAmountCents: PRICING.BASE_AMOUNT_CENTS,
+        addonAmountCents: PRICING.ADDON_AMOUNT_CENTS,
+        currency: PRICING.CURRENCY,
+      }
+    );
+  }
+
   /**
    * Base $30/mo includes 1 branch + 2 courts. Every extra branch is
    * $10/mo (1 court included per extra branch). Every court beyond the
    * included units is $10/mo.
    */
   computeBreakdown(branchCount: number, courtCount: number): PricingBreakdown {
+    const pricing = this.getPricing();
     const branchAddons = Math.max(0, branchCount - PRICING.INCLUDED_BRANCHES);
     const includedCourts =
       branchCount === 0
@@ -84,9 +182,8 @@ export class PricingService {
       courtAddons,
       billableAddons,
       monthlyAmountCents:
-        PRICING.BASE_AMOUNT_CENTS +
-        billableAddons * PRICING.ADDON_AMOUNT_CENTS,
-      currency: PRICING.CURRENCY,
+        pricing.baseAmountCents + billableAddons * pricing.addonAmountCents,
+      currency: pricing.currency,
     };
   }
 
@@ -107,6 +204,30 @@ export class PricingService {
   async computeTenantBreakdown(tenantId: string): Promise<PricingBreakdown> {
     const { branchCount, courtCount } = await this.getTenantCounts(tenantId);
     return this.computeBreakdown(branchCount, courtCount);
+  }
+
+  /**
+   * Line items for the first Checkout: the same base + add-on shape that
+   * doSyncTenantSubscription maintains afterwards, so the subscription is
+   * born with the tenant's real unit counts instead of the base plan alone.
+   */
+  buildCheckoutLineItems(
+    breakdown: PricingBreakdown,
+  ): Array<{ price: string; quantity: number }> {
+    const basePriceId = this.configService.get('stripe.branchPriceId');
+    const branchAddonPriceId = this.configService.get(
+      'stripe.branchAddonPriceId',
+    );
+    const courtAddonPriceId = this.configService.get('stripe.courtAddonPriceId');
+
+    const items = [{ price: basePriceId, quantity: 1 }];
+    if (breakdown.branchAddons > 0) {
+      items.push({ price: branchAddonPriceId, quantity: breakdown.branchAddons });
+    }
+    if (breakdown.courtAddons > 0) {
+      items.push({ price: courtAddonPriceId, quantity: breakdown.courtAddons });
+    }
+    return items;
   }
 
   /**

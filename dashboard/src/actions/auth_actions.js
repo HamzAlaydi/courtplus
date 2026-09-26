@@ -7,8 +7,10 @@ export const signInStaff = (credentials) => async (dispatch) => {
     const data = await authService.signInStaff(credentials).catch((err) => err);
     // Handle API error response properly
     if (data.response && data.response.data) {
-      const errorMessage = data.response.data.message || "INVALID_CREDENTIALS";
-      return errorMessage;
+      // HttpExceptionFilter responds { statusCode, code } — `message` is
+      // never set, so every failure (including the 1-hour throttle block)
+      // read as "invalid credentials".
+      return data.response.data.code || data.response.data.message || "INVALID_CREDENTIALS";
     }
 
     // Check if verification is required
@@ -64,6 +66,10 @@ export const verifyStaff = async (userData) => {
 
 export const resendVerificationCode = async (data) => {
   return await authService.resendVerificationCode(data);
+};
+
+export const changeUnverifiedEmail = async (data) => {
+  return await authService.changeUnverifiedEmail(data);
 };
 
 export const forgetPass = async (data) => {

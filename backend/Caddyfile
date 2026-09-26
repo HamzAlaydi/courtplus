@@ -1,3 +1,69 @@
-api.courtplusapp.com
+# Court+ API edge.
+#
+# This was two lines (hostname + reverse_proxy). Caddy gives us automatic
+# HTTPS and HSTS for free, but everything below had to be added explicitly.
 
-reverse_proxy api:3000
+api.courtplusapp.com {
+	# --- Security headers -------------------------------------------------
+	header {
+		# Caddy sets HSTS automatically, but not with preload/subdomains.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		# The API serves JSON and (optionally) the Swagger page; nothing here
+		# should ever be framed.
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+		# Never advertise the server software.
+		-Server
+		-X-Powered-By
+	}
+
+	# --- Keep the API docs off the public internet ------------------------
+	# ENABLE_API_DOCS also gates these in the app; this is defence in depth so
+	# a misconfigured env var cannot publish the full API map.
+	@docs path /reference/api* /api-json
+	respond @docs 404
+
+	# --- Upload ceiling ---------------------------------------------------
+	# Uploads go to S3 via presigned POST, so the API itself never needs to
+	# accept a large body. Without a cap, a single request can pin memory.
+	request_body {
+		max_size 2MB
+	}
+
+	# --- Realtime notifications (SSE) -----------------------------------
+	# Long-lived text/event-stream responses: flush every write and skip the
+	# upstream response timeout that ordinary JSON calls get below. Caddy
+	# already streams event-stream responses, but making it explicit means a
+	# future transport change cannot silently buffer the bells.
+	@sse path /notifications/stream
+	reverse_proxy @sse api:3000 {
+		header_up X-Real-IP {remote_host}
+		flush_interval -1
+		transport http {
+			dial_timeout 10s
+		}
+	}
+
+	reverse_proxy api:3000 {
+		# Caddy sets X-Forwarded-For/Proto; the app trusts exactly one hop
+		# (app.set('trust proxy', 1) in main.ts) so req.ip is the real client.
+		header_up X-Real-IP {remote_host}
+
+		# Do not let a slow upstream hold connections open indefinitely.
+		transport http {
+			dial_timeout 10s
+			response_header_timeout 30s
+		}
+	}
+
+	# Structured access logs, rotated, so there is some record of traffic.
+	log {
+		output file /data/access.log {
+			roll_size 10MB
+			roll_keep 5
+		}
+		format json
+	}
+}

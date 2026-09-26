@@ -51,10 +51,35 @@ export class MailService {
   }
 
   async sendMail({ to, subject, html, text, replyTo }: SendMailOptions) {
+    const recipients = to.join(', ');
     try {
-      return await this.send({ to, subject, html, text, replyTo });
+      const result = await this.send({ to, subject, html, text, replyTo });
+
+      // nodemailer RESOLVES even when the server refused some recipients -
+      // they come back in `rejected`. Without this check a partly or wholly
+      // undelivered message looked exactly like a delivered one.
+      const rejected = (result as { rejected?: unknown[] })?.rejected ?? [];
+      if (rejected.length) {
+        this.logger.error(
+          `Email "${subject}" was REJECTED for: ${rejected.join(', ')} (accepted: ${recipients})`,
+        );
+        if (rejected.length >= to.length) {
+          throw new Error(`all recipients rejected: ${rejected.join(', ')}`);
+        }
+      }
+
+      // Logged at info on purpose. Without it there is no way to tell an
+      // email that was never attempted from one that was sent and simply
+      // never arrived - which is precisely the question support has to
+      // answer when a vendor says "no code came through".
+      this.logger.log(
+        `Email sent via ${this.driver} - to: ${recipients}, subject: "${subject}"`,
+      );
+      return result;
     } catch (error) {
-      this.logger.warn(`Outbound email failed: ${(error as Error).message}`);
+      this.logger.error(
+        `Outbound email FAILED via ${this.driver} - to: ${recipients}, subject: "${subject}" - ${(error as Error).message}`,
+      );
       throw new ServiceUnavailableException(EMAIL_SEND_FAILED);
     }
   }

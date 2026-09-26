@@ -15,6 +15,9 @@ export interface BookingUpdatedEventPayload {
 
 export interface BookingCancelledEventPayload {
   booking: Booking;
+  /** Who cancelled and why — surfaced to the other side (customer or venue). */
+  cancelledBy?: { id: string; type: string; name?: string };
+  reason?: string | null;
 }
 
 export interface ParticipantRespondedEventPayload {

@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
+import { NotificationsRealtimeService } from './notifications-realtime.service';
 import { NotificationsController } from './notifications.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -23,7 +24,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
     forwardRef(() => BookingsModule),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+  providers: [NotificationsService, NotificationsRealtimeService],
+  exports: [NotificationsService, NotificationsRealtimeService],
 })
 export class NotificationsModule { }

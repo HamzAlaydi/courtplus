@@ -57,7 +57,9 @@ export default function Home() {
   });
 
   const branches = branchesData?.items || [];
-  const hasSubscription = !!billingOverview?.subscription;
+  const hasSubscription = ["active", "past_due", "trialing"].includes(
+    billingOverview?.subscription?.status
+  );
   const showSubscribeBanner =
     subscribeBannerVisible &&
     ((billingOverview && !billingOverview.subscription) ||
@@ -76,7 +78,13 @@ export default function Home() {
             showIcon
             closable
             onClose={() => setSubscribeBannerVisible(false)}
-            message={t("home.subscribe_banner")}
+            message={t("home.subscribe_banner", {
+              amount: `${(
+                (billingOverview?.pricing?.baseAmountCents ?? 3000) / 100
+              ).toLocaleString()} ${(
+                billingOverview?.pricing?.currency || "usd"
+              ).toUpperCase()}`,
+            })}
             action={
               <Button
                 size="small"

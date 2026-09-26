@@ -10,10 +10,12 @@ import {
   Switch,
   Tag,
   Tooltip,
-} from "antd";
+  Modal, Alert } from "antd";
 import "dayjs/locale/en";
 import WorkingHours from "../components/WorkingHours"; // Reusable component
 import { UploadOutlined } from "@ant-design/icons";
+import ImgCrop from "antd-img-crop";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBranches } from "../actions/branch_action";
 import { useNotification } from "../modules/NotificationProvider";
@@ -23,6 +25,7 @@ import {
 } from "react-icons/io";
 import GooglePlacesInput from "../components/GooglePlaceses";
 import { useNavigate, useParams } from "react-router-dom";
+import { getCourtAvailability } from "../actions/subscription_action";
 import {
   createCourt,
   deleteCourt,
@@ -34,7 +37,14 @@ import ModalDelete from "../components/ModalDelete";
 import { MdDeleteOutline } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { uploadImageToS3 } from "../utils/functions";
+import UploadProgress from "../components/UploadProgress";
 import { notifyError } from "../utils/errorMessages";
+
+// 16:9. Court photos are shown in fixed-ratio cards in the mobile app and on
+// the website, so a consistent crop is what keeps listings looking uniform.
+const COURT_IMAGE_ASPECT = 16 / 9;
+const MAX_IMAGE_MB = 8;
+const MAX_VIDEO_MB = 100;
 
 const { TextArea } = Input;
 
@@ -45,6 +55,9 @@ const MODERATION_STATUS_COLORS = {
   changes_requested: "red",
   suspended: "default",
 };
+
+const formatMoney = (cents, currency) =>
+  `${((cents ?? 0) / 100).toLocaleString()} ${(currency || "").toUpperCase()}`;
 
 export default function CourtForm() {
   const { t } = useTranslation();
@@ -62,6 +75,8 @@ export default function CourtForm() {
   });
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // Court data waiting for the vendor to confirm a paid add-on.
+  const [pendingCreate, setPendingCreate] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [images, setImages] = useState([]); // Store image URLs
   const [imageIds, setImageIds] = useState([]); // Store uploaded image IDs
@@ -80,7 +95,7 @@ export default function CourtForm() {
   // 🔹 Fetch branches with applied filters
   const { isLoading, data: branchData } = useQuery({
     queryKey: ["branches"],
-    queryFn: getBranches,
+    queryFn: () => getBranches({ page: 1, pageSize: 100 }),
     keepPreviousData: true,
   });
 
@@ -177,8 +192,17 @@ export default function CourtForm() {
     },
     onError: (err) => {
       console.log("Error updating court:", err);
-      notify("error", "Something went wrong while updating. : ", err);
+      notifyError(notify, err, t, "courtForm.update_failed");
     },
+  });
+
+  // What one more court costs, fetched only when creating. Lets the vendor
+  // confirm a paid add-on BEFORE the card is charged — until now the first
+  // they heard of the charge was the invoice.
+  const { data: courtAvailability } = useQuery({
+    queryKey: ["court-availability"],
+    queryFn: getCourtAvailability,
+    enabled: !id,
   });
 
   const handleSubmit = (values) => {
@@ -217,19 +241,83 @@ export default function CourtForm() {
       updateCourtMutate(finalData);
     } else {
       // ✅ CREATE NEW COURT
-
+      if (courtAvailability?.canCreate === false) {
+        notify("error", t("billing.court_creation_blocked"));
+        navigate("/billing");
+        return;
+      }
+      if (courtAvailability?.nextCourtChargeCents > 0) {
+        // Paid add-on: confirm the price first.
+        setPendingCreate(finalData);
+        return;
+      }
       createCourtMutate(finalData);
     }
+  };
+
+  // null = idle, 0-100 = in flight. Keyed by kind so an image and a video can
+  // upload independently without one clobbering the other's indicator.
+  const [uploading, setUploading] = useState({ image: null, video: null });
+
+  // Accept on EITHER the reported MIME or the file extension.
+  //
+  // Browsers do not always produce a MIME for media files — .mov in
+  // particular often arrives as an empty string, and uploadImageToS3 already
+  // works around the same thing when signing the S3 policy. Checking the MIME
+  // alone silently rejected perfectly valid videos, so a vendor picked a file
+  // and simply nothing happened.
+  const matchesFile = (file, mimes, extensions) => {
+    const type = (file.type || "").toLowerCase();
+    if (type && mimes.includes(type)) return true;
+    const name = (file.name || "").toLowerCase();
+    return extensions.some((ext) => name.endsWith(ext));
+  };
+
+  const validateImage = (file) => {
+    const okType = matchesFile(
+      file,
+      ["image/png", "image/jpeg", "image/webp"],
+      [".png", ".jpg", ".jpeg", ".webp"]
+    );
+    if (!okType) {
+      notify("error", t("courtForm.image_type_error"));
+      return Upload.LIST_IGNORE;
+    }
+    if (file.size / 1024 / 1024 > MAX_IMAGE_MB) {
+      notify("error", t("courtForm.image_size_error", { mb: MAX_IMAGE_MB }));
+      return Upload.LIST_IGNORE;
+    }
+    return true;
+  };
+
+  const validateVideo = (file) => {
+    const okType = matchesFile(
+      file,
+      ["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"],
+      [".mp4", ".mov", ".m4v", ".webm"]
+    );
+    if (!okType) {
+      notify("error", t("courtForm.video_type_error"));
+      return Upload.LIST_IGNORE;
+    }
+    if (file.size / 1024 / 1024 > MAX_VIDEO_MB) {
+      notify("error", t("courtForm.video_size_error", { mb: MAX_VIDEO_MB }));
+      return Upload.LIST_IGNORE;
+    }
+    return true;
   };
 
   const handleUpload = async (
     { file, onSuccess, onError },
     isVideo = false
   ) => {
+    const kind = isVideo ? "video" : "image";
+    setUploading((prev) => ({ ...prev, [kind]: 0 }));
     try {
       const { assetId, assetUrl } = await uploadImageToS3(
         file,
-        isVideo ? "court_video" : "court_image"
+        isVideo ? "court_video" : "court_image",
+        (percent) => setUploading((prev) => ({ ...prev, [kind]: percent }))
       );
 
       if (isVideo) {
@@ -250,8 +338,20 @@ export default function CourtForm() {
       onSuccess?.(assetUrl);
     } catch (err) {
       console.log("Upload error:", err);
-      notify("error", `${isVideo ? "Video" : "Image"} upload failed.`);
+      // S3 rejects a policy violation (usually size) with a bare 403, which as
+      // a plain "upload failed" told the vendor nothing about what to change.
+      const isPolicyRejection = /\b(403|400)\b/.test(String(err?.message));
+      notify(
+        "error",
+        isPolicyRejection
+          ? t(isVideo ? "courtForm.video_size_error" : "courtForm.image_size_error", {
+              mb: isVideo ? MAX_VIDEO_MB : MAX_IMAGE_MB,
+            })
+          : t(isVideo ? "courtForm.video_upload_failed" : "courtForm.image_upload_failed")
+      );
       onError?.(err);
+    } finally {
+      setUploading((prev) => ({ ...prev, [kind]: null }));
     }
   };
 
@@ -288,6 +388,41 @@ export default function CourtForm() {
           </Button>
         )}
       </div>
+      <Modal
+        open={!!pendingCreate}
+        title={t("billing.court_addon_confirm_title")}
+        okText={t("common.yes")}
+        cancelText={t("common.cancel")}
+        onOk={() => {
+          const data = pendingCreate;
+          setPendingCreate(null);
+          createCourtMutate(data);
+        }}
+        onCancel={() => setPendingCreate(null)}
+      >
+        {t(
+          courtAvailability?.chargedNow
+            ? "billing.court_addon_confirm"
+            : "billing.court_addon_pending_sub",
+          {
+            amount: formatMoney(
+              courtAvailability?.nextCourtChargeCents,
+              courtAvailability?.currency
+            ),
+          }
+        )}
+      </Modal>
+      {/* Ops decision + reason: the notification links here, but the page
+          showed neither the status nor why changes were requested. */}
+      {court?.status && ["changes_requested", "suspended", "pending_approval", "pending_payment"].includes(court.status) && (
+        <Alert
+          type={["changes_requested", "suspended"].includes(court.status) ? "warning" : "info"}
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={t(`courtCard.status.${court.status}`, court.status)}
+          description={court.rejectionReason ? `${t("courtCard.rejection_reason")}: ${court.rejectionReason}` : undefined}
+        />
+      )}
       <Form
         size="large"
         form={form}
@@ -463,49 +598,123 @@ export default function CourtForm() {
         <div className="court-visuals">
           <h4 className="form-title">{t("courtForm.visuals")}</h4>
 
-          {/* 🔹 Image Upload */}
-          <Form.Item label={t("courtForm.upload_image")}>
-            <Upload
-              customRequest={(file) => handleUpload(file, false)}
-              showUploadList={false}
-              accept="image/*"
+          {/* 🔹 Image Upload — cropped to a fixed ratio before it is sent.
+               Court photos are rendered in fixed-ratio cards in the mobile app
+               and on the website; accepting arbitrary dimensions meant the
+               vendor picked the framing by accident and every listing looked
+               different. Cropping here makes the vendor choose the part of the
+               photo that matters. */}
+          <Form.Item
+            label={t("courtForm.upload_image")}
+            extra={t("courtForm.image_hint")}
+          >
+            <ImgCrop
+              aspect={COURT_IMAGE_ASPECT}
+              quality={0.9}
+              modalTitle={t("courtForm.crop_title")}
+              modalOk={t("courtForm.crop_confirm")}
+              modalCancel={t("common.cancel")}
+              showGrid
+              showReset
+              rotationSlider
             >
-              <Button icon={<UploadOutlined />}>
-                {t("courtForm.upload_image_btn")}
-              </Button>
-            </Upload>
+              <Upload
+                disabled={uploading.image !== null}
+                customRequest={(file) => handleUpload(file, false)}
+                showUploadList={false}
+                accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                className="court-dropzone-upload"
+                beforeUpload={validateImage}
+              >
+                <div
+                  className={`court-dropzone${
+                    uploading.image !== null ? " court-dropzone--busy" : ""
+                  }`}
+                >
+                  {uploading.image !== null ? (
+                    <UploadProgress
+                      percent={uploading.image}
+                      label={t("courtForm.uploading_image")}
+                    />
+                  ) : (
+                    <>
+                      <UploadOutlined className="court-dropzone__icon" />
+                      <span className="court-dropzone__title">
+                        {t("courtForm.upload_image_btn")}
+                      </span>
+                      <span className="court-dropzone__hint">
+                        {t("courtForm.image_formats")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </Upload>
+            </ImgCrop>
           </Form.Item>
 
           {/* 🔹 Uploaded Images Preview */}
-          <div className="image-gallery">
-            {images.map((img, index) => (
-              <div className="img-container" key={img.id || index}>
-                <img
-                  src={img.url}
-                  alt={`court-${index}`}
-                  className="preview-image"
-                />
-                <IoIosCloseCircleOutline
-                  color="#fff"
-                  size={34}
-                  className="remove-icon"
-                  onClick={() => handleRemove(img.id, false)}
-                />
-              </div>
-            ))}
-          </div>
+          {images.length > 0 && (
+            <div className="image-gallery">
+              {images.map((img, index) => (
+                <div className="img-container" key={img.id || index}>
+                  <img
+                    src={img.url}
+                    alt={`court-${index}`}
+                    className="preview-image"
+                  />
+                  <button
+                    type="button"
+                    className="remove-icon"
+                    aria-label={t("common.delete")}
+                    onClick={() => handleRemove(img.id, false)}
+                  >
+                    <IoIosCloseCircleOutline color="#fff" size={22} />
+                  </button>
+                  {index === 0 && (
+                    <span className="cover-badge">
+                      {t("courtForm.cover_image")}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* 🔹 Video Upload */}
-          <Form.Item label={t("courtForm.upload_video")}>
+          <Form.Item
+            label={t("courtForm.upload_video")}
+            extra={t("courtForm.video_hint")}
+          >
             <Upload
-              disabled={video ? true : false}
+              disabled={!!video || uploading.video !== null}
               customRequest={(file) => handleUpload(file, true)}
               showUploadList={false}
-              accept="video/*"
+              accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm"
+              className="court-dropzone-upload"
+              beforeUpload={validateVideo}
             >
-              <Button icon={<UploadOutlined />}>
-                {t("courtForm.upload_video_btn")}
-              </Button>
+              <div
+                className={`court-dropzone${
+                  video ? " court-dropzone--disabled" : ""
+                }${uploading.video !== null ? " court-dropzone--busy" : ""}`}
+              >
+                {uploading.video !== null ? (
+                  <UploadProgress
+                    percent={uploading.video}
+                    label={t("courtForm.uploading_video")}
+                  />
+                ) : (
+                  <>
+                    <UploadOutlined className="court-dropzone__icon" />
+                    <span className="court-dropzone__title">
+                      {t("courtForm.upload_video_btn")}
+                    </span>
+                    <span className="court-dropzone__hint">
+                      {t("courtForm.video_formats")}
+                    </span>
+                  </>
+                )}
+              </div>
             </Upload>
           </Form.Item>
           {/* 🔹 Video Preview */}

@@ -27,11 +27,13 @@ export class ListBranchesDto extends PaginationInputDto {
   placeId?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsLongitude()
   @ApiPropertyOptional({ description: 'Longitude for coordinate-based search' })
   lng?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsLatitude()
   @ApiPropertyOptional({ description: 'Latitude for coordinate-based search' })
   lat?: number;
@@ -41,6 +43,7 @@ export class ListBranchesDto extends PaginationInputDto {
       o.lng !== undefined || o.lat !== undefined || o.placeId !== undefined,
   )
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   @ApiPropertyOptional({

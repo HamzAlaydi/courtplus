@@ -45,8 +45,12 @@ const MyCalendar = ({ branchId }) => {
 
   if (error) console.log(error);
 
-  // Transform match data into calendar events
-  const events = (data?.items || []).map((match) => {
+  // Transform match data into calendar events. Cancelled bookings are left
+  // out: the slot is free again, and showing them as if they were still on
+  // made the calendar look fully booked.
+  const events = (data?.items || [])
+    .filter((match) => match.status !== "cancelled")
+    .map((match) => {
     const start = new Date(match.startDate);
     const end = new Date(match.endDate);
     const formattedTitle = `${formatDate(start, "HH:mm")} - ${formatDate(
@@ -54,13 +58,13 @@ const MyCalendar = ({ branchId }) => {
       "HH:mm"
     )} | ${match.court?.name || "Unknown Court"}`;
 
-    return {
-      id: match.id,
-      title: formattedTitle,
-      start,
-      end,
-    };
-  });
+      return {
+        id: match.id,
+        title: formattedTitle,
+        start,
+        end,
+      };
+    });
 
   // Navigate to match details when an event is clicked
   const handleEventClick = (event) => {

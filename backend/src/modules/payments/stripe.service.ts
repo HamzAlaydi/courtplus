@@ -95,6 +95,36 @@ export class StripeService {
     };
   }
 
+  async retrievePaymentIntent(
+    paymentIntentId: string,
+  ): Promise<Stripe.PaymentIntent> {
+    return this.call(() => this.stripe.paymentIntents.retrieve(paymentIntentId));
+  }
+
+  /**
+   * Charge a saved card with the customer absent. Used to recover a capture
+   * whose authorisation Stripe already expired (7-day limit).
+   */
+  async chargeOffSession(params: {
+    amount: number;
+    currency: string;
+    customer: string;
+    paymentMethod: string;
+    metadata?: Record<string, string>;
+  }): Promise<Stripe.PaymentIntent> {
+    return this.call(() =>
+      this.stripe.paymentIntents.create({
+        amount: params.amount,
+        currency: (params.currency || 'sar').toLowerCase(),
+        customer: params.customer,
+        payment_method: params.paymentMethod,
+        off_session: true,
+        confirm: true,
+        metadata: params.metadata,
+      }),
+    );
+  }
+
   async capturePayment(
     paymentIntentId: string,
     options?: Stripe.PaymentIntentCaptureParams,
@@ -103,14 +133,54 @@ export class StripeService {
     return true;
   }
 
+  /**
+   * Cancel an authorisation, treating "there is nothing left to cancel" as
+   * success.
+   *
+   * Cancelling a booking loops over its payments. If Stripe answered that one
+   * PaymentIntent was already canceled — or had expired, which happens to any
+   * authorisation older than 7 days — the whole cancel threw, the database
+   * transaction rolled back, and the earlier refunds in that same loop stayed
+   * done at Stripe while the booking remained active and un-cancellable.
+   */
+  private async cancelIntentIdempotently(
+    paymentIntentId: string,
+  ): Promise<boolean> {
+    try {
+      await this.call(() => this.stripe.paymentIntents.cancel(paymentIntentId));
+      return true;
+    } catch (error) {
+      const intent = await this.retrievePaymentIntentSafe(paymentIntentId);
+      // ONLY an already-cancelled intent counts as success. A succeeded or
+      // in-flight intent means the customer's money moved, and callers rely on
+      // this throwing so they can leave the payment PENDING for the webhook —
+      // swallowing it marked a paid booking CANCELLED with no refund.
+      if (intent?.status === 'canceled') {
+        this.logger.warn(
+          `PaymentIntent ${paymentIntentId} was already canceled; treating as released.`,
+        );
+        return true;
+      }
+      throw error;
+    }
+  }
+
+  private async retrievePaymentIntentSafe(
+    paymentIntentId: string,
+  ): Promise<Stripe.PaymentIntent | null> {
+    try {
+      return await this.stripe.paymentIntents.retrieve(paymentIntentId);
+    } catch {
+      return null;
+    }
+  }
+
   async releasePayment(paymentIntentId: string) {
-    await this.call(() => this.stripe.paymentIntents.cancel(paymentIntentId));
-    return true;
+    return this.cancelIntentIdempotently(paymentIntentId);
   }
 
   async cancelPaymentIntent(paymentIntentId: string) {
-    await this.call(() => this.stripe.paymentIntents.cancel(paymentIntentId));
-    return true;
+    return this.cancelIntentIdempotently(paymentIntentId);
   }
 
   async createCustomer({
@@ -144,10 +214,31 @@ export class StripeService {
     }
   }
 
+  /**
+   * Refund a charge; an already-refunded charge is not an error.
+   *
+   * Stripe answers `charge_already_refunded` when the same refund is retried,
+   * which used to abort the whole cancellation and leave the booking stuck.
+   */
   async refundPayment(paymentIntentId: string) {
-    return this.call(() => this.stripe.refunds.create({
-      payment_intent: paymentIntentId,
-    }));
+    try {
+      return await this.call(() =>
+        this.stripe.refunds.create({ payment_intent: paymentIntentId }),
+      );
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      const raw = (error as { raw?: { code?: string } })?.raw?.code;
+      if (
+        code === 'charge_already_refunded' ||
+        raw === 'charge_already_refunded'
+      ) {
+        this.logger.warn(
+          `PaymentIntent ${paymentIntentId} was already refunded; treating as success.`,
+        );
+        return null;
+      }
+      throw error;
+    }
   }
 
   async createTenantCustomer(
@@ -232,6 +323,53 @@ export class StripeService {
     }));
   }
 
+  /**
+   * A Checkout Session with its subscription expanded. Used to confirm a
+   * subscription straight from the success redirect instead of waiting on a
+   * webhook that may be delayed, or (in local dev without `stripe listen`)
+   * never arrive at all.
+   */
+  async retrieveCheckoutSession(
+    sessionId: string,
+  ): Promise<Stripe.Checkout.Session> {
+    return this.call(() => this.stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'customer'],
+    }));
+  }
+
+  /**
+   * Find the tenant's subscriptions on Stripe by the metadata we stamp at
+   * checkout. This is the recovery path when the local row is missing —
+   * e.g. the subscription was created while webhooks were not being received.
+   */
+  async searchSubscriptionsByTenant(
+    tenantId: string,
+  ): Promise<Stripe.Subscription[]> {
+    const result = await this.call(() => this.stripe.subscriptions.search({
+      query: `metadata['tenantId']:'${tenantId}'`,
+      limit: 20,
+      expand: ['data.latest_invoice'],
+    }));
+    return result.data;
+  }
+
+  /**
+   * Reuse a Stripe customer already created for this tenant. Without this,
+   * every checkout attempt created a fresh customer (the id was never
+   * persisted locally), so one tenant ended up with several customers in
+   * Stripe and the billing portal could not find "the" customer.
+   */
+  async findCustomerByTenant(
+    tenantId: string,
+  ): Promise<Stripe.Customer | null> {
+    const result = await this.call(() => this.stripe.customers.search({
+      query: `metadata['tenantId']:'${tenantId}'`,
+      limit: 5,
+    }));
+    // Prefer the most recently created; deleted customers are excluded by search.
+    return result.data.sort((a, b) => b.created - a.created)[0] ?? null;
+  }
+
   async createBillingPortalSession(
     customerId: string,
     returnUrl: string,
@@ -245,8 +383,7 @@ export class StripeService {
 
   async createCheckoutSession(params: {
     customerId: string;
-    priceId: string;
-    quantity: number;
+    lineItems: Array<{ price: string; quantity: number }>;
     successUrl: string;
     cancelUrl: string;
     metadata?: Record<string, string>;
@@ -255,12 +392,11 @@ export class StripeService {
       customer: params.customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: params.priceId,
-          quantity: params.quantity,
-        },
-      ],
+      // Base plan + branch/court add-ons, same shape PricingService keeps in
+      // sync afterwards. A single base item here meant extra units were never
+      // billed.
+      line_items: params.lineItems,
+      client_reference_id: params.metadata?.tenantId,
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
       metadata: params.metadata,
@@ -269,6 +405,10 @@ export class StripeService {
       },
     }));
   }
+  async retrievePrice(priceId: string): Promise<Stripe.Price> {
+    return this.call(() => this.stripe.prices.retrieve(priceId));
+  }
+
   async retrieveSetupIntent(
     setupIntentId: string,
   ): Promise<Stripe.SetupIntent> {

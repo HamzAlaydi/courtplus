@@ -26,6 +26,25 @@ export class BlocksService {
   ) { }
 
   @Transactional()
+  /**
+   * Everyone this user cannot see and who cannot see them — BOTH directions.
+   *
+   * Blocking was recorded but never enforced anywhere: a blocked person still
+   * appeared in search, in follower lists and in the community feed. Any query
+   * that returns people or their content should exclude these ids.
+   */
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    const rows = await this.blocksRepository.find({
+      where: [{ blockerId: userId }, { blockedId: userId }],
+      select: { blockerId: true, blockedId: true },
+    });
+    const ids = new Set<string>();
+    for (const row of rows) {
+      ids.add(row.blockerId === userId ? row.blockedId : row.blockerId);
+    }
+    return [...ids];
+  }
+
   async block(blockedId: string, user: SessionUser): Promise<Block> {
     const blockerId = user.id;
 

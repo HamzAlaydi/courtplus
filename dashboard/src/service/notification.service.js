@@ -20,6 +20,14 @@ class NotificationService {
     });
   }
 
+  markAllNotificationsRead() {
+    return apiRequest({
+      method: "patch",
+      url: `${API_URL}/read-all`,
+      customHeaders: authHeader(),
+    });
+  }
+
   markAllNotificationsSeen() {
     return apiRequest({
       method: "post",

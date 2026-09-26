@@ -4,6 +4,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { TwilioService } from '../shared/services/twilio.service';
 import { EmailService, EmailTemplate } from '../shared/services/email.service';
+import { VERIFICATION_CODE_TTL_MINUTES } from './verification.constants';
 import { verifyPassword, hashPassword } from './util/password';
 import { createRandomStringGenerator } from '@better-auth/utils/random';
 import {
@@ -21,7 +22,13 @@ import { dayjs } from '../shared/dayjs';
 export class VerificationService {
   private otpGenerator: (length: number) => string;
   private env: string;
-  private readonly DEV_CODE = '123456';
+  /**
+   * Local-only bypass code, taken from DEV_OTP_BYPASS_CODE (Joi refuses it in
+   * production). The previous hard-coded '123456' was accepted whenever
+   * NODE_ENV was not 'production' — which the shipped .env.example sets to
+   * 'development' — i.e. one fixed code reset any staff or ops password.
+   */
+  private readonly otpBypassCode?: string;
   private readonly logger = new Logger(VerificationService.name);
 
   constructor(
@@ -33,6 +40,7 @@ export class VerificationService {
   ) {
     this.otpGenerator = createRandomStringGenerator('0-9');
     this.env = configService.get('env');
+    this.otpBypassCode = configService.get<string>('auth.devOtpBypassCode') || undefined;
   }
 
   async createVerification({
@@ -49,23 +57,62 @@ export class VerificationService {
     channel: VerificationChannel;
     userType: UserType;
   }): Promise<string> {
+    const { code, persist } = await this.prepareVerification({
+      codeLength,
+      userId,
+      context,
+      identifier,
+      channel,
+    });
+    await persist();
+    return code;
+  }
+
+  /**
+   * Generates a code and hands back a `persist()` the caller runs only once
+   * the code has actually gone out.
+   *
+   * The old flow upserted first and emailed second. Because the upsert
+   * overwrites the row in place (conflictPaths userId+context), a resend whose
+   * email then failed destroyed the code the user had already received AND
+   * left them without a replacement — the one action offered to someone who
+   * has not got their code could take away the code they did have.
+   */
+  private async prepareVerification({
+    codeLength = 6,
+    userId,
+    context,
+    identifier,
+    channel,
+  }: {
+    codeLength?: number;
+    userId: string;
+    context: VerificationContext;
+    identifier: string;
+    channel: VerificationChannel;
+  }): Promise<{ code: string; persist: () => Promise<void> }> {
     const code = this.otpGenerator(codeLength);
     const hashedCode = await hashPassword(code);
 
-    await this.verificationsRepository.upsert(
-      {
-        value: hashedCode,
-        channel,
-        expiresAt: dayjs().add(15, 'minutes').toDate(),
-        userId,
-        context,
-        identifier,
-      },
-      {
-        conflictPaths: ['userId', 'context'],
-      },
-    );
-    return code;
+    const persist = async () => {
+      await this.verificationsRepository.upsert(
+        {
+          value: hashedCode,
+          channel,
+          expiresAt: dayjs()
+            .add(VERIFICATION_CODE_TTL_MINUTES, 'minutes')
+            .toDate(),
+          userId,
+          context,
+          identifier,
+        },
+        {
+          conflictPaths: ['userId', 'context'],
+        },
+      );
+    };
+
+    return { code, persist };
   }
 
   async verifyCode({
@@ -117,7 +164,7 @@ export class VerificationService {
       return { isValid: false, errorCode: CODE_EXPIRED };
     }
 
-    if (['development', 'dev'].includes(this.env) && code === this.DEV_CODE) {
+    if (this.otpBypassCode && this.env !== 'production' && code === this.otpBypassCode) {
       return {
         isValid: true,
         context,
@@ -151,13 +198,11 @@ export class VerificationService {
     user: Staffer | User,
     context: VerificationContext,
   ): Promise<void> {
-    const userType = user instanceof Staffer ? UserType.Staff : UserType.Customer;
-    const code = await this.createVerification({
+    const { code, persist } = await this.prepareVerification({
       userId: user.id,
       context,
       identifier: user.email,
       channel: VerificationChannel.EMAIL,
-      userType,
     });
     let template: EmailTemplate;
     switch (context) {
@@ -180,8 +225,14 @@ export class VerificationService {
       data: {
         name: `${user.firstName} ${user.lastName}`,
         otp: code,
+        expiresInMinutes: VERIFICATION_CODE_TTL_MINUTES,
       },
     });
+
+    // Only now that the code is genuinely on its way does it replace the
+    // previous one. If the send above threw, the user keeps whatever code
+    // they already had.
+    await persist();
   }
 
   async sendPhoneCode(phoneNumber: string, ip: string) {

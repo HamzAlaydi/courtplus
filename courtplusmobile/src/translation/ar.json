@@ -40,7 +40,7 @@
     "date": "التاريخ",
     "time": "الوقت",
     "total": "الإجمالي",
-    "currency": "ريال سعودي",
+    "currency": "ر.س",
     "court": "الملعب",
     "to": "إلى",
     "available": "متاح",
@@ -62,7 +62,8 @@
     "mobileNumber": "رقم الجوال",
     "apply": "تطبيق",
     "camera": "كاميرا",
-    "gallery": "معرض الصور"
+    "gallery": "معرض الصور",
+    "keep": "إبقاء"
   },
   "language": {
     "title": "أختر لغتك المفضلة",
@@ -70,13 +71,14 @@
     "english": "الإنجليزية"
   },
   "onboarding": {
-    "title1": "طريقك إلى اللعب، في أي وقت، في أي مكان.",
-    "title2": "طريقك إلى اللعب، في أي وقت، في أي مكان.",
-    "title3": "طريقك إلى اللعب، في أي وقت، في أي مكان.",
-    "description1": "ابحث عن أماكن اللعب بسهولة واختر الملعب الذي تفضله معنا!",
-    "description2": "ابحث عن أماكن اللعب بسهولة واختر الملعب الذي تفضله معنا!",
-    "description3": "ابحث عن أماكن اللعب بسهولة واختر الملعب الذي تفضله معنا!",
-    "getStarted": "ابدأ الآن"
+    "title1": "اعثر على ملعب قريب منك",
+    "title2": "احجز في ثوانٍ",
+    "title3": "العب وقيّم",
+    "description1": "تصفّح ملاعب كرة القدم والتنس والبادل حولك مع التوفّر الحقيقي والأسعار.",
+    "description2": "اختر الوقت، وادفع من التطبيق أو قسّم التكلفة مع أصدقائك — مكانك مؤكد فورًا.",
+    "description3": "تصلك تذكيرات قبل المباراة، سجّل وصولك في الملعب، وقيّمه بعدها.",
+    "getStarted": "ابدأ الآن",
+    "terms": "بالمتابعة أنت توافق على شروط الخدمة وسياسة الخصوصية."
   },
   "auth": {
     "noAccount": " ليس لديك حساب؟",
@@ -144,7 +146,7 @@
     "findCourts": "ابحث عن ملاعب، مدربين، وأكثر",
     "noCourts": "لا توجد ملاعب متاحة حاليًا في هذه المنطقة",
     "playMatch": "لعب مباراة رائعة",
-    "searchCourt": "ابحث عن ملعب أو مركز",
+    "searchCourt": "ابحث عن ملعب",
     "noMoments": "لا توجد لحظات لعرضها",
     "details": "تفاصيل الملعب",
     "availability": "المواعيد المتاحة ",
@@ -164,7 +166,10 @@
     "noReviews": "لا توجد مراجعات لعرضها.",
     "noCourtsAvailable": "لا توجد ملاعب متاحة حاليًا",
     "noCourtsSubtitle": "حاول تعديل عوامل التصفية أو استكشاف منطقة أخرى.",
-    "noMomentsSubtitle": "ستظهر اللحظات التي تتم مشاركتها في هذا الملعب هنا."
+    "noMomentsSubtitle": "ستظهر اللحظات التي تتم مشاركتها في هذا الملعب هنا.",
+    "notAvailable": "هذا الملعب لم يعد متاحًا.",
+    "openInMaps": "افتح في خرائط جوجل",
+    "locationUnavailable": "لا يوجد موقع مسجّل لهذا الملعب بعد"
   },
   "completeProfile": {
     "title": " أكمل إعداد ملفك الشخصي",
@@ -363,7 +368,11 @@
     "SMS_SEND_FAILED": "تعذر إرسال الرسالة النصية. حاول مرة أخرى بعد قليل.",
     "STORAGE_SERVICE_UNAVAILABLE": "خدمة تخزين الملفات غير متاحة مؤقتًا. حاول لاحقًا.",
     "LOCATION_SERVICE_UNAVAILABLE": "خدمات الموقع غير متاحة مؤقتًا. حاول لاحقًا.",
-    "UPLOAD_FAILED": "تعذر رفع الصورة. يرجى المحاولة مرة أخرى."
+    "UPLOAD_FAILED": "تعذر رفع الصورة. يرجى المحاولة مرة أخرى.",
+    "BOOKING_CANCELLATION_WINDOW_CLOSED": "يمكن إلغاء الحجز حتى 12 ساعة قبل البداية.",
+    "PARTICIPANT_ALREADY_PAID": "لقد دفعت حصتك في هذه المباراة بالفعل.",
+    "BLOCKED_BY_VENUE": "هذا الملعب لا يقبل الحجز من حسابك.",
+    "BOOKING_NOT_JOINABLE": "لم يعد بالإمكان الانضمام إلى هذه المباراة."
   },
   "form": {
     "phone": "رقم الجوال مطلوب",
@@ -398,7 +407,39 @@
     "playerID": "رقم اللاعب",
     "relatedCoach": "المدرب المسؤول",
     "captureMoment": "توثيق لحظة في Court+",
-    "noBookingsSubtitle": "ستظهر حجوزاتك القادمة والسابقة هنا."
+    "noBookingsSubtitle": "ستظهر حجوزاتك القادمة والسابقة هنا.",
+    "cancelBooking": "إلغاء الحجز",
+    "leaveMatch": "مغادرة المباراة",
+    "cancelConfirmTitle": "إلغاء هذا الحجز؟",
+    "cancelConfirmMessage": "الإلغاء مجاني حتى 12 ساعة قبل البداية: يُسترد كل ما دُفع لهذا الحجز إلى وسيلة الدفع الأصلية.",
+    "leaveConfirmTitle": "مغادرة هذه المباراة؟",
+    "leaveConfirmMessage": "يمكنك المغادرة حتى 12 ساعة قبل البداية. تُسترد حصتك فقط إذا لم تكتمل دفعات المباراة بعد.",
+    "cancelled": "تم إلغاء الحجز",
+    "left": "غادرت المباراة",
+    "cancelClosed": "يُغلق الإلغاء قبل 12 ساعة من البداية.",
+    "activityLog": "سجل النشاط",
+    "noActivitySubtitle": "كل ما يحدث في هذا الحجز سيظهر هنا.",
+    "events": {
+      "created": "أنشأ {{name}} الحجز",
+      "started": "بدأت المباراة",
+      "ended": "انتهت المباراة",
+      "participant_entered": "دخل {{name}} إلى الملعب",
+      "participant_cancelled": "غادر {{name}} المباراة",
+      "participant_removed": "أزال {{name}} أحد اللاعبين",
+      "participant_added": "أضاف {{name}} لاعبًا",
+      "participant_joined": "انضم {{name}} إلى المباراة",
+      "participant_invitation_accepted": "قبل {{name}} الدعوة",
+      "participant_invitation_rejected": "رفض {{name}} الدعوة",
+      "participant_payment_completed": "دفع {{name}} حصته",
+      "participant_join_request_submitted": "طلب {{name}} الانضمام إلى المباراة",
+      "participant_join_request_approved": "تمت الموافقة على طلب انضمام {{name}}",
+      "participant_join_request_rejected": "تم رفض طلب انضمام {{name}}",
+      "cancelled": "ألغى {{name}} الحجز",
+      "moment_posted": "شارك {{name}} لحظة في Court+",
+      "payment_completed": "تم دفع الحجز بالكامل",
+      "somePlayer": "أحد اللاعبين",
+      "unknown": "نشاط في الحجز"
+    }
   },
   "community": {
     "search": "ابحث عن أصدقاء",
@@ -423,7 +464,9 @@
     "title": "التصفية",
     "sport": "الرياضة",
     "availability": "التوفر",
-    "duration": "المدة"
+    "duration": "المدة",
+    "radius": "نطاق البحث",
+    "noPlaceFound": "لم يُعثر على مكان بهذا الاسم."
   },
   "booking": {
     "title": "اختيار وقت الحجز",
@@ -450,7 +493,9 @@
     "totalSelectedTime": "الوقت المختار بالكامل",
     "totalCost": "المبلغ الإجمالي",
     "noSlots": "لا توجد أوقات متاحة لعرضها في الوقت الحالي.",
-    "noEvents": "لا توجد أحداث حتى الآن"
+    "noEvents": "لا توجد أحداث حتى الآن",
+    "cancellationPolicy": "الإلغاء مجاني حتى 12 ساعة قبل البداية؛ بعد ذلك الحجز غير قابل للاسترداد.",
+    "selectionMustBeContiguous": "يرجى اختيار أوقات متتالية بدون فجوات."
   },
   "branchDetails": {
     "sessions": "جلسة",
@@ -517,7 +562,16 @@
     "addPlayers": "اضافة لاعبين",
     "playersNameEmailPhone": "اسم اللاعب، البريد الإلكتروني، رقم الهاتف",
     "pickDay": "اختر اليوم",
-    "noMatchesSubtitle": "لا توجد مباريات مفتوحة الآن. ابدأ مباراتك الخاصة وادعُ اللاعبين!"
+    "noMatchesSubtitle": "لا توجد مباريات مفتوحة الآن. ابدأ مباراتك الخاصة وادعُ اللاعبين!",
+    "mixedGender": "مختلط",
+    "joined": "انضممت إلى المباراة. ستجدها في نشاطك.",
+    "joinRequested": "تم إرسال الطلب. سيؤكد المنظّم مقعدك.",
+    "continueToPayment": "متابعة إلى الدفع",
+    "fiveASide": "خماسي (10 لاعبين)",
+    "sixASide": "سداسي (12 لاعباً)",
+    "sevenASide": "سباعي (14 لاعباً)",
+    "elevenASide": "11 لاعباً (22 لاعباً)",
+    "matchSize": "حجم المباراة"
   },
   "recoverAccount": {
     "welcomeBack": "مرحبا بعودتك!",

@@ -50,6 +50,12 @@ export enum NotificationType {
   TENANT_UNSUSPEND_REQUESTED = 'tenant_unsuspend_requested',
   SUBSCRIPTION_PAYMENT_FAILED = 'subscription_payment_failed',
   SUBSCRIPTION_PAYMENT_SUCCEEDED = 'subscription_payment_succeeded',
+  TENANT_UNSUSPEND_DENIED = 'tenant_unsuspend_denied',
+  PAYOUT_REQUESTED = 'payout_requested',
+  PAYOUT_APPROVED = 'payout_approved',
+  PAYOUT_REJECTED = 'payout_rejected',
+  PAYOUT_COMPLETED = 'payout_completed',
+  PAYOUT_FAILED = 'payout_failed',
 
 }
 
@@ -111,6 +117,10 @@ export interface NotificationData {
   tenantId?: string;
   tenantName?: string;
   message?: string;
+  payoutId?: string;
+  /** Major units, already formatted (e.g. "1500.00") — numeric(14,2) reads back as a string. */
+  amount?: string | number;
+  currency?: string;
 }
 
 @Entity('notifications')

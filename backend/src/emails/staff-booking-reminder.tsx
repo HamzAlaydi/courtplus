@@ -10,14 +10,18 @@ export function BookingReminderEmail({
   date,
   startTime,
   endTime,
-  teamsInvolved,
+  // The reminder job only sends the booking/court/branch/time fields, so every
+  // other prop arrives undefined. Without these defaults the array props were
+  // dereferenced (`.join` / `.map`) and rendering the e-mail threw, which meant
+  // the staff reminder was never delivered.
+  teamsInvolved = [],
   expectedAttendees,
-  staffAssigned,
-  specialRequirements,
-  contactPerson,
-  contactPhone,
-  contactEmail,
-  setupTime,
+  staffAssigned = [],
+  specialRequirements = '',
+  contactPerson = '',
+  contactPhone = '',
+  contactEmail = '',
+  setupTime = '',
 }: {
   bookingId: string;
   courtName: string;
@@ -26,14 +30,14 @@ export function BookingReminderEmail({
   date: string;
   startTime: string;
   endTime: string;
-  teamsInvolved: string[];
-  expectedAttendees: number;
-  staffAssigned: string[];
-  specialRequirements: string;
-  contactPerson: string;
-  contactPhone: string;
-  contactEmail: string;
-  setupTime: string;
+  teamsInvolved?: string[];
+  expectedAttendees?: number;
+  staffAssigned?: string[];
+  specialRequirements?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  setupTime?: string;
 }) {
   return (
     <BaseEmail preview={`A booking is coming up in 3 days`}>
@@ -73,29 +77,37 @@ export function BookingReminderEmail({
         <Text className="text-[14px] text-gray-700 my-[4px]">
           <strong>Branch:</strong> {branchName}
         </Text>
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Teams:</strong> {teamsInvolved.join(' vs ')}
-        </Text>
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Expected Attendees:</strong> {expectedAttendees}
-        </Text>
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Setup Time:</strong> {setupTime} (Please ensure court is ready
-          by this time)
-        </Text>
-      </Section>
-
-      <Section className="bg-green-50 rounded-[8px] p-[16px] mb-[24px]">
-        <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
-          Staff Assigned
-        </Heading>
-
-        {staffAssigned.map((staff, index) => (
-          <Text key={index} className="text-[14px] text-gray-700 my-[4px]">
-            • {staff}
+        {teamsInvolved.length > 0 && (
+          <Text className="text-[14px] text-gray-700 my-[4px]">
+            <strong>Teams:</strong> {teamsInvolved.join(' vs ')}
           </Text>
-        ))}
+        )}
+        {expectedAttendees !== undefined && (
+          <Text className="text-[14px] text-gray-700 my-[4px]">
+            <strong>Expected Attendees:</strong> {expectedAttendees}
+          </Text>
+        )}
+        {setupTime && (
+          <Text className="text-[14px] text-gray-700 my-[4px]">
+            <strong>Setup Time:</strong> {setupTime} (Please ensure court is
+            ready by this time)
+          </Text>
+        )}
       </Section>
+
+      {staffAssigned.length > 0 && (
+        <Section className="bg-green-50 rounded-[8px] p-[16px] mb-[24px]">
+          <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
+            Staff Assigned
+          </Heading>
+
+          {staffAssigned.map((staff, index) => (
+            <Text key={index} className="text-[14px] text-gray-700 my-[4px]">
+              • {staff}
+            </Text>
+          ))}
+        </Section>
+      )}
 
       <Section className="bg-yellow-50 rounded-[8px] p-[16px] mb-[24px]">
         <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
@@ -122,31 +134,41 @@ export function BookingReminderEmail({
         </Text>
       </Section>
 
-      <Section className="bg-gray-50 rounded-[8px] p-[16px] mb-[24px]">
-        <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
-          Special Requirements
-        </Heading>
+      {specialRequirements && (
+        <Section className="bg-gray-50 rounded-[8px] p-[16px] mb-[24px]">
+          <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
+            Special Requirements
+          </Heading>
 
-        <Text className="text-[14px] text-gray-700 my-[8px]">
-          {specialRequirements}
-        </Text>
-      </Section>
+          <Text className="text-[14px] text-gray-700 my-[8px]">
+            {specialRequirements}
+          </Text>
+        </Section>
+      )}
 
-      <Section className="bg-gray-50 rounded-[8px] p-[16px] mb-[24px]">
-        <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
-          Contact Information
-        </Heading>
+      {(contactPerson || contactPhone || contactEmail) && (
+        <Section className="bg-gray-50 rounded-[8px] p-[16px] mb-[24px]">
+          <Heading className="text-[18px] font-bold text-gray-800 mt-0 mb-[16px]">
+            Contact Information
+          </Heading>
 
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Event Coordinator:</strong> {contactPerson}
-        </Text>
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Phone:</strong> {contactPhone}
-        </Text>
-        <Text className="text-[14px] text-gray-700 my-[4px]">
-          <strong>Email:</strong> {contactEmail}
-        </Text>
-      </Section>
+          {contactPerson && (
+            <Text className="text-[14px] text-gray-700 my-[4px]">
+              <strong>Event Coordinator:</strong> {contactPerson}
+            </Text>
+          )}
+          {contactPhone && (
+            <Text className="text-[14px] text-gray-700 my-[4px]">
+              <strong>Phone:</strong> {contactPhone}
+            </Text>
+          )}
+          {contactEmail && (
+            <Text className="text-[14px] text-gray-700 my-[4px]">
+              <strong>Email:</strong> {contactEmail}
+            </Text>
+          )}
+        </Section>
+      )}
 
       <Text className="text-[16px] text-gray-700 mb-[24px]">
         Please confirm that all preparations are on track by responding to this

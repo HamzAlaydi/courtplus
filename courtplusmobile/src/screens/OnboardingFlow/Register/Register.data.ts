@@ -6,11 +6,12 @@ export const registerSchema = yup.object().shape({
     .string()
     .required(t("general.requiredField"))
     .test("fullname-match", t("form.name"), (value) => {
-      const regex = /^[A-Za-z\s]+$/;
+      // Any script (Arabic names!), plus apostrophes/hyphens as in Al-Ghamdi.
+      const regex = /^[\p{L}\p{M}\s'.-]+$/u;
       return regex.test(value);
     }),
   username: yup.string().required(t("general.requiredField")),
-  dateOfBirth: yup.string(),
+  dateOfBirth: yup.string().required(t("general.requiredField")),
   gender: yup.string().required(t("general.requiredField")),
   phoneNumber: yup.string().required(t("general.requiredField")),
 });

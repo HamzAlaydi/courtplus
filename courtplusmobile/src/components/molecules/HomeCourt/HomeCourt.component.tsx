@@ -59,7 +59,7 @@ const HomeCourt = ({ item, onPress }: HomeCourtProps) => {
           <CustomText
             font="text"
             weight="semiBold"
-            text={`${item.avgRating}`}
+            text={Number(item.avgRating ?? 0).toFixed(1)}
             overrideStyle={themedStyles.rating}
           />
         </View>

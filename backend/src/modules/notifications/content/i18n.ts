@@ -3,6 +3,9 @@ import i18next from 'i18next';
 i18next.init({
   lng: 'en',
   fallbackLng: 'en',
+  // Output is plain text for push/SSE/JSON, never HTML: without this a
+  // reason like "Photos aren't clear" reached the vendor as "aren&#39;t".
+  interpolation: { escapeValue: false },
   resources: {
     en: {
       translation: {
@@ -28,11 +31,18 @@ i18next.init({
           court_changes_requested: 'Changes requested for your court',
           resource_suspended: 'A resource has been suspended',
           court_pending_payment: 'Payment pending for your court',
+          vendor_registration: 'Finish setting up your facility on Court+',
+          vendor_lead_notification: 'New vendor lead',
+          vendor_account_exists: 'You already have a Court+ account',
+          booking_confirmed: 'Your Court+ booking is confirmed',
+          subscription_payment_failed: 'We could not take your Court+ payment',
+          payout_failed: 'Your Court+ withdrawal could not be sent',
         },
         notifications: {
           booking_cancelled: {
             title: 'Booking Cancelled',
-            content: 'Your booking has been cancelled',
+            content:
+              'Your booking at {{courtName}} on {{date}} at {{startTime}} was cancelled{{reasonSuffix}}. Any payment is refunded to your original payment method.',
           },
           follow: {
             title: 'New Follower',
@@ -196,6 +206,36 @@ i18next.init({
             title: 'Subscription Payment Successful',
             content: 'Your subscription payment was processed successfully',
           },
+          tenant_unsuspend_denied: {
+            title: 'Unsuspend Request Denied',
+            content:
+              'Your request to lift the account suspension was denied: {{reason}}',
+          },
+          payout_requested: {
+            title: 'Payout Requested',
+            content:
+              '{{tenantName}} requested a payout of {{amount}} {{currency}}',
+          },
+          payout_approved: {
+            title: 'Payout Approved',
+            content:
+              'Your payout of {{amount}} {{currency}} was approved and is on its way',
+          },
+          payout_rejected: {
+            title: 'Payout Rejected',
+            content:
+              'Your payout of {{amount}} {{currency}} was rejected: {{reason}}. The amount is back in your available balance.',
+          },
+          payout_completed: {
+            title: 'Payout Sent',
+            content:
+              '{{amount}} {{currency}} has been sent to your payout account',
+          },
+          payout_failed: {
+            title: 'Payout Failed',
+            content:
+              'Your payout of {{amount}} {{currency}} could not be sent. The amount is back in your available balance — check your bank details before trying again.',
+          },
         },
         messages: {
           ASSET_NOT_FOUND: 'Asset not found',
@@ -358,11 +398,18 @@ i18next.init({
           court_changes_requested: 'تم طلب تعديلات على ملعبك',
           resource_suspended: 'تم تعليق أحد الموارد',
           court_pending_payment: 'الدفع معلق لملعبك',
+          vendor_registration: 'أكمل تسجيل منشأتك على Court+',
+          vendor_lead_notification: 'طلب تسجيل منشأة جديد',
+          vendor_account_exists: 'لديك حساب بالفعل على Court+',
+          booking_confirmed: 'تم تأكيد حجزك في Court+',
+          subscription_payment_failed: 'تعذّر استيفاء دفعة اشتراكك في Court+',
+          payout_failed: 'تعذّر إرسال تحويلك من Court+',
         },
         notifications: {
           booking_cancelled: {
             title: 'إلغاء الحجز',
-            content: 'تم إلغاء حجزك',
+            content:
+              'تم إلغاء حجزك في {{courtName}} يوم {{date}} الساعة {{startTime}}{{reasonSuffix}}. يُسترد أي مبلغ مدفوع إلى وسيلة الدفع الأصلية.',
           },
           follow: {
             title: 'متابع جديد',
@@ -523,6 +570,32 @@ i18next.init({
           subscription_payment_succeeded: {
             title: 'دفع الاشتراك ناجح',
             content: 'تمت معالجة دفعة اشتراكك بنجاح',
+          },
+          tenant_unsuspend_denied: {
+            title: 'تم رفض طلب إلغاء التعليق',
+            content: 'تم رفض طلبك لرفع تعليق الحساب: {{reason}}',
+          },
+          payout_requested: {
+            title: 'طلب سحب أرباح',
+            content: '{{tenantName}} طلب سحب {{amount}} {{currency}}',
+          },
+          payout_approved: {
+            title: 'تمت الموافقة على السحب',
+            content: 'تمت الموافقة على سحب {{amount}} {{currency}} وجارٍ تحويله إليك',
+          },
+          payout_rejected: {
+            title: 'تم رفض السحب',
+            content:
+              'تم رفض سحب {{amount}} {{currency}}: {{reason}}. تمت إعادة المبلغ إلى رصيدك المتاح.',
+          },
+          payout_completed: {
+            title: 'تم إرسال السحب',
+            content: 'تم إرسال {{amount}} {{currency}} إلى حساب السحب الخاص بك',
+          },
+          payout_failed: {
+            title: 'فشل السحب',
+            content:
+              'تعذّر إرسال سحبك بمبلغ {{amount}} {{currency}}. المبلغ عاد إلى رصيدك المتاح — تحقّق من بيانات حسابك البنكي قبل المحاولة مرة أخرى.',
           },
         },
         messages: {

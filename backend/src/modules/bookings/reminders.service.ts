@@ -66,13 +66,20 @@ export class RemindersService {
         booking.startDate,
         REMINDER_INTERVALS.QUARTER_HOUR,
       );
-    } else if (timeUntilBooking > 0) {
-      await this.scheduleBookingStatusJobs(
-        booking.id,
-        booking.startDate,
-        booking.endDate,
-      );
     }
+
+    // The status jobs used to hang off the last `else if` branch, so a booking
+    // created 15-60 minutes before kick-off got a reminder but no start/end
+    // job: it stayed `pending` through the match and never emitted
+    // STARTED/ENDED. Schedule them for every booking; scheduleBookingStatusJobs
+    // skips whichever delay is already in the past, and the fixed
+    // `start_<id>` / `end_<id>` job ids make the later call from
+    // BookingsProcessor.scheduleNextReminder a no-op rather than a duplicate.
+    await this.scheduleBookingStatusJobs(
+      booking.id,
+      booking.startDate,
+      booking.endDate,
+    );
   }
 
   async scheduleBookingReminder(

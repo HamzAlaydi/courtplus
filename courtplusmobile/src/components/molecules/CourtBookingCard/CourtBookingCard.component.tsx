@@ -37,7 +37,15 @@ const CourtBookingCard = ({
               style={themedStyles.locationIcon}
             />
             <CustomText
-              text={courtData.location.name ?? ""}
+              // Same null-location fallback as BookingDetails: this card renders in
+              // the booking summary and in match invitations, so an unguarded
+              // dereference broke both the payment step and the Current tab.
+              text={
+                courtData.location?.name ??
+                courtData.branch?.location?.name ??
+                courtData.branch?.name ??
+                ""
+              }
               font="chip"
               weight="medium"
               overrideStyle={[

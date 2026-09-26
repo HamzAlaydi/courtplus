@@ -35,7 +35,12 @@ export class Availability extends BaseEntity {
     const slotStart = currentDate.hour(startHour).minute(startMinute).second(0);
     let slotEnd = currentDate.hour(endHour).minute(endMinute).second(0);
 
-    if (slotEnd.isBefore(slotStart)) {
+    // isSameOrBefore, not isBefore. An equal start and end means the venue is
+    // open around the clock (00:00-00:00, or 09:00-09:00 for a day that rolls
+    // over). With a plain isBefore the end never moved past the start, the
+    // loop below ran zero times, and the court silently produced NO bookable
+    // slots at all — it looked configured but could never be booked.
+    if (slotEnd.isSameOrBefore(slotStart)) {
       slotEnd = slotEnd.add(1, 'day');
     }
 

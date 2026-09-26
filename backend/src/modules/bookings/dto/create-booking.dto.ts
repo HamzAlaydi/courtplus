@@ -9,7 +9,6 @@ import {
   ValidateIf,
   Matches,
   Max,
-  ArrayUnique,
 } from 'class-validator';
 import { PaymentType } from 'src/modules/payments/entities/payment.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -50,11 +49,13 @@ export class CreateBookingDto {
     type: [String],
     example: ['123e4567-e89b-12d3-a456-426614174000'],
   })
+  // NOT @ArrayUnique: a repeated friend is a client-side slip, and rejecting
+  // the request meant the customer got a hard 400 at the moment of payment.
+  // Both booking paths de-duplicate the list instead (and log that they did).
   @IsArray()
   @IsUUID(undefined, { each: true })
   @ValidateIf((o) => !o.open)
   @IsOptional()
-  @ArrayUnique()
   participants?: string[];
 
   @ApiProperty({

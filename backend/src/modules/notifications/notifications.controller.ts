@@ -8,7 +8,12 @@ import {
   Get,
   Query,
   ParseUUIDPipe,
+  Sse,
+  Req,
 } from '@nestjs/common';
+import type { MessageEvent } from '@nestjs/common';
+import type { Request } from 'express';
+import type { Observable } from 'rxjs';
 import { NotificationsService } from './notifications.service';
 import {
   ApiTags,
@@ -59,6 +64,15 @@ export class NotificationsController {
     return this.notificationsService.markAsRead(id, user.id);
   }
 
+  @Patch('read-all')
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  @ApiResponse({ status: 200, description: 'Every unread notification is now read.' })
+  markAllAsRead(
+    @CurrentUser() user: SessionUser,
+  ): Promise<{ updated: number }> {
+    return this.notificationsService.markAllAsRead(user);
+  }
+
   @Post('mark-seen')
   @ApiOperation({ summary: 'Mark all notifications as seen' })
   @ApiResponse({
@@ -67,6 +81,23 @@ export class NotificationsController {
   })
   markAllAsSeen(@CurrentUser() user: SessionUser): Promise<void> {
     return this.notificationsService.markAllAsSeen(user);
+  }
+
+  /**
+   * text/event-stream. Auth is the normal Bearer header (clients use fetch,
+   * not EventSource, so no token ever lands in a URL). Events: `count`
+   * {unseenCount}, `notification` {unseenCount, notification}, `ping`.
+   */
+  @Sse('stream')
+  @ApiOperation({
+    summary:
+      'Realtime stream of unseen-count changes and new notifications (SSE)',
+  })
+  stream(
+    @CurrentUser() user: SessionUser,
+    @Req() req: Request,
+  ): Observable<MessageEvent> {
+    return this.notificationsService.stream(user, req);
   }
 
   @Get('unseen-count')

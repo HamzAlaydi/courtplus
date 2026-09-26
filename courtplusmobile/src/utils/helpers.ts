@@ -1,7 +1,9 @@
+import { formatInTimeZone } from "date-fns-tz";
 import { QueryClient } from "@tanstack/react-query";
 import {
   I18nManager,
   ImageSourcePropType,
+  Linking,
   PermissionsAndroid,
   Platform,
   StyleProp,
@@ -173,11 +175,20 @@ export enum HeaderType {
   Onboarding = "Onboarding",
 }
 
+/**
+ * Many accounts (social sign-in especially) carry only a first name.
+ * Interpolating both parts unconditionally rendered "Name undefined", and
+ * Update Profile seeded its form from that string and saved the literal
+ * "undefined" back as the surname.
+ */
 export const generateFullName = (data: {
-  firstName: string;
-  lastName: string;
+  firstName?: string | null;
+  lastName?: string | null;
 }) => {
-  return `${data.firstName} ${data.lastName}`;
+  return [data?.firstName, data?.lastName]
+    .map((part) => part?.trim())
+    .filter((part) => !!part)
+    .join(" ");
 };
 
 export type Location = {
@@ -270,8 +281,33 @@ export const formatDate = (date: string, format: string = "yyyy-MM-dd") => {
   });
 };
 
-export const convertToUTCTime = (date: string) => {
-  return new Date(date).toISOString().split("T")[1].slice(0, 5);
+/**
+ * Format an API timestamp (UTC ISO) in the COURT's timezone.
+ *
+ * Booking screens used to slice the ISO string ("…T07:00:00Z" -> "07:00"),
+ * i.e. they showed UTC: a 10:00 Riyadh booking read 07:00 on the ticket.
+ * Falls back to the device timezone when the booking carries none.
+ */
+export const formatInZone = (
+  date: string | Date,
+  format: string,
+  timeZone?: string | null
+) => {
+  const value = typeof date === "string" ? new Date(date) : date;
+  const locale = I18nManager.isRTL ? ar : enUS;
+  try {
+    if (timeZone) {
+      return formatInTimeZone(value, timeZone, format, { locale });
+    }
+  } catch {
+    // unknown zone id: fall through to the device timezone
+  }
+  return dateFNSFormat(value, format, { locale });
+};
+
+/** @deprecated use formatInZone(date, "HH:mm", timeZone) */
+export const convertToUTCTime = (date: string, timeZone?: string | null) => {
+  return formatInZone(date, "HH:mm", timeZone);
 };
 
 export const convertDateToUTCSeconds = (startDate: string) => {
@@ -359,6 +395,50 @@ export const dehydrateQuery = (query: any) => {
 
 export const getErrorMessage = (message: string) => {
   return getApiErrorMessage(message);
+};
+
+/**
+ * The API returns a venue's position as GeoJSON — `coordinates` is
+ * [longitude, latitude], NOT [lat, lng]. Swapping them drops the pin in the
+ * wrong hemisphere, so the order is unpacked explicitly here.
+ */
+export const getMapsUrl = (location?: {
+  address?: string;
+  coordinates?: { coordinates?: number[] } | null;
+}): string | null => {
+  const [lng, lat] = location?.coordinates?.coordinates ?? [];
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+  // No pin on file: fall back to a text search so the button still does
+  // something useful instead of silently doing nothing.
+  if (location?.address) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      location.address
+    )}`;
+  }
+  return null;
+};
+
+/**
+ * Opens the venue in Google Maps. The https form is deliberate: Android and
+ * iOS both hand it to the Google Maps app when installed and fall back to the
+ * browser when it is not, so no platform branch is needed.
+ */
+export const openInMaps = async (location?: {
+  address?: string;
+  coordinates?: { coordinates?: number[] } | null;
+}): Promise<boolean> => {
+  const url = getMapsUrl(location);
+  if (!url) {
+    return false;
+  }
+  try {
+    await Linking.openURL(url);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const formatCurrency = (amount: number) => {
@@ -570,18 +650,33 @@ export const sortSlotsByStartTime = (slots: Slot[]) =>
   );
 
 /**
- * Selected times act as range boundaries: N selected slots span
- * [first slot start, last slot start]. A single selection books one
- * 30-minute interval. Matches the backend totalAmount computation
- * (hourlyRate * duration / 60).
+ * Total time the customer actually selected.
+ *
+ * This used to measure from the first slot's start to the LAST slot's start,
+ * which drops the final slot: two adjacent 30-minute chips came out as 30
+ * minutes, three as 60. The customer was charged for, and given, one slot
+ * less than they picked every single time.
  */
 export const getSlotsDurationMinutes = (slots: Slot[]) => {
   if (!slots?.length) return 0;
-  if (slots.length === 1) return SLOT_DURATION_MINUTES;
-  const sortedSlots = sortSlotsByStartTime(slots);
-  return (
-    timeToMinutes(sortedSlots[sortedSlots.length - 1].startTime) -
-    timeToMinutes(sortedSlots[0].startTime)
+  return slots.length * SLOT_DURATION_MINUTES;
+};
+
+/**
+ * Whether the selection is one unbroken block.
+ *
+ * A booking is a single start time plus a duration, so a gap in the selection
+ * would silently book (and charge for) the slot in between — which may not
+ * even be free.
+ */
+export const areSlotsContiguous = (slots: Slot[]) => {
+  if (!slots?.length) return true;
+  const sorted = sortSlotsByStartTime(slots);
+  return sorted.every(
+    (slot, index) =>
+      index === 0 ||
+      timeToMinutes(slot.startTime) ===
+        timeToMinutes(sorted[index - 1].startTime) + SLOT_DURATION_MINUTES,
   );
 };
 
@@ -591,10 +686,9 @@ export const formatTimeRange = (slots: Slot[]) => {
   const firstSlot = sortedSlots[0];
   const lastSlot = sortedSlots[sortedSlots.length - 1];
 
-  const formattedTime =
-    sortedSlots.length > 1
-      ? `${firstSlot?.startTime} - ${lastSlot?.startTime}`
-      : `${firstSlot?.startTime} - ${firstSlot?.endTime}`;
+  // End at the last slot's END, not its start — the old form hid the final
+  // half hour the customer had selected and paid for.
+  const formattedTime = `${firstSlot?.startTime} - ${lastSlot?.endTime}`;
 
   return formattedTime;
 };

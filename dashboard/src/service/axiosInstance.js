@@ -130,6 +130,9 @@ axiosInstance.interceptors.request.use(
       console.log("refreshing");
 
       if (!accessToken) return Promise.reject("Token refresh failed.");
+      // The header was built from the OLD token; without this the first
+      // request after a refresh always failed with 401.
+      config.headers = { ...config.headers, Authorization: `Bearer ${accessToken}` };
     }
     return config;
   },

@@ -2,6 +2,7 @@ import {
   CreditCardOutlined,
   FieldTimeOutlined,
   PieChartOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Form, Input, Layout, Menu, Modal } from "antd";
 import { useState } from "react";
@@ -27,6 +28,7 @@ const sidebarRoutes = [
   { key: "3", path: "/courts" },
   { key: "billing", path: "/billing" },
   { key: "schedule", path: "/schedule" },
+  { key: "team", path: "/team" },
   { key: "users", path: "/users" },
   // { key: "sub1", path: "/users" },
   // { key: "sub2", path: "/teams" },
@@ -78,6 +80,18 @@ const DashboardLayout = () => {
   const selectedKey = getSelectedKey();
   const iconStyle = { fontSize: "18px" };
 
+  let staffRole;
+  try {
+    staffRole = JSON.parse(localStorage.getItem("userData") || "null")?.role;
+  } catch {
+    staffRole = undefined;
+  }
+  const canSeeBilling = !staffRole || staffRole === "Owner";
+  // Staff management (list, invite, change role, unassign) is Owner-only on
+  // the backend too, so managers would only get 403s from the Team page.
+  // This is a hint from localStorage; the page re-checks against /staff/me.
+  const canSeeTeam = !staffRole || staffRole === "Owner";
+
   // Define sidebar items (with submenus)
   const items = [
     {
@@ -105,11 +119,26 @@ const DashboardLayout = () => {
       icon: <FieldTimeOutlined style={iconStyle} />,
       label: <Link to="/schedule">{t("sideNav.schedule")}</Link>,
     },
-    {
-      key: "billing",
-      icon: <CreditCardOutlined style={iconStyle} />,
-      label: <Link to="/billing">{t("sideNav.billing")}</Link>,
-    },
+    ...(canSeeTeam
+      ? [
+          {
+            key: "team",
+            icon: <TeamOutlined style={iconStyle} />,
+            label: <Link to="/team">{t("sideNav.team")}</Link>,
+          },
+        ]
+      : []),
+    // Billing endpoints are Owner-only; showing the entry to managers only
+    // produced 403s.
+    ...(canSeeBilling
+      ? [
+          {
+            key: "billing",
+            icon: <CreditCardOutlined style={iconStyle} />,
+            label: <Link to="/billing">{t("sideNav.billing")}</Link>,
+          },
+        ]
+      : []),
 
     // {
     //   key: "sub1",

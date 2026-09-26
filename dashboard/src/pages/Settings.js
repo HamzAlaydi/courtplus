@@ -17,6 +17,8 @@ import { notifyError } from "../utils/errorMessages";
 import ImageUploader from "../components/ImageUploader";
 import { useNotification } from "../modules/NotificationProvider";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
+import PayoutsSection from "../components/settings/PayoutsSection";
 
 const { Text } = Typography;
 
@@ -25,6 +27,10 @@ export default function SettingsPage() {
   const isRTL = i18n.dir() === "rtl";
   const notify = useNotification();
   const queryClient = useQueryClient();
+  // Stripe Connect sends the vendor back to /settings?payouts=complete|refresh;
+  // open the Payouts section directly in that case.
+  const [searchParams] = useSearchParams();
+  const initialSection = searchParams.get("payouts") ? "payouts" : "business";
 
   /* ================= BUSINESS PROFILE ================= */
   const [businessForm] = Form.useForm();
@@ -256,7 +262,11 @@ export default function SettingsPage() {
     try {
       await deleteAccVerify({ code: values.code });
       notify("success", t("settings.accountDeleted"));
-      window.location.href = "/login";
+      // /login does not exist; clear the session and go to the sign-in page.
+      ["accessToken", "refreshToken", "userData", "tokenExpiry", "role"].forEach((k) =>
+        localStorage.removeItem(k)
+      );
+      window.location.href = "/auth/signin";
     } catch {
       notify("error", t("settings.invalidCode"));
     } finally {
@@ -297,7 +307,7 @@ export default function SettingsPage() {
       {/* SETTINGS SECTIONS (accordion) */}
       <Collapse
         accordion
-        defaultActiveKey={["business"]}
+        defaultActiveKey={[initialSection]}
         style={{ marginBottom: 24 }}
         items={[
           {
@@ -464,6 +474,11 @@ export default function SettingsPage() {
                 </div>
               </Form>
             ),
+          },
+          {
+            key: "payouts",
+            label: t("settings.payouts.title"),
+            children: <PayoutsSection />,
           },
           {
             key: "delete",

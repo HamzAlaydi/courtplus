@@ -20,7 +20,7 @@ export const useGetReviews = ({ courtId }: ReviewsRequest) => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: [queryKeys.getCourtReviews],
+    queryKey: [queryKeys.getCourtReviews, courtId],
     queryFn: ({ pageParam = 1 }) =>
       getReviews({ page: pageParam, pageSize: 10, courtId }),
     initialPageParam: 1,

@@ -2,6 +2,7 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { EmailLoginDto } from './dto/login.dto';
 import { EmailSignupDto } from './dto/signup.dto';
+import { ChangeUnverifiedEmailDto } from './dto/change-unverified-email.dto';
 import { SendVerificationCodeDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailCodeDto } from './dto/verify-code.dto';
@@ -27,6 +28,7 @@ import {
 import { UserType } from './@types/user.type';
 import { Staffer } from 'src/modules/staff/entities/staff.entity';
 import { VerificationService } from './verification.service';
+import { normalizeEmailKey, normalizePhoneKey, authAttemptKey} from './util/throttle-key';
 @ApiTags('Staff Authentication')
 @Controller('auth/staff')
 @UseGuards(ThrottlerGuard)
@@ -53,8 +55,15 @@ export class StaffAuthController {
     @Body() signupDto: EmailSignupDto,
     @IpAddress() ip: string,
     @UserAgent() userAgent: string,
-  ): Promise<LoginResponseDto<Staffer> | void> {
-    return this.authService.signupWithEmail(signupDto, ip, userAgent);
+  ): Promise<
+    LoginResponseDto<Staffer> | { verificationSent: boolean }
+  > {
+    // Returns { verificationSent } for a normal signup so the dashboard can
+    // tell the vendor the code could not be sent, instead of claiming it was.
+    // An invited signup still returns a session.
+    return this.authService.signupWithEmail(signupDto, ip, userAgent) as Promise<
+      LoginResponseDto<Staffer> | { verificationSent: boolean }
+    >;
   }
 
   @ApiOperation({ summary: 'Login with email and password' })
@@ -70,7 +79,11 @@ export class StaffAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `login-email-${request.body.email}`;
+        return authAttemptKey(
+          'login-email',
+          normalizeEmailKey(request.body.email),
+          getIpAddress(req),
+        );
       },
     },
   })
@@ -92,7 +105,7 @@ export class StaffAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `login-email-${request.body.email}`;
+        return `resend-code-${normalizeEmailKey(request.body.email)}`;
       },
     },
   })
@@ -101,6 +114,37 @@ export class StaffAuthController {
     @Body() body: SendVerificationCodeDto,
   ): Promise<void> {
     return this.authService.sendVerificationCode(body);
+  }
+
+  @ApiOperation({
+    summary: 'Correct the email on an account that is not verified yet',
+  })
+  @ApiResponse({ status: 200, description: 'Address changed, new code sent' })
+  @ApiResponse({ status: 400, description: 'New address already in use' })
+  @ApiResponse({ status: 401, description: 'Unknown, verified, or wrong password' })
+  @ApiResponse({ status: 429, description: 'Too many attempts' })
+  @ApiBody({ type: ChangeUnverifiedEmailDto })
+  @Throttle({
+    auth: {
+      // Keyed on the ORIGIN as well as the address. This endpoint takes a
+      // password, so unlike resend it is a guessing target: keying it on the
+      // address alone would also let anyone burn a stranded vendor's only
+      // route out of a mistyped address.
+      generateKey(req) {
+        const request = req.switchToHttp().getRequest();
+        return authAttemptKey(
+          'change-unverified-email',
+          normalizeEmailKey(request.body.email),
+          getIpAddress(req),
+        );
+      },
+    },
+  })
+  @Post('change-unverified-email')
+  async changeUnverifiedEmail(
+    @Body() body: ChangeUnverifiedEmailDto,
+  ): Promise<{ verificationSent: boolean }> {
+    return this.authService.changeUnverifiedEmail(body);
   }
   @ApiOperation({ summary: 'Verify code' })
   @ApiResponse({ status: 200, description: 'Code verified successfully' })
@@ -111,7 +155,7 @@ export class StaffAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `verify-code-${request.body.email}`;
+        return `verify-code-${normalizeEmailKey(request.body.email)}`;
       },
     },
   })
@@ -141,7 +185,11 @@ export class StaffAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `forgot-password-${request.body.email}`;
+        return authAttemptKey(
+          'forgot-password',
+          normalizeEmailKey(request.body.email),
+          getIpAddress(req),
+        );
       },
     },
   })
@@ -161,7 +209,7 @@ export class StaffAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `reset-password-${request.body.email}`;
+        return `reset-password-${normalizeEmailKey(request.body.email)}`;
       },
     },
   })
@@ -180,6 +228,9 @@ export class StaffAuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiBearerAuth()
+  // Already bearer-authenticated; the per-IP auth throttle (6/15 min) locked
+  // whole offices out of token refresh.
+  @SkipThrottle({ auth: true })
   @Post('refresh-token')
   @UseGuards(JwtRefreshGuard)
   async refreshToken(
@@ -194,6 +245,7 @@ export class StaffAuthController {
   @ApiResponse({ status: 200, description: 'Successfully logged out' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiBearerAuth()
+  @SkipThrottle({ auth: true })
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   async logout(@CurrentUser() user: SessionUser): Promise<void> {

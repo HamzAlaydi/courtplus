@@ -18,6 +18,8 @@ import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { AuthorizedUserType } from 'src/decorators/user-type.decorator';
 import { StaffRole } from 'src/modules/staff/entities/enum';
 import { RequestPayoutDto } from '../dto/request-payout.dto';
+import { StartOnboardingDto } from '../dto/start-onboarding.dto';
+import { MarkPayoutSentDto } from '../dto/mark-payout-sent.dto';
 import { RejectPayoutDto } from '../dto/reject-payout.dto';
 import { UpdatePayoutSettingsDto } from '../dto/update-payout-settings.dto';
 import { ListPayoutsResponseDto } from '../dto/payout-response.dto';
@@ -28,6 +30,8 @@ import { Payout } from '../entities/payout.entity';
 import { TenantBalance } from '../entities/tenant-balance.entity';
 import { TenantPayoutSettings } from '../entities/tenant-payout-settings.entity';
 import type { SessionUser } from 'src/modules/auth/@types/session';
+import { Audited } from 'src/decorators/audited.decorator';
+import { LogAction, LogEntity } from 'src/modules/logging/entities/log.entity';
 
 @Controller('payouts')
 @ApiTags('Payouts')
@@ -97,6 +101,22 @@ export class PayoutsController {
     return this.payoutsService.getAccountStatus(user.tenantId);
   }
 
+  @Post('account/onboard')
+  @ApiOperation({
+    summary: 'Start or resume Stripe Connect onboarding; returns the hosted URL',
+  })
+  @AuthorizedUserType.isStaff([StaffRole.OWNER])
+  async startOnboarding(
+    @CurrentUser() user: SessionUser,
+    @Body() dto: StartOnboardingDto,
+  ): Promise<{ url: string }> {
+    return this.payoutsService.startOnboarding(
+      user.tenantId,
+      user.email,
+      dto.country,
+    );
+  }
+
   @Post('request')
   @ApiOperation({ summary: 'Request a payout' })
   @AuthorizedUserType.isStaff([StaffRole.OWNER])
@@ -107,9 +127,25 @@ export class PayoutsController {
     return this.payoutsService.requestPayout(user.tenantId, user.id, dto);
   }
 
+  // Payout decisions move vendor money but carried no @Audited, so approving,
+  // rejecting or marking one sent left no trace of who did it.
+  @Post(':id/mark-sent')
+  @ApiOperation({
+    summary: 'Record that a manual bank transfer for this payout has been sent',
+  })
+  @AuthorizedUserType.isStaff([StaffRole.SUPER_ADMIN])
+  @Audited(LogEntity.PAYOUT, LogAction.UPDATE)
+  async markPayoutSent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: MarkPayoutSentDto,
+  ): Promise<Payout> {
+    return this.payoutsService.markPayoutSent(id, dto.reference);
+  }
+
   @Post(':id/approve')
   @ApiOperation({ summary: 'Approve and process a pending payout' })
   @AuthorizedUserType.isStaff([StaffRole.SUPER_ADMIN])
+  @Audited(LogEntity.PAYOUT, LogAction.UPDATE)
   async approvePayout(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Payout> {
@@ -119,6 +155,7 @@ export class PayoutsController {
   @Post(':id/reject')
   @ApiOperation({ summary: 'Reject a pending payout' })
   @AuthorizedUserType.isStaff([StaffRole.SUPER_ADMIN])
+  @Audited(LogEntity.PAYOUT, LogAction.UPDATE)
   async rejectPayout(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: RejectPayoutDto,
@@ -133,7 +170,10 @@ export class PayoutsController {
     @CurrentUser() user: SessionUser,
     @Query() query: ListPayoutsQueryDto,
   ): Promise<ListPayoutsResponseDto> {
-    return this.payoutsService.listPayouts(user.tenantId, query);
+    return this.payoutsService.listPayouts(
+      user.role === StaffRole.SUPER_ADMIN ? undefined : user.tenantId,
+      query,
+    );
   }
 
   @Get(':id')
@@ -143,6 +183,9 @@ export class PayoutsController {
     @CurrentUser() user: SessionUser,
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Payout> {
-    return this.payoutsService.getPayout(user.tenantId, id);
+    return this.payoutsService.getPayout(
+      user.role === StaffRole.SUPER_ADMIN ? undefined : user.tenantId,
+      id,
+    );
   }
 }

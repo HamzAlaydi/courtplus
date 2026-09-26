@@ -11,6 +11,7 @@ import {
   mapGenderValue,
   SportFilterItem,
   sports,
+  getMatchSizesForSport,
 } from "utils";
 import { AuthenticatedStackNavigationProp } from "navigation/types";
 import { useNavigation } from "@react-navigation/native";
@@ -27,7 +28,11 @@ export const useNewMatch = () => {
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
-  const [autoAccept, setAutoAccept] = useState(true);
+  // The switch is labelled "Members need to be accepted", but it used to be
+  // bound straight to autoAccept — so turning it ON auto-accepted everyone,
+  // the exact opposite of what the organiser was told.
+  const [requiresApproval, setRequiresApproval] = useState(false);
+  const autoAccept = !requiresApproval;
   const selectedDate = useOpenMatchStore((store) => store.date);
   const { t } = useTranslation();
   const levelBottomSheetRef = useRef<BottomSheetModal>(null);
@@ -38,7 +43,8 @@ export const useNewMatch = () => {
   const clearMatchData = useOpenMatchStore((store) => store.clearMatchData);
   const addPlayersModalRef = useRef<BottomSheetModal>(null);
   const genderModalRef = useRef<BottomSheetModal>(null);
-  const [selectedGender, setSelectedGender] = useState<string>("");
+  // Default to a mixed match so the form is valid without an extra tap.
+  const [selectedGender, setSelectedGender] = useState<string>("other");
   const { data: profileData } = useGetProfile();
   const [participants, setParticipants] = useState<User[]>([profileData!!]);
   const [selectedSport, setSelectedSport] = useState<SportFilterItem[]>([
@@ -212,11 +218,27 @@ export const useNewMatch = () => {
     genderModalRef.current?.dismiss();
   };
 
+  // Football cannot be played 2-a-side and padel cannot be played 11-a-side,
+  // so the options follow the court's sport rather than being a fixed pair.
+  const matchSizes = useMemo(
+    () => getMatchSizesForSport(selectedCourt?.sport),
+    [selectedCourt?.sport],
+  );
+
+  // A size carried over from a previous sport (2 v 2 on a football pitch)
+  // would be submitted verbatim, so drop it when it is no longer offered.
+  useEffect(() => {
+    if (playerAside && !matchSizes.some((item) => item.key === playerAside.key)) {
+      setPlayerAside(null);
+    }
+  }, [matchSizes, playerAside]);
+
   return {
+    matchSizes,
     list,
     themedStyles,
-    autoAccept,
-    setAutoAccept,
+    requiresApproval,
+    setRequiresApproval,
     formattedDate,
     levelBottomSheetRef,
     selectedLevel,

@@ -7,7 +7,7 @@ import {
 } from "navigation/types";
 import { useState } from "react";
 import { useUserStore } from "store";
-import { formatDate } from "utils";
+import { formatDate, getSlotsDurationMinutes, areSlotsContiguous} from "utils";
 
 export const useChooseTime = () => {
   const route = useRoute<RouteProp<CourtStackParamList, "ChooseTime">>();
@@ -48,10 +48,27 @@ export const useChooseTime = () => {
   };
 
   const slots = data?.slots ?? [];
-  const isRightButtonDisabled = selectedSlots.length === 0;
+  // A booking is one start time plus a duration, so a gap in the selection
+  // would book and charge for the slot in between — which may already be
+  // taken. Block it instead of silently widening the booking.
+  const hasGapInSelection = !areSlotsContiguous(selectedSlots ?? []);
+  const isRightButtonDisabled =
+    selectedSlots.length === 0 || hasGapInSelection;
+
+  // The header chips used to be hard-coded to "30 mins" and the court's
+  // hourly rate no matter what the customer picked, so a 30-minute booking on
+  // a 150/h court advertised 150 and charged 75.
+  const selectedDurationMinutes = getSlotsDurationMinutes(selectedSlots ?? []);
+  const selectedTotalCost =
+    Math.round(
+      ((courtData?.hourlyRate ?? 0) * (selectedDurationMinutes / 60) +
+        Number.EPSILON) * 100,
+    ) / 100;
 
   return {
     courtData,
+    selectedDurationMinutes,
+    selectedTotalCost,
     onNextPress,
     slots,
     setSelectedDate,
@@ -61,5 +78,6 @@ export const useChooseTime = () => {
     selectedDate,
     goBack,
     isRightButtonDisabled,
+    hasGapInSelection,
   };
 };

@@ -7,11 +7,26 @@ import { useTranslation } from "react-i18next";
 import { Images } from "theme";
 import { ActionListItem, changeLanguage, clearCache, isRTL } from "utils";
 import styles from "./Settings.styles";
-import { Image, View } from "react-native";
+import { Image, Linking, View } from "react-native";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useDeleteAccount, useGetProfile, useLogout } from "apis";
 import { useAppStore } from "store";
 import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
+
+const PRIVACY_POLICY_URL = "https://courtplusapp.com/privacy";
+
+const openPrivacyPolicy = async (t: (k: string) => string) => {
+  try {
+    const canOpen = await Linking.canOpenURL(PRIVACY_POLICY_URL);
+    if (!canOpen) {
+      showSnackbar({ message: t("messages.INTERNAL_SERVER_ERROR") });
+      return;
+    }
+    await Linking.openURL(PRIVACY_POLICY_URL);
+  } catch {
+    showSnackbar({ message: t("messages.INTERNAL_SERVER_ERROR") });
+  }
+};
 
 const useSettings = () => {
   const { t } = useTranslation();
@@ -130,6 +145,12 @@ const useSettings = () => {
           {
             title: t("settings.privacyPolicy"),
             image: Images.eye,
+            // This row had no onPress at all, so the app shipped with no
+            // reachable privacy policy. Apple rejects an app that collects
+            // personal data without one, and there is no in-app privacy
+            // content (no settings.privacyPolicy* body keys exist), so this
+            // opens the published policy on the marketing site.
+            onPress: () => openPrivacyPolicy(t),
           },
         ],
       },
