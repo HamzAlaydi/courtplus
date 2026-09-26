@@ -166,8 +166,19 @@ Release = bundle baked in, production API. Debug/dev builds need Metro + `adb re
 
 1. **Twilio** — trial: SMS only to verified numbers. Upgrade (~$20) for real users.
 2. **SES** — sandbox: email only to verified addresses (currently Gmail SMTP covers everything via `MAIL_DRIVER=smtp`). Request production access in the SES console when ready; then set `MAIL_DRIVER=ses` + `SES_FROM_EMAIL=no-reply@courtplusapp.com` (domain already DKIM-verified).
-3. **Stores** — Android: generate release keystore → Play Console. iOS: Apple Developer account ($99/y) → pods + archive.
-4. **Deferred hardening** (from the security audit): JWT session check on ops routes, CORS restriction, hide Swagger in production, IP-keyed throttles on auth endpoints.
+3. **Stores** — Android: upload keystore now EXISTS (created 2026-09-26 at
+   `~/.android-keystores/courtplus-upload.keystore`, properties in
+   `~/.gradle/gradle.properties`, alias `courtplus-upload`, RSA 4096, valid to
+   2054). **Back up both files off this machine** — losing them means no
+   update can ever be published under this key. Remaining: Play Console
+   listing. iOS: Apple Developer account ($99/y) → pods + archive.
+4. **Deferred hardening** (from the security audit): JWT session check on ops
+   routes, hide Swagger in production, IP-keyed throttles on auth endpoints.
+   CORS is now restricted — `CORS_ORIGINS` must list every browser origin, and
+   an EMPTY value refuses every preflight with a bare 404 in production while
+   `curl` still succeeds (it sends no preflight). That exact gap took down all
+   browser logins on 2026-09-26; if the dashboard cannot log in but curl can,
+   check this first.
 
 ---
 
