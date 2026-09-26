@@ -78,6 +78,18 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    // Pinned because NDK 27 dropped the `gold` linker while CMake 3.22 (the
+    // version AGP picks by default) still probes for it when checking
+    // interprocedural optimisation. Release builds enable IPO, so they failed
+    // at configure with "invalid linker name in argument '-fuse-ld=gold'"
+    // while debug builds — which do not enable IPO — kept working.
+    // Install with: sdkmanager "cmake;3.31.1"
+    externalNativeBuild {
+        cmake {
+            version "3.31.1"
+        }
+    }
+
     namespace "net.courtplus"
     defaultConfig {
         applicationId "net.courtplus"
