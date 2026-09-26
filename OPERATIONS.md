@@ -42,8 +42,8 @@ Monorepo: github.com/HamzAlaydi/courtplus (private)
 | Service | Account | How reached |
 |---|---|---|
 | **AWS** | `964816885138` (Hamza Juma Alaydi) | Console web login. IAM user `courtplus-backend` (policies: S3/SES/Rekognition/CloudFront/EC2 FullAccess). Keys in `backend/.env` |
-| **EC2 instance** | `i-0a30af52bce0130af` (t3.micro, eu-central-1) | Elastic IP `63.186.130.126`. SSH: `ssh -i ~/.ssh/courtplus-ec2.pem ec2-user@63.186.130.126` |
-| **EC2 security group** | `sg-0956ec5bc6f4ef1bf` | Port 22 restricted to current home IP (rotate it via AWS CLI when ISP changes); 80/443 open |
+| **EC2 instance** | `i-010d29f3c6078d965` (t3.micro, eu-central-1, rebuilt 2026-09-26 — the previous `i-0a30af52bce0130af` was terminated) | Elastic IP `63.186.130.126`. SSH: `ssh -i ~/.ssh/courtplus-ec2.pem ec2-user@63.186.130.126` |
+| **EC2 security group** | `sg-0956ec5bc6f4ef1bf` | Port 22 restricted to specific admin IPs (add yours via AWS CLI when your ISP changes — stale entries accumulate); 80/443 open |
 | **S3** | bucket `courtplus1-assets` (eu-central-1) | Private; presigned uploads; CORS set for dashboard origins |
 | **CloudFront** | dist `E258KZDVE5HI6Y` | `d2s0i7s3svixzt.cloudfront.net` → serves `/assets/<id>` |
 | **SES** | eu-central-1 | Identities: `courtplusapp.com` (DKIM via Vercel DNS), Gmail (verified). Sandbox mode — see §7 |
@@ -174,6 +174,17 @@ Release = bundle baked in, production API. Debug/dev builds need Metro + `adb re
 ---
 
 ## 8. Backup & restore (added during production hardening)
+
+> **STATUS 2026-09-26 — THIS IS NOT INSTALLED.** The server was rebuilt from
+> scratch on 26 September because the original instance had been terminated.
+> There were no EBS snapshots, no AMI and no volumes, and the bucket this
+> section names (`s3://courtplus-backups`) **does not exist in the account** —
+> only `courtplus1-assets` does. Every booking, payment and payout record from
+> before that date is unrecoverable. The section below is still the plan, not
+> the state: create the bucket, install the cron, then prove it with a restore
+> drill (§9.3) before treating any production data as durable.
+
+
 
 Until this section existed there was **no backup of any kind**. Production data
 lived only in the `pgdata` Docker volume on one EC2 instance: losing that volume
