@@ -109,8 +109,21 @@ export const validationSchema = Joi.object({
       is: 'production',
       then: Joi.forbidden().messages({
         'any.unknown':
-          'DEV_OTP_BYPASS_CODE must not be set when NODE_ENV=production — it is an authentication bypass for every account.',
+          'DEV_OTP_BYPASS_CODE must not be set when NODE_ENV=production — it is an authentication bypass for every account. For pre-launch phone testing use TEST_PHONE_OTP_CODE.',
       }),
+    }),
+
+  // Pre-launch testing on the real server (owner's decision): every phone
+  // number signs in with this code and no SMS is sent, so testers need no
+  // Twilio-verified number. Phone OTP only — staff/ops e-mail codes ignore it.
+  // Allowed in production on purpose; remove it before real customers sign up.
+  TEST_PHONE_OTP_CODE: Joi.string()
+    .pattern(/^\d{6}$/)
+    .optional()
+    .allow('')
+    .messages({
+      'string.pattern.base':
+        'TEST_PHONE_OTP_CODE must be 6 digits — the app only accepts 6-digit codes.',
     }),
 
   SENTRY_DSN: Joi.string().uri().optional().allow(''),

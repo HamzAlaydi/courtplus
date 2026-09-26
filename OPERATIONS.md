@@ -164,7 +164,8 @@ Release = bundle baked in, production API. Debug/dev builds need Metro + `adb re
 
 ## 7. Launch blockers remaining
 
-1. **Twilio** — trial: SMS only to verified numbers. Upgrade (~$20) for real users.
+1. **Twilio** — trial: SMS only to verified numbers. Upgrade (~$20) for real users,
+   and remove `TEST_PHONE_OTP_CODE` from the server `.env` at the same time (§12).
 2. **SES** — sandbox: email only to verified addresses (currently Gmail SMTP covers everything via `MAIL_DRIVER=smtp`). Request production access in the SES console when ready; then set `MAIL_DRIVER=ses` + `SES_FROM_EMAIL=no-reply@courtplusapp.com` (domain already DKIM-verified).
 3. **Stores** — Android: upload keystore now EXISTS (created 2026-09-26 at
    `~/.android-keystores/courtplus-upload.keystore`, properties in
@@ -390,8 +391,15 @@ but no updates = Redis pub/sub (check `redis-cli PUBSUB CHANNELS`).
 
 ## 12. Accounts & auth — operational notes (pass 6)
 
-- `DEV_OTP_BYPASS_CODE` is the ONLY bypass (phone and e-mail codes). It is
+- `DEV_OTP_BYPASS_CODE` is the local bypass (phone and e-mail codes). It is
   refused in production by config validation; never set it on the server.
+- `TEST_PHONE_OTP_CODE` (6 digits) is the pre-launch testing switch that IS
+  allowed on the server: every phone number signs in to the mobile app with
+  that code and no SMS is sent, so testers need no Twilio-verified number.
+  Phone OTP only — dashboard/ops e-mail codes are unaffected. The API logs a
+  warning on every boot while it is set. Turn it off before real customers
+  sign up: delete the line from `~/courtplus/backend/.env`, then
+  `docker compose -f docker-compose.prod.yml up -d --force-recreate api`.
 - Blocking a customer in ops now refuses login and refresh (`ACCOUNT_BLOCKED`).
   Password reset, account deletion and admin deactivation revoke every session.
 - Phone numbers are normalised to E.164 on every auth endpoint; throttle keys
