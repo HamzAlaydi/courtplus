@@ -66,6 +66,14 @@ export default function Court() {
             <strong>{t(`court.surface_${court?.surface}`)}</strong>
           </h5>
           <h5 className="info-item">
+            <span>{t("court.air_conditioned")}</span>
+            <strong>
+              {court?.isAirConditioned
+                ? t("court.air_conditioned_yes")
+                : t("court.air_conditioned_no")}
+            </strong>
+          </h5>
+          <h5 className="info-item">
             <span>{t("court.size")}</span>
             <strong>{t(`court.size_${court?.size}`)}</strong>
           </h5>

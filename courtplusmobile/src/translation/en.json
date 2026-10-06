@@ -125,7 +125,10 @@
     "noMomentsSubtitle": "Moments shared on this court will appear here.",
     "notAvailable": "This court is no longer available.",
     "openInMaps": "Open in Google Maps",
-    "locationUnavailable": "This venue has no location on file yet"
+    "locationUnavailable": "This venue has no location on file yet",
+    "airConditioning": "Air Conditioning",
+    "airConditioned": "Air conditioned",
+    "notAirConditioned": "Not air conditioned"
   },
   "completeProfile": {
     "title": "Complete Your Profile Setup",
@@ -466,7 +469,8 @@
     "availability": "Availability",
     "duration": "Duration",
     "radius": "Search radius",
-    "noPlaceFound": "No place found for that search."
+    "noPlaceFound": "No place found for that search.",
+    "airConditioned": "Air conditioned only"
   },
   "booking": {
     "title": "Booking",

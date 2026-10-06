@@ -286,7 +286,8 @@
     "rejection_reason": "السبب",
     "resubmit": "تعديل وإعادة إرسال",
     "resubmit_success": "تمت إعادة إرسال الملعب للموافقة",
-    "resubmit_failed": "فشل إعادة إرسال الملعب"
+    "resubmit_failed": "فشل إعادة إرسال الملعب",
+    "air_conditioned": "مكيّف"
   },
   "common": {
     "submit": "إرسال",
@@ -319,6 +320,9 @@
     "placeholder_surface": "اختر نوع السطح",
     "surface_grass": "عشب",
     "surface_hard": "ملعب صلب",
+    "air_conditioned": "مكيّف",
+    "air_conditioned_yes": "نعم",
+    "air_conditioned_no": "لا",
     "place_name": "اسم المكان",
     "status": "حالة الملعب",
     "status_tooltip": "سيؤدي هذا إلى جعل الملعب مرئيًا للمستخدمين",
@@ -375,6 +379,9 @@
     "surface": "نوع السطح",
     "surface_grass": "عشب",
     "surface_hard": "ملعب صلب",
+    "air_conditioned": "التكييف",
+    "air_conditioned_yes": "مكيّف",
+    "air_conditioned_no": "غير مكيّف",
     "location": "الموقع",
     "size": "حجم الملعب",
     "size_full": "ملعب كامل",

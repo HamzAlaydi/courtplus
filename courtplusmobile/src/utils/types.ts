@@ -95,6 +95,7 @@ export type Filters = {
   minRating?: number;
   startAt?: string;
   duration?: number;
+  isAirConditioned?: boolean;
 };
 
 export type PaginatedItems<T> = {

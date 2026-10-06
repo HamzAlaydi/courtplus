@@ -237,6 +237,9 @@ export const Images = {
   width: Image.resolveAssetSource(
     require("../../assets/images/width/width.png")
   ),
+  airConditioner: Image.resolveAssetSource(
+    require("../../assets/images/airConditioner/airConditioner.png")
+  ),
   cloud: Image.resolveAssetSource(
     require("../../assets/images/cloud/cloud.png")
   ),

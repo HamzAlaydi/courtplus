@@ -57,6 +57,9 @@ const CourtCard = ({ name, id, image, status, court }) => {
           <Tag color={STATUS_COLORS[status] || "default"}>
             {t(`courtCard.status.${status}`, status)}
           </Tag>
+          {court?.isAirConditioned && (
+            <Tag color="cyan">{t("courtCard.air_conditioned")}</Tag>
+          )}
           {showReason && (
             <Popover
               content={court.rejectionReason}

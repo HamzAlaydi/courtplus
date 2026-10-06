@@ -62,6 +62,7 @@ const CUSTOMER_COURT_COLUMNS = [
   'court.locationId',
   'court.hourlyRate',
   'court.sport',
+  'court.isAirConditioned',
   'court.minDuration',
   'court.bookmarksCount',
   'court.postsCount',
@@ -212,6 +213,7 @@ export class CourtsService {
       placeId,
       radius,
       status,
+      isAirConditioned,
       minRating,
       rating,
       page = 1,
@@ -363,6 +365,11 @@ export class CourtsService {
       });
     }
 
+    // The app sends true or omits the param, so false means "no filter".
+    if (isAirConditioned === true) {
+      queryBuilder.andWhere('court.isAirConditioned = true');
+    }
+
     if (minRating) {
       queryBuilder.andWhere('court.avgRating >= :minRating', {
         minRating,
@@ -430,9 +437,6 @@ export class CourtsService {
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
-
-
-    console.log(JSON.stringify(courts, null, 2));
 
     const mappedCourts = await this.mapCourts(
       courts,

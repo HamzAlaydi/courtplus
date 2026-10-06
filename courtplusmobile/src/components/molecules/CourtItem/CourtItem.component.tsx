@@ -53,6 +53,9 @@ const CourtItem = ({
           overrideStyle={themedStyles.brancName}
         />
         <View style={themedStyles.rowContainer}>
+          {item.isAirConditioned && (
+            <Image source={Images.airConditioner} style={themedStyles.acIcon} />
+          )}
           <Image source={Images.star} />
           <CustomText
             font="headline3"

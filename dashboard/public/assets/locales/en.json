@@ -270,7 +270,8 @@
     "rejection_reason": "Reason",
     "resubmit": "Edit & Resubmit",
     "resubmit_success": "Court resubmitted for approval",
-    "resubmit_failed": "Failed to resubmit court"
+    "resubmit_failed": "Failed to resubmit court",
+    "air_conditioned": "Air conditioned"
   },
   "common": {
     "submit": "Submit",
@@ -303,6 +304,9 @@
     "placeholder_surface": "Select surface type",
     "surface_grass": "Grass",
     "surface_hard": "Hard Court",
+    "air_conditioned": "Air Conditioned",
+    "air_conditioned_yes": "Yes",
+    "air_conditioned_no": "No",
     "place_name": "Place Name",
     "status": "Court Status",
     "status_tooltip": "This will make the court visible to end users",
@@ -359,6 +363,9 @@
     "surface": "Surface Type",
     "surface_grass": "Grass",
     "surface_hard": "Hard Court",
+    "air_conditioned": "Air Conditioning",
+    "air_conditioned_yes": "Air Conditioned",
+    "air_conditioned_no": "Not Air Conditioned",
     "location": "Location",
     "size": "Court Size",
     "size_full": "Full Court",

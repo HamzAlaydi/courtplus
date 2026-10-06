@@ -29,6 +29,7 @@ export type Court = {
   width: number;
   size: string;
   surface: string;
+  isAirConditioned?: boolean;
   status: string;
   locationId: string;
   deletedAt: null;

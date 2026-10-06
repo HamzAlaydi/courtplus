@@ -91,6 +91,7 @@ export interface Court {
   assets?: Asset[];
   sport: string;
   surface: string;
+  isAirConditioned?: boolean;
   size: string;
   length: number;
   width: number;

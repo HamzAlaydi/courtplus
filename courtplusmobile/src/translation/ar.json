@@ -169,7 +169,10 @@
     "noMomentsSubtitle": "ستظهر اللحظات التي تتم مشاركتها في هذا الملعب هنا.",
     "notAvailable": "هذا الملعب لم يعد متاحًا.",
     "openInMaps": "افتح في خرائط جوجل",
-    "locationUnavailable": "لا يوجد موقع مسجّل لهذا الملعب بعد"
+    "locationUnavailable": "لا يوجد موقع مسجّل لهذا الملعب بعد",
+    "airConditioning": "التكييف",
+    "airConditioned": "مكيف",
+    "notAirConditioned": "غير مكيف"
   },
   "completeProfile": {
     "title": " أكمل إعداد ملفك الشخصي",
@@ -466,7 +469,8 @@
     "availability": "التوفر",
     "duration": "المدة",
     "radius": "نطاق البحث",
-    "noPlaceFound": "لم يُعثر على مكان بهذا الاسم."
+    "noPlaceFound": "لم يُعثر على مكان بهذا الاسم.",
+    "airConditioned": "الملاعب المكيفة فقط"
   },
   "booking": {
     "title": "اختيار وقت الحجز",

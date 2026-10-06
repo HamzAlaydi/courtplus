@@ -177,6 +177,13 @@ export class Court extends BaseEntity {
   sport: Sport;
 
   @ApiProperty({
+    description: 'Whether the court is air conditioned',
+    example: false,
+  })
+  @Column({ default: false })
+  isAirConditioned: boolean;
+
+  @ApiProperty({
     description: 'The distance to the court from the user',
     example: 10,
   })

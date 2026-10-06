@@ -112,6 +112,7 @@ export default function CourtForm() {
         width: court.width || 0,
         hourlyRate: court.hourlyRate || 0,
         surface: court.surface || "grass",
+        isAirConditioned: !!court.isAirConditioned,
         zone: court.schedule?.timeZone || "Asia/Riyadh",
       });
 
@@ -428,7 +429,7 @@ export default function CourtForm() {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{ zone: "Asia/Riyadh" }}
+        initialValues={{ zone: "Asia/Riyadh", isAirConditioned: false }}
       >
         <div className="form-section">
           <div className="form-group">
@@ -560,6 +561,17 @@ export default function CourtForm() {
                   {t("courtForm.surface_hard")}
                 </Select.Option>
               </Select>
+            </Form.Item>
+            <Form.Item
+              name="isAirConditioned"
+              label={t("courtForm.air_conditioned")}
+              valuePropName="checked"
+            >
+              <Switch
+                className="toggle-switch"
+                checkedChildren={t("courtForm.air_conditioned_yes")}
+                unCheckedChildren={t("courtForm.air_conditioned_no")}
+              />
             </Form.Item>
             <Form.Item label={t("courtForm.place_name")}>
               <GooglePlacesInput

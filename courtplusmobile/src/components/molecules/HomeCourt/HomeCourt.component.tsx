@@ -55,6 +55,9 @@ const HomeCourt = ({ item, onPress }: HomeCourtProps) => {
           />
         </View>
         <View style={themedStyles.innerRowContainer}>
+          {item.isAirConditioned && (
+            <Image source={Images.airConditioner} style={themedStyles.acIcon} />
+          )}
           <Image source={Images.star} />
           <CustomText
             font="text"

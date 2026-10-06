@@ -7,7 +7,12 @@ import { Images } from "theme";
 import { CourtSpecsProps } from "./CourtSpecs.types";
 import { useTranslation } from "react-i18next";
 
-const CourtSpecs = ({ surface, widthSingles, long }: CourtSpecsProps) => {
+const CourtSpecs = ({
+  surface,
+  widthSingles,
+  long,
+  isAirConditioned,
+}: CourtSpecsProps) => {
   const {
     currentTheme: { colors },
   } = useThemeContext();
@@ -29,6 +34,13 @@ const CourtSpecs = ({ surface, widthSingles, long }: CourtSpecsProps) => {
       image: Images.long,
       title: t("court.long"),
       description: `${long} ${t("general.meters")}`,
+    },
+    {
+      image: Images.airConditioner,
+      title: t("court.airConditioning"),
+      description: isAirConditioned
+        ? t("court.airConditioned")
+        : t("court.notAirConditioned"),
     },
   ];
 

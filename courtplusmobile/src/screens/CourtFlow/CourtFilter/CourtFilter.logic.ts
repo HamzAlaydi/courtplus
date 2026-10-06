@@ -52,6 +52,9 @@ export const useCourtFilter = () => {
   const [availabilityEnabled, setAvailabilityEnabled] = useState(
     !!storedFilters?.startAt
   );
+  const [airConditionedOnly, setAirConditionedOnly] = useState(
+    !!storedFilters?.isAirConditioned
+  );
   const [selectedDate, setSelectedDate] = useState(storedStartAt ?? new Date());
   const [selectedPeriod, setSelectedPeriod] = useState(
     storedStartAt ? periodFromHour(storedStartAt.getHours()) : DEFAULT_PERIOD
@@ -113,6 +116,7 @@ export const useCourtFilter = () => {
           }`
         : undefined,
       duration: availabilityEnabled ? duration : undefined,
+      isAirConditioned: airConditionedOnly ? true : undefined,
     });
     goBack();
   };
@@ -121,6 +125,7 @@ export const useCourtFilter = () => {
     setSelectedSports([]);
     setMinRating(0);
     setAvailabilityEnabled(false);
+    setAirConditionedOnly(false);
     setSelectedDate(new Date());
     setSelectedPeriod(DEFAULT_PERIOD);
     setDuration(DURATION_OPTIONS[0]);
@@ -135,6 +140,8 @@ export const useCourtFilter = () => {
     setMinRating,
     availabilityEnabled,
     setAvailabilityEnabled,
+    airConditionedOnly,
+    setAirConditionedOnly,
     selectedDate,
     setSelectedDate,
     periodItems,

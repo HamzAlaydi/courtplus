@@ -24,6 +24,8 @@ const CourtFilterScreen = () => {
     setMinRating,
     availabilityEnabled,
     setAvailabilityEnabled,
+    airConditionedOnly,
+    setAirConditionedOnly,
     selectedDate,
     setSelectedDate,
     periodItems,
@@ -106,6 +108,17 @@ const CourtFilterScreen = () => {
             overrideStyle={themedStyles.ratingHint}
           />
         )}
+      </View>
+      <View style={themedStyles.availabilityHeader}>
+        <CustomText
+          text={t("filters.airConditioned")}
+          font="headline3"
+          weight="semiBold"
+        />
+        <CustomSwitch
+          value={airConditionedOnly}
+          onValueChange={setAirConditionedOnly}
+        />
       </View>
       <View style={themedStyles.availabilityHeader}>
         <CustomText

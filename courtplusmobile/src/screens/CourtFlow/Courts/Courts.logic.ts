@@ -58,6 +58,7 @@ export const useCourts = () => {
       minRating: filters?.minRating,
       startAt: filters?.startAt,
       duration: filters?.startAt ? filters?.duration : undefined,
+      isAirConditioned: filters?.isAirConditioned,
       sortBy: sortQuery[0],
       sortDirection: sortQuery[1],
     },
