@@ -16,26 +16,51 @@ describe('Schedule.checkSlotAvailability across midnight', () => {
   a.endTime = '02:00';
   schedule.availabilities = [a];
 
-  // Saturday 2026-10-03 in Riyadh
-  const at = (day: string, time: string) => dayjs.tz(`${day} ${time}`, 'Asia/Riyadh');
+  // The next Saturday in Riyadh, always at least a day ahead: the entity
+  // rejects any slot that starts before now, so a hard-coded date silently
+  // turns these into SLOT_IN_PAST failures once it passes.
+  let saturday = dayjs().tz('Asia/Riyadh').startOf('day');
+  do {
+    saturday = saturday.add(1, 'day');
+  } while (saturday.day() !== 6);
+  const sunday = saturday.add(1, 'day');
+  const monday = saturday.add(2, 'day');
+  const at = (day: dayjs.Dayjs, time: string) =>
+    dayjs.tz(`${day.format('YYYY-MM-DD')} ${time}`, 'Asia/Riyadh');
 
   it('accepts a slot before midnight on the scheduled day', () => {
-    const r = schedule.checkSlotAvailability(at('2026-10-03', '20:00'), at('2026-10-03', '21:00'), []);
+    const r = schedule.checkSlotAvailability(
+      at(saturday, '20:00'),
+      at(saturday, '21:00'),
+      [],
+    );
     expect(r.available).toBe(true);
   });
 
   it('accepts a slot after midnight that belongs to the previous day window', () => {
-    const r = schedule.checkSlotAvailability(at('2026-10-04', '00:30'), at('2026-10-04', '01:30'), []);
+    const r = schedule.checkSlotAvailability(
+      at(sunday, '00:30'),
+      at(sunday, '01:30'),
+      [],
+    );
     expect(r.available).toBe(true);
   });
 
   it('rejects a slot after the window closes', () => {
-    const r = schedule.checkSlotAvailability(at('2026-10-04', '02:00'), at('2026-10-04', '03:00'), []);
+    const r = schedule.checkSlotAvailability(
+      at(sunday, '02:00'),
+      at(sunday, '03:00'),
+      [],
+    );
     expect(r.available).toBe(false);
   });
 
   it('rejects the early hours on a day whose previous day has no hours', () => {
-    const r = schedule.checkSlotAvailability(at('2026-10-06', '00:30'), at('2026-10-06', '01:30'), []);
+    const r = schedule.checkSlotAvailability(
+      at(monday, '00:30'),
+      at(monday, '01:30'),
+      [],
+    );
     expect(r.available).toBe(false);
   });
 });
