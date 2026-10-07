@@ -38,6 +38,7 @@ import { UserSport } from './entities/sport.entity';
 import { AssetType } from '../assets/entities/asset.entity';
 import { UserPreferencesDto } from './dto/user-preferences.dto';
 import { UserPreferences } from './entities/user-preferences.entity';
+import { redactUserForViewer, redactUsersForViewer } from './users.privacy';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, UserTypeGuard)
@@ -198,7 +199,9 @@ export class UsersController {
     @Query() query: ListUsersDto,
     @CurrentUser() currentUser: SessionUser,
   ): Promise<ListUsersResponseDto> {
-    return this.usersService.find(query, currentUser);
+    const result = await this.usersService.find(query, currentUser);
+    // Strip contact PII when one customer searches for another.
+    return { ...result, items: redactUsersForViewer(result.items, currentUser) };
   }
 
   @ApiOperation({ summary: 'Get user by id' })
@@ -212,11 +215,14 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() currentUser: SessionUser,
   ): Promise<User> {
-    return this.usersService.getById(id, {
+    const user = await this.usersService.getById(id, {
       cached: false,
       relations: ['sports'],
       friendship: currentUser.id,
     });
+    // Any customer could otherwise read every other user's email, phone,
+    // date of birth, Firebase UID and Stripe customer id.
+    return redactUserForViewer(user, currentUser);
   }
 
   @ApiOperation({ summary: 'Send verification code to update email' })

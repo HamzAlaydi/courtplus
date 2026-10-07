@@ -24,6 +24,12 @@ import { CourtChangesRequestedEmail } from 'src/emails/court-changes-requested';
 import { ResourceSuspendedEmail } from 'src/emails/resource-suspended';
 import { CourtPaymentPendingEmail } from 'src/emails/court-payment-pending';
 import { i18next } from 'src/modules/notifications/content/i18n';
+import { VendorRegistrationEmail } from 'src/emails/vendor-registration';
+import { VendorLeadNotificationEmail } from 'src/emails/vendor-lead-notification';
+import { VendorAccountExistsEmail } from 'src/emails/vendor-account-exists';
+import { BookingConfirmedEmail } from 'src/emails/booking-confirmed';
+import { SubscriptionPaymentFailedEmail } from 'src/emails/subscription-payment-failed';
+import { PayoutFailedEmail } from 'src/emails/payout-failed';
 
 export enum EmailTemplate {
   ForgotPassword = 'forgot_password',
@@ -47,6 +53,14 @@ export enum EmailTemplate {
   COURT_CHANGES_REQUESTED = 'court_changes_requested',
   RESOURCE_SUSPENDED = 'resource_suspended',
   COURT_PENDING_PAYMENT = 'court_pending_payment',
+  VENDOR_REGISTRATION = 'vendor_registration',
+  VENDOR_LEAD_NOTIFICATION = 'vendor_lead_notification',
+  VENDOR_ACCOUNT_EXISTS = 'vendor_account_exists',
+  // The receipt the paying customer gets; the venue's copy is
+  // STAFF_BOOKING_CREATED above and says different things.
+  BOOKING_CONFIRMED = 'booking_confirmed',
+  SUBSCRIPTION_PAYMENT_FAILED = 'subscription_payment_failed',
+  PAYOUT_FAILED = 'payout_failed',
 }
 
 @Injectable()
@@ -79,6 +93,12 @@ export class EmailService {
       [EmailTemplate.COURT_CHANGES_REQUESTED]: CourtChangesRequestedEmail,
       [EmailTemplate.RESOURCE_SUSPENDED]: ResourceSuspendedEmail,
       [EmailTemplate.COURT_PENDING_PAYMENT]: CourtPaymentPendingEmail,
+      [EmailTemplate.VENDOR_REGISTRATION]: VendorRegistrationEmail,
+      [EmailTemplate.VENDOR_LEAD_NOTIFICATION]: VendorLeadNotificationEmail,
+      [EmailTemplate.VENDOR_ACCOUNT_EXISTS]: VendorAccountExistsEmail,
+      [EmailTemplate.BOOKING_CONFIRMED]: BookingConfirmedEmail,
+      [EmailTemplate.SUBSCRIPTION_PAYMENT_FAILED]: SubscriptionPaymentFailedEmail,
+      [EmailTemplate.PAYOUT_FAILED]: PayoutFailedEmail,
     };
   }
 
@@ -94,12 +114,18 @@ export class EmailService {
     subject,
     template,
     language = 'en',
+    replyTo,
   }: {
     to: string[];
     subject?: string;
     template: EmailTemplate;
     data: Record<string, any>;
     language?: string;
+    /**
+     * Address replies should go to, when that differs from the sender —
+     * e.g. an internal lead notification where the team replies to the vendor.
+     */
+    replyTo?: string;
   }) {
     const Component = this.templateComponents[template];
     const html = await render(Component(data));
@@ -108,6 +134,7 @@ export class EmailService {
       to,
       subject: subject || this.getSubject(template, language),
       html,
+      replyTo,
     });
   }
 }

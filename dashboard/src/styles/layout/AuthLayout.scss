@@ -13,10 +13,46 @@
   justify-content: flex-end;
   align-items: flex-start;
   gap: 1rem;
+
+  // The global `h1, h2, ... { color: #333 }` rule targets these headings
+  // DIRECTLY, and a direct rule always beats the inherited `color: white`
+  // above — so the headline rendered dark grey on a bright photo and was
+  // effectively invisible. Restate the colour on the elements themselves.
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span {
+    color: #ffffff;
+  }
+
+  h1 {
+    // The backdrop is a photograph, so contrast cannot be guaranteed by the
+    // scrim alone — a soft shadow keeps the text legible over the bright
+    // areas (racket, sky) as well as the dark ones.
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  p {
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  }
 }
 
 .cover-signup {
-  background: radial-gradient(
+  // Two layers: the original brand-green radial glow, plus a vertical scrim.
+  // The radial alone only darkened the bottom-LEFT corner, so any text sitting
+  // higher up — the headline — was left over the bare photograph.
+  background: linear-gradient(
+      to top,
+      rgba(10, 21, 23, 0.88) 0%,
+      rgba(10, 21, 23, 0.6) 35%,
+      rgba(10, 21, 23, 0.15) 65%,
+      rgba(10, 21, 23, 0) 100%
+    ),
+    radial-gradient(
       100% 58.8% at 0% 100%,
       rgba(36, 52, 15, 0.925) 44.44%,
       rgba(36, 52, 15, 0) 100%

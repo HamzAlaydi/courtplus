@@ -18,8 +18,15 @@ const BookingDetailsScreen = () => {
 
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
-  const { onActivityLogPress, item, formattedTime, bookingTicketButton, reviewCourtModalRef } =
-    useBookingDetails();
+  const {
+    onActivityLogPress,
+    item,
+    formattedTime,
+    bookingTicketButton,
+    cancelAction,
+    cancellationClosed,
+    reviewCourtModalRef,
+  } = useBookingDetails();
 
   const courtImage = getCourtImage(item.court);
 
@@ -72,7 +79,15 @@ const BookingDetailsScreen = () => {
             <View style={themedStyles.distanceContainer}>
               <Image source={Images.discovery} />
               <CustomText
-                text={item.court.location.name ?? ""}
+                // A court has no location of its own unless the vendor picked one, so
+                // fall back to the branch before giving up. Dereferencing
+                // `location.name` crashed this screen for every such court.
+                text={
+                  item.court.location?.name ??
+                  item.court.branch?.location?.name ??
+                  item.court.branch?.name ??
+                  ""
+                }
                 font="chip"
                 weight="regular"
                 overrideStyle={themedStyles.location}
@@ -206,6 +221,21 @@ const BookingDetailsScreen = () => {
           onPress={bookingTicketButton.onPress}
           title={bookingTicketButton.title}
         />
+        {cancelAction && (
+          <CustomButton
+            variant="bordered"
+            onPress={cancelAction.onPress}
+            title={cancelAction.title}
+            overrideStyle={{ marginTop: 12 }}
+          />
+        )}
+        {cancellationClosed && (
+          <CustomText
+            text={t("activity.cancelClosed")}
+            font="body"
+            overrideStyle={{ marginTop: 12, textAlign: "center", opacity: 0.7 }}
+          />
+        )}
       </View>
       <ReviewCourtModal
         onClose={() => reviewCourtModalRef.current?.dismiss()}

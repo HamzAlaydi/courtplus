@@ -30,10 +30,11 @@ class MatchService {
     });
   }
 
-  cancelMatchById(id) {
+  cancelMatchById(id, reason) {
     return apiRequest({
       method: "post",
       url: `${API_URL}/${id}/cancel`,
+      data: reason ? { reason } : {},
       customHeaders: authHeader(),
     });
   }

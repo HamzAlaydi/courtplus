@@ -179,6 +179,22 @@ export class OpsController {
     return this.opsService.resolveUnsuspendRequest(id);
   }
 
+  @Post('unsuspend-requests/:id/deny')
+  @Audited(LogEntity.UNSUSPEND_REQUEST, LogAction.UPDATE)
+  @ApiOperation({
+    summary: 'Deny an unsuspend request',
+    description:
+      'Closes the request without lifting the suspension. The reason is sent to the vendor.',
+  })
+  @ApiResponse({ status: 200, type: UnsuspendRequest })
+  @ApiParam({ name: 'id', type: String })
+  denyUnsuspendRequest(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CourtModerationDto,
+  ): Promise<UnsuspendRequest> {
+    return this.opsService.denyUnsuspendRequest(id, dto.reason);
+  }
+
   @Get('admins')
   @ApiOperation({ summary: 'List ops admins (SUPER_ADMIN staff)' })
   @ApiResponse({ status: 200, description: 'Paginated ops admins' })
@@ -203,8 +219,11 @@ export class OpsController {
   })
   @ApiResponse({ status: 204, description: 'Admin deactivated' })
   @ApiParam({ name: 'id', type: String })
-  async deactivateAdmin(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.opsService.deactivateAdmin(id);
+  async deactivateAdmin(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: SessionUser,
+  ): Promise<void> {
+    await this.opsService.deactivateAdmin(id, user);
   }
 
   @Patch('admins/:id/role')

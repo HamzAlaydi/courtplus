@@ -3,6 +3,7 @@ import { BranchesService } from './branches.service';
 import { BranchesController } from './branches.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Branch } from './entities/branch.entity';
+import { BranchStaffer } from 'src/modules/staff/entities/branch-staffer.entity';
 import { AssetsModule } from 'src/modules/assets/assets.module';
 import { LocationsService } from './locations.service';
 import { Location } from './entities/location.entity';
@@ -16,7 +17,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Branch, Location, Booking]),
+    TypeOrmModule.forFeature([Branch, Location, Booking, BranchStaffer]),
     AssetsModule,
     forwardRef(() => CourtsModule),
     forwardRef(() => BookmarksModule),

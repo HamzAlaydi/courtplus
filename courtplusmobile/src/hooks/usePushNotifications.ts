@@ -11,7 +11,11 @@ import {
 import { showSnackbar } from "atoms/Snackbar/SnackBar.utils";
 import { useEffect } from "react";
 import { useAppStore } from "store";
-import { navigateToNotification, parsePushNotificationData } from "utils";
+import {
+  invalidateQuery,
+  navigateToNotification,
+  parsePushNotificationData,
+} from "utils";
 
 /**
  * - Displays FCM messages in-app while the app is in the foreground.
@@ -43,6 +47,9 @@ export const usePushNotifications = () => {
         if (message) {
           showSnackbar({ message });
         }
+        // The notifications list is open or cached: refresh it so the new
+        // item appears without leaving and re-entering the screen.
+        invalidateQuery("getNotifications");
       }
     );
 

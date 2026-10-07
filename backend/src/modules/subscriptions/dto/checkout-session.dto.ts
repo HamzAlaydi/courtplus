@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, IsUrl, Min } from 'class-validator';
 
 export class CreateCheckoutSessionDto {
   @ApiProperty({
@@ -11,17 +11,29 @@ export class CreateCheckoutSessionDto {
   @Min(1)
   branchCount: number;
 
-  @ApiProperty({
-    description: 'Success URL',
-    example: 'https://example.com/success',
+  // These two had @ApiProperty but NO class-validator decorator. Because the
+  // global ValidationPipe runs with whitelist: true, a property without a
+  // validation decorator is silently STRIPPED from the body — so the URLs the
+  // dashboard sent (/billing?subscription=success) never reached the service,
+  // which fell back to its default of /dashboard?... — a route that does not
+  // exist in the dashboard. That is the blank page after Stripe Checkout.
+  //
+  // require_tld: false so http://localhost:3001/... is accepted in dev.
+  @ApiPropertyOptional({
+    description: 'Where Stripe sends the user after a successful checkout',
+    example: 'https://dashboard.courtplusapp.com/billing?subscription=success',
   })
-  successUrl: string;
+  @IsOptional()
+  @IsUrl({ require_tld: false, require_protocol: true })
+  successUrl?: string;
 
-  @ApiProperty({
-    description: 'Cancel URL',
-    example: 'https://example.com/cancel',
+  @ApiPropertyOptional({
+    description: 'Where Stripe sends the user if they abandon checkout',
+    example: 'https://dashboard.courtplusapp.com/billing?subscription=cancelled',
   })
-  cancelUrl: string;
+  @IsOptional()
+  @IsUrl({ require_tld: false, require_protocol: true })
+  cancelUrl?: string;
 }
 
 export class CheckoutSessionResponseDto {

@@ -72,7 +72,7 @@ export class BillingController {
     @CurrentUser() user: SessionUser,
     @Body('returnUrl') returnUrl?: string,
   ): Promise<{ url: string }> {
-    const defaultReturnUrl = `${this.configService.get('app.frontendUrl')}`;
+    const defaultReturnUrl = `${this.configService.get('app.frontendUrl')}/billing`;
     return this.subscriptionsService.createBillingPortalSession(
       user.tenantId,
       returnUrl || defaultReturnUrl,

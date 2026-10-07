@@ -1,3 +1,4 @@
+import { moneyTransformer } from 'src/common/money.transformer';
 import { BaseEntity } from 'src/common/base-entity';
 import { Branch } from 'src/modules/branches/entities/branch.entity';
 import {
@@ -176,6 +177,20 @@ export class Court extends BaseEntity {
   sport: Sport;
 
   @ApiProperty({
+    description: 'Whether the court is air conditioned',
+    example: false,
+  })
+  @Column({ default: false })
+  isAirConditioned: boolean;
+
+  @ApiProperty({
+    description: 'Whether the court is women only: fully enclosed and private',
+    example: false,
+  })
+  @Column({ default: false })
+  isWomenOnly: boolean;
+
+  @ApiProperty({
     description: 'The distance to the court from the user',
     example: 10,
   })
@@ -231,7 +246,7 @@ export class Court extends BaseEntity {
     description: 'The total revenue for the court',
     example: 100,
   })
-  @Column({ default: 0 })
+  @Column('numeric', { precision: 14, scale: 2, default: 0, transformer: moneyTransformer })
   totalRevenue: number;
 
   @ApiProperty({

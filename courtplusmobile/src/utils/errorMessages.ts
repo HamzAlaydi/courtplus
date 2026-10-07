@@ -21,3 +21,21 @@ export const getApiErrorMessage = (code?: string | null): string => {
 export const getNetworkErrorMessage = (): string => {
   return t("messages.networkError");
 };
+
+/**
+ * Turns whatever a rejected request hands us into something worth showing.
+ *
+ * The axios interceptor rejects with `{ status, data, message }` — NOT an
+ * Error — so `(error as Error).message` was `undefined` at several call
+ * sites. `showSnackbar({ message: undefined })` renders an empty bar, which
+ * is why a failed booking looked like nothing happened at all.
+ */
+export const getErrorText = (error: unknown): string => {
+  const message = (error as { message?: unknown } | null)?.message;
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+  const code = (error as { response?: { data?: { code?: string } } } | null)
+    ?.response?.data?.code;
+  return getApiErrorMessage(code ?? null);
+};

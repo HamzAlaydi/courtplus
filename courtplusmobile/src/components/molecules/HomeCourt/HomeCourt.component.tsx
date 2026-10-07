@@ -55,11 +55,20 @@ const HomeCourt = ({ item, onPress }: HomeCourtProps) => {
           />
         </View>
         <View style={themedStyles.innerRowContainer}>
+          {item.isAirConditioned && (
+            <Image
+              source={Images.airConditioner}
+              style={themedStyles.featureIcon}
+            />
+          )}
+          {item.isWomenOnly && (
+            <Image source={Images.womenOnly} style={themedStyles.featureIcon} />
+          )}
           <Image source={Images.star} />
           <CustomText
             font="text"
             weight="semiBold"
-            text={`${item.avgRating}`}
+            text={Number(item.avgRating ?? 0).toFixed(1)}
             overrideStyle={themedStyles.rating}
           />
         </View>

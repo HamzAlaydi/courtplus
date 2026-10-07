@@ -65,7 +65,7 @@ export default function Courts() {
   // 🔹 Fetch branches for the branch filter
   const { data: branchData } = useQuery({
     queryKey: ["branches"],
-    queryFn: () => getBranches(),
+    queryFn: () => getBranches({ page: 1, pageSize: 100 }),
   });
 
   // 🔹 Return a valid image URL or fallback
@@ -76,8 +76,8 @@ export default function Courts() {
 
     const imageAssets = assets.filter((asset) => asset.type === "court_image");
     if (imageAssets.length > 0) {
-      const randomIndex = Math.floor(Math.random() * imageAssets.length);
-      return imageAssets[randomIndex]?.url || FALLBACK_IMAGE;
+      // The first image is the vendor's cover; a random pick changed on every render.
+      return imageAssets[0]?.url || FALLBACK_IMAGE;
     }
 
     return FALLBACK_IMAGE;

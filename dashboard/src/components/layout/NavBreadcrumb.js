@@ -49,8 +49,11 @@ const NavBreadcrumb = () => {
     },
     ...pathSnippets.map((segment, index) => {
       const url = `/${pathSnippets.slice(0, index + 1).join("/")}`; // Build path dynamically
+      // Entity ids: show the short id (as the page header does) instead of a
+      // UUID chopped into "B32c8454 4f13 4835 …".
+      const isId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment);
       return {
-        title: getSegmentLabel(segment),
+        title: isId ? segment.slice(0, 8) : getSegmentLabel(segment),
         href: index !== pathSnippets.length - 1 ? url : null, // Only link if not last item
       };
     }),

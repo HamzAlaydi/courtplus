@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Staffer } from './entities/staff.entity';
+import { AuthEvent, UserPayload } from '../auth/auth.events';
 import { StaffRole } from './entities/enum';
 import { FindOptionsWhere, In, IsNull, Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,6 +34,7 @@ import {
   CANNOT_MODIFY_OWNER_ROLE,
   PHONE_NUMBER_MUST_BE_DIFFERENT,
   STAFF_EMAIL_ALREADY_EXISTS,
+  STAFF_EMAIL_DEACTIVATED,
   FORBIDDEN,
   INVITATION_NOT_FOUND_OR_USED,
   INCORRECT_CURRENT_PASSWORD,
@@ -72,6 +74,10 @@ import { BranchStaffer } from './entities/branch-staffer.entity';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { BranchesService } from '../branches/branches.service';
 import { AuthService } from '../auth/auth.service';
+import {
+  VendorRegistration,
+  VendorRegistrationStatus,
+} from 'src/modules/vendors/entities/vendor-registration.entity';
 
 @Injectable()
 export class StaffService {
@@ -80,6 +86,8 @@ export class StaffService {
     private readonly staffRepository: Repository<Staffer>,
     @InjectRepository(StaffInvitation)
     private readonly staffInvitationRepository: Repository<StaffInvitation>,
+    @InjectRepository(VendorRegistration)
+    private readonly vendorRegistrationRepository: Repository<VendorRegistration>,
     @InjectRepository(BranchStaffer)
     private readonly branchStafferRepository: Repository<BranchStaffer>,
     @Inject(forwardRef(() => BranchesService))
@@ -166,6 +174,59 @@ export class StaffService {
         { id: invitation.id },
         { status: StaffInvitationStatus.ACCEPTED },
       );
+    }
+
+    // Tenant creation is keyed on the staffer having no tenant, NOT on the
+    // absence of an invitation.
+    //
+    // It used to be `if (invitation) {...} else { createTenant() }`, which
+    // assumed every invitation joins an EXISTING business. A vendor who signs
+    // up from the marketing site redeems an invitation whose tenantId is null,
+    // so under the old shape they became an Owner with tenantId = null — and
+    // the dashboard calls getTenant() unconditionally on every page, so that
+    // account could log in and then fail on literally every screen.
+    //
+    // SUPER_ADMIN is the one role that legitimately has no tenant: those are
+    // platform operators, not vendors.
+    if (!staffer.tenantId && staffer.role !== StaffRole.SUPER_ADMIN) {
+      // A vendor who registered from the marketing site already told us their
+      // facility name and phone. Seed the tenant with them rather than making
+      // them type the same details a second time in the portal.
+      const registration = invitation
+        ? await this.vendorRegistrationRepository.findOne({
+            where: { invitationId: invitation.id },
+          })
+        : null;
+
+      const tenant = await this.tenantsService.create({
+        ownerId: staffer.id,
+        name: registration?.facilityName,
+        phoneNumber: registration?.phoneNumber,
+        profileCompletion: {
+          name: !!registration?.facilityName,
+          logo: false,
+          phoneNumber: !!registration?.phoneNumber,
+          branches: false,
+          courts: false,
+        },
+      });
+
+      await this.staffRepository.update(staffer.id, { tenantId: tenant.id });
+      staffer.tenantId = tenant.id;
+
+      if (registration) {
+        await this.vendorRegistrationRepository.update(
+          { id: registration.id },
+          {
+            status: VendorRegistrationStatus.COMPLETED,
+            tenantId: tenant.id,
+            completedAt: new Date(),
+          },
+        );
+      }
+    }
+
+    if (invitation) {
 
       if (invitation.branchId && invitation.role !== StaffRole.SUPER_ADMIN) {
         await this.branchStafferRepository.save({
@@ -178,23 +239,9 @@ export class StaffService {
           this.cacheManager.del(`staff#${invitation.tenantId}`),
         ]);
       }
-    } else {
-      const tenant = await this.tenantsService.create({
-        ownerId: staffer.id,
-        profileCompletion: {
-          name: false,
-          logo: false,
-          phoneNumber: false,
-          branches: false,
-          courts: false,
-        },
-      });
-
-      await this.staffRepository.update(staffer.id, {
-        tenantId: tenant.id,
-      });
-      staffer.tenantId = tenant.id;
     }
+    // (The tenant for a no-invitation signup is created above; a second
+    // creation here produced two tenants per vendor.)
 
     if (staffer.tenantId) {
       await this.cacheManager.del(`staff#${staffer.tenantId}`);
@@ -291,6 +338,15 @@ export class StaffService {
     const existingStaff = await this.getByEmail(email);
     if (existingStaff) {
       throw new BadRequestException(STAFF_EMAIL_ALREADY_EXISTS);
+    }
+    // The unique index covers soft-deleted rows: re-creating a deactivated
+    // admin's e-mail was a raw 500. Say what is going on instead.
+    const deactivated = await this.staffRepository.findOne({
+      where: { email },
+      withDeleted: true,
+    });
+    if (deactivated?.deletedAt) {
+      throw new BadRequestException(STAFF_EMAIL_DEACTIVATED);
     }
 
     if (branchId && tenantId) {
@@ -467,6 +523,16 @@ export class StaffService {
     await this.assertNotLastSuperAdmin(staff);
 
     await this.staffRepository.update(id, { deletedAt: new Date() });
+    // A deactivated admin kept full access until their token expired.
+    const sessions: Array<{ id: string }> = await this.staffRepository.manager.query(
+      `UPDATE sessions SET status = 'revoked' WHERE "userId" = $1 AND status = 'active' RETURNING id`,
+      [id],
+    );
+    await Promise.all(
+      sessions.map((s) =>
+        this.cacheManager.set(`revoked-session#${s.id}`, true, 60 * 60 * 1000),
+      ),
+    );
   }
 
   async updateSuperAdminRole(id: string, role: StaffRole) {
@@ -601,6 +667,7 @@ export class StaffService {
   async changePassword(
     userId: string,
     { currentPassword, newPassword }: ChangePasswordDto,
+    currentSid?: string,
   ) {
     const staff = await this.getById(userId);
     if (!staff) {
@@ -625,10 +692,18 @@ export class StaffService {
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    await this.update(userId, {
+    const updated = await this.update(userId, {
       password: hashedPassword,
       lastPasswordChangeAt: new Date(),
     });
+
+    // Changing the password from Settings used to leave every other device
+    // signed in, with 30-day refresh tokens still valid — so the person you
+    // changed it because of stayed logged in. The current session is kept.
+    this.eventEmitter.emit(AuthEvent.PASSWORD_CHANGED, {
+      user: updated ?? ({ id: userId } as Staffer),
+      exceptSid: currentSid,
+    } satisfies UserPayload);
   }
 
   async requestEmailChange(

@@ -29,6 +29,8 @@ export type Court = {
   width: number;
   size: string;
   surface: string;
+  isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
   status: string;
   locationId: string;
   deletedAt: null;
@@ -36,6 +38,9 @@ export type Court = {
   assets: Asset[];
   sport: Games;
   hourlyRate: number;
+  // The API returns the tenant's currency on every court (mapCourts sets it
+  // from tenantPreferences, defaulting to SAR).
+  currency?: string;
   avgRating: number;
   reviewsCount: number;
   branchId?: string;

@@ -1,3 +1,4 @@
+import { useUserStore } from "store";
 import { axiosInstance, CourtsResponse } from "apis";
 import {
   BranchRequestIdRequest,
@@ -23,7 +24,15 @@ export const getCourts = async ({
     params: {
       pageSize,
       // radius is required by the backend whenever coordinates are sent
-      ...(hasLocation ? { radius: DEFAULT_COURTS_RADIUS } : {}),
+      ...(hasLocation
+        ? {
+            // km chosen in the location filter, else the default
+            radius: (() => {
+              const km = useUserStore.getState().location?.radius;
+              return km && km > 0 ? Math.round(km * 1000) : DEFAULT_COURTS_RADIUS;
+            })(),
+          }
+        : {}),
       ...params,
     },
     ...(hasLocation

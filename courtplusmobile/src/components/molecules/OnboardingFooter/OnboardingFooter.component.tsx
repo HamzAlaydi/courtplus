@@ -38,11 +38,9 @@ const OnboardingFooter = ({
         >
           <Image source={Images.google} style={themedStyles.socialButton} />
         </TouchableOpacity>
-        {!isAndroid && (
-          <TouchableOpacity style={themedStyles.socialButtonContainer}>
-            <Image source={Images.apple} style={themedStyles.socialButton} />
-          </TouchableOpacity>
-        )}
+        {/* Sign in with Apple is not implemented yet (no onPress); a dead
+            button is worse than none. App Store rule 4.8 requires it before
+            an iOS release with Google sign-in — tracked in the readiness doc. */}
       </View>
       <Text style={themedStyles.footerText}>
         <CustomText

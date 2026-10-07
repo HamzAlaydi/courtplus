@@ -1,7 +1,18 @@
+import authHeader from "./auth-header";
 import { apiRequest } from "./axiosInstance"; // ✅ Use axiosInstance
 const API_URL = "/auth/staff"; // No need to include API_URL_COMMON (handled in axiosInstance)
 
 class AuthService {
+  // Revokes the server session (denylisted immediately) — before, logout
+  // was client-only and the session stayed valid for 30 days.
+  logoutStaff() {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/logout`,
+      customHeaders: authHeader(),
+    });
+  }
+
   signInStaff(userData) {
     return apiRequest({
       method: "post",
@@ -39,6 +50,16 @@ class AuthService {
     return apiRequest({
       method: "post",
       url: `${API_URL}/resend-verification-code`,
+      data: data,
+    });
+  }
+
+  // For a vendor who mistyped their address at signup: an unverified account
+  // is never issued a token, so this is the only way they can correct it.
+  changeUnverifiedEmail(data) {
+    return apiRequest({
+      method: "post",
+      url: `${API_URL}/change-unverified-email`,
       data: data,
     });
   }

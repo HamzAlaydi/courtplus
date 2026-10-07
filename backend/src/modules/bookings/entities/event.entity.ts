@@ -27,6 +27,10 @@ export enum BookingEventType {
   // captures money, and when a captured payment is refunded.
   PAYMENT_CAPTURED = 'payment_captured',
   ENDED_SWEEP = 'ended_sweep',
+  // Asks BookingsService to settle a split booking's hold before the sweep
+  // emits ENDED. An event (awaited via emitAsync) instead of a direct call,
+  // because BookingsService already depends on SlotsService.
+  SETTLE_PENDING = 'settle_pending',
   PAYMENT_REFUNDED = 'payment_refunded',
 }
 

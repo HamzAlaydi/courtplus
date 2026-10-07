@@ -21,7 +21,9 @@ import { ListCourtsResponseDto } from './dto/list-courts-response.dto';
 import { AssetType } from '../assets/entities/asset.entity';
 import {
   NOT_ALLOWED,
+  COURT_CREATION_NOT_ALLOWED,
   COURT_NOT_FOUND,
+  COURT_HAS_UPCOMING_BOOKINGS,
   BRANCH_NOT_FOUND,
   INVALID_COURT_STATUS_TRANSITION,
 } from '../shared/error-codes';
@@ -31,12 +33,47 @@ import { SchedulesService } from '../schedules/schedules.service';
 import { UserType } from '../auth/@types/user.type';
 import { SortDirection } from 'src/common/sort';
 import { BookmarksService } from '../bookmarks/bookmarks.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { SlotsService } from '../bookings/slots.service';
+import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
+import { BranchStatus } from '../branches/entities/branch.entity';
 import { dayjs } from 'src/modules/shared/dayjs';
 import { CourtEvent } from './courts.events';
 import { CourtEventPayload } from './courts.events';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { Schedule } from '../schedules/entities/schedule.entity';
+/**
+ * Columns a customer may see on a court. Everything omitted here is either
+ * the vendor's business data or ops moderation state.
+ */
+const CUSTOMER_COURT_COLUMNS = [
+  'court.id',
+  'court.name',
+  'court.description',
+  'court.branchId',
+  'court.length',
+  'court.width',
+  'court.size',
+  'court.surface',
+  'court.status',
+  'court.avgRating',
+  'court.reviewsCount',
+  'court.ratingStats',
+  'court.locationId',
+  'court.hourlyRate',
+  'court.sport',
+  'court.isAirConditioned',
+  'court.isWomenOnly',
+  'court.minDuration',
+  'court.bookmarksCount',
+  'court.postsCount',
+  // Shown to customers as the court's "sessions" count on the details
+  // screen. Omitting it rendered a literal "undefined sessions".
+  'court.totalBookings',
+  'court.createdAt',
+  'court.updatedAt',
+];
+
 @Injectable()
 export class CourtsService {
   private readonly logger = new Logger(CourtsService.name);
@@ -53,6 +90,8 @@ export class CourtsService {
     private readonly bookmarksService: BookmarksService,
     @Inject(forwardRef(() => SlotsService))
     private readonly slotsService: SlotsService,
+    @Inject(forwardRef(() => SubscriptionsService))
+    private readonly subscriptionsService: SubscriptionsService,
   ) { }
 
   @Transactional()
@@ -78,6 +117,16 @@ export class CourtsService {
     }
     if (branch.tenantId !== currentUser.tenantId) {
       throw new ForbiddenException(NOT_ALLOWED);
+    }
+
+    // Lapsed subscription: no new units. A tenant with no subscription yet is
+    // allowed through — the court waits in pending_payment and is billed by
+    // the first Checkout. There was no server-side check at all here before.
+    const availability = await this.subscriptionsService.getCourtAvailability(
+      currentUser.tenantId,
+    );
+    if (!availability.canCreate) {
+      throw new ForbiddenException(COURT_CREATION_NOT_ALLOWED);
     }
 
     const location = coordinates
@@ -165,6 +214,8 @@ export class CourtsService {
       placeId,
       radius,
       status,
+      isAirConditioned,
+      isWomenOnly,
       minRating,
       rating,
       page = 1,
@@ -180,6 +231,9 @@ export class CourtsService {
         },
       },
     } = query;
+    // Staff see their own operational columns; customers must not.
+    const isStaffViewer = user?.type === UserType.Staff;
+
     const queryBuilder = this.courtRepository.createQueryBuilder('court');
     queryBuilder.leftJoinAndSelect('court.branch', 'branch');
     if (options.include.branch) {
@@ -204,7 +258,11 @@ export class CourtsService {
         { type: AssetType.CourtImage },
       )
       .select([
-        'court',
+        // 'court' would ship every column. Customers were receiving the
+        // vendor's revenue and minutes booked, plus internal moderation
+        // fields (rejectionReason, reviewedByStaffId, submittedAt,
+        // reviewedAt). Staff still get the full row below.
+        ...(isStaffViewer ? ['court'] : CUSTOMER_COURT_COLUMNS),
         'location.id',
         'location.name',
         'location.placeId',
@@ -247,6 +305,21 @@ export class CourtsService {
       });
       queryBuilder.andWhere('branch.suspendedAt IS NULL');
       queryBuilder.andWhere('tenant.blockedAt IS NULL');
+      // A venue whose subscription lapsed stops appearing and stops taking
+      // NEW bookings; what customers already paid for is untouched.
+      queryBuilder.andWhere('tenant."subscriptionLapsedAt" IS NULL');
+      // The vendor's "show to users" switch and a closed / under-maintenance
+      // branch were ignored: hidden branches stayed listed and bookable.
+      queryBuilder.andWhere('branch.isVisible IS DISTINCT FROM false');
+      queryBuilder.andWhere('branch.status NOT IN (:...hiddenBranchStatuses)', {
+        // "occupied" means every court is busy right now, not that the venue is
+        // shut: requiring status = 'open' hid a working branch and all of its
+        // courts from customers. Only closed and under-maintenance hide.
+        hiddenBranchStatuses: [
+          BranchStatus.CLOSED,
+          BranchStatus.UNDER_MAINTENANCE,
+        ],
+      });
     }
 
     if (search) {
@@ -294,6 +367,14 @@ export class CourtsService {
       });
     }
 
+    // The app sends true or omits these params, so false means "no filter".
+    if (isAirConditioned === true) {
+      queryBuilder.andWhere('court.isAirConditioned = true');
+    }
+    if (isWomenOnly === true) {
+      queryBuilder.andWhere('court.isWomenOnly = true');
+    }
+
     if (minRating) {
       queryBuilder.andWhere('court.avgRating >= :minRating', {
         minRating,
@@ -324,7 +405,12 @@ export class CourtsService {
         default:
           queryBuilder.orderBy('court.createdAt', SortDirection.ASC);
       }
+    } else {
+      queryBuilder.orderBy('court.createdAt', SortDirection.DESC);
     }
+    // Deterministic pages: without a tiebreaker rows could repeat or skip
+    // between pages of an infinite scroll.
+    queryBuilder.addOrderBy('court.id', 'ASC');
 
     if (ids && ids.length > 0) {
       queryBuilder.andWhere('court.id IN (:...ids)', { ids });
@@ -345,7 +431,9 @@ export class CourtsService {
           .getQuery();
         return `court.id NOT IN ${subQuery}`;
       });
-      queryBuilder.setParameter('cancelledStatus', 'CANCELLED');
+      // The enum value is lowercase; the literal 'CANCELLED' made Postgres
+      // reject the query, so the availability filter returned 500 every time.
+      queryBuilder.setParameter('cancelledStatus', BookingStatus.CANCELLED);
       queryBuilder.setParameter('startDate', startDate);
       queryBuilder.setParameter('endDate', endDate);
     }
@@ -354,9 +442,6 @@ export class CourtsService {
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
-
-
-    console.log(JSON.stringify(courts, null, 2));
 
     const mappedCourts = await this.mapCourts(
       courts,
@@ -412,13 +497,20 @@ export class CourtsService {
       const mappedCourt = {
         ...court,
         assets,
-        location: court.location
-          ? {
-            ...court.location,
-            lng: court.location.coordinates.coordinates[0],
-            lat: court.location.coordinates.coordinates[1],
-          }
-          : null,
+        // Fall back to the branch's location. A court's own `locationId` is
+        // optional and the dashboard does not require one, so most courts have
+        // none — and every client that showed `court.location.name` crashed on
+        // null, which made those courts unbookable from the mobile app.
+        location: (() => {
+          const source = court.location ?? court.branch?.location ?? null;
+          return source
+            ? {
+              ...source,
+              lng: source.coordinates.coordinates[0],
+              lat: source.coordinates.coordinates[1],
+            }
+            : null;
+        })(),
         isBookmarked: options.include.bookmarks
           ? bookmarks?.has(court.id)
           : false,
@@ -438,15 +530,17 @@ export class CourtsService {
         };
       }
 
-      if (location && court.location?.coordinates) {
+      const courtCoords =
+        court.location?.coordinates ?? court.branch?.location?.coordinates;
+      if (location && courtCoords) {
         mappedCourt.distance = this.locationsService.calculateDistance(
           {
             lat: location.latitude,
             lon: location.longitude,
           },
           {
-            lat: court.location.coordinates.coordinates[1],
-            lon: court.location.coordinates.coordinates[0],
+            lat: courtCoords.coordinates[1],
+            lon: courtCoords.coordinates[0],
           },
         );
       }
@@ -481,6 +575,13 @@ export class CourtsService {
       .createQueryBuilder('court')
       .where('court.id = :id', { id })
       .andWhere('court.deletedAt IS NULL');
+
+    // Same column restriction as the list query. It was applied there only, so
+    // opening a single court still handed the customer the vendor's revenue
+    // and the ops moderation trail.
+    if (user && user.type !== UserType.Staff) {
+      queryBuilder.select(CUSTOMER_COURT_COLUMNS);
+    }
 
     if (relations.branch) {
       queryBuilder
@@ -561,6 +662,23 @@ export class CourtsService {
       });
       queryBuilder.andWhere('branch.suspendedAt IS NULL');
       queryBuilder.andWhere('tenant.blockedAt IS NULL');
+      // A venue whose subscription lapsed stops appearing and stops taking
+      // NEW bookings; what customers already paid for is untouched.
+      queryBuilder.andWhere('tenant."subscriptionLapsedAt" IS NULL');
+      // The list query hides branches the vendor switched off or closed, but
+      // this one did not, so a customer holding a court id from an earlier
+      // listing could still open and book a court at a closed or hidden
+      // branch. Booking goes through findOne, so this was the live hole.
+      queryBuilder.andWhere('branch.isVisible IS DISTINCT FROM false');
+      queryBuilder.andWhere('branch.status NOT IN (:...hiddenBranchStatuses)', {
+        // "occupied" means every court is busy right now, not that the venue is
+        // shut: requiring status = 'open' hid a working branch and all of its
+        // courts from customers. Only closed and under-maintenance hide.
+        hiddenBranchStatuses: [
+          BranchStatus.CLOSED,
+          BranchStatus.UNDER_MAINTENANCE,
+        ],
+      });
     }
 
     if (user && user.type === UserType.Staff) {
@@ -610,17 +728,22 @@ export class CourtsService {
             : null,
         }
         : undefined,
-      location: court.location
-        ? {
-          ...court.location,
-          lng: court.location.coordinates.coordinates[0],
-          lat: court.location.coordinates.coordinates[1],
-        }
-        : null,
+      // Same branch fallback as the list mapping: a court's own locationId is
+      // optional, and clients that read `court.location.name` crashed on null.
+      location: (() => {
+        const source = court.location ?? court.branch?.location ?? null;
+        return source
+          ? {
+            ...source,
+            lng: source.coordinates.coordinates[0],
+            lat: source.coordinates.coordinates[1],
+          }
+          : null;
+      })(),
       currency,
     };
 
-    if (relations.availability) {
+    if (relations.availability && court.schedule) {
       const availability = await this.getDaysAvailability(
         court.schedule,
         dayjs().format('YYYY-MM'),
@@ -629,15 +752,17 @@ export class CourtsService {
       mappedCourt.unavailableDays = availability.unavailableDays;
     }
 
-    if (location && court.location?.coordinates) {
+    const courtCoords =
+      court.location?.coordinates ?? court.branch?.location?.coordinates;
+    if (location && courtCoords) {
       mappedCourt.distance = this.locationsService.calculateDistance(
         {
           lat: location.latitude,
           lon: location.longitude,
         },
         {
-          lat: court.location.coordinates.coordinates[1],
-          lon: court.location.coordinates.coordinates[0],
+          lat: courtCoords.coordinates[1],
+          lon: courtCoords.coordinates[0],
         },
       );
     }
@@ -702,14 +827,32 @@ export class CourtsService {
       ...data,
     };
 
+    // Moving a court to another branch must stay inside the tenant: the
+    // branch id came straight from the body and was written unchecked.
+    if (updateData.branchId && updateData.branchId !== court.branchId) {
+      const target = await this.branchesService.findOne(
+        updateData.branchId,
+        currentUser,
+      );
+      if (!target || target.tenantId !== currentUser.tenantId) {
+        throw new NotFoundException(BRANCH_NOT_FOUND);
+      }
+    }
+
     // Moderation states (pending_payment/pending_approval/changes_requested/
     // suspended) are owned by the ops/billing flows — a vendor edit must never
-    // stomp them with a plain available/unavailable toggle.
+    // stomp them with a plain available/unavailable toggle, nor may a vendor
+    // write a moderation state themselves.
     if (
       court.status !== CourtStatus.AVAILABLE &&
       court.status !== CourtStatus.UNAVAILABLE
     ) {
       delete updateData.status;
+    } else if (
+      updateData.status &&
+      ![CourtStatus.AVAILABLE, CourtStatus.UNAVAILABLE].includes(updateData.status)
+    ) {
+      throw new BadRequestException(INVALID_COURT_STATUS_TRANSITION);
     }
 
     if (location) {
@@ -722,6 +865,12 @@ export class CourtsService {
         court.id,
         AssetType.CourtVideo,
       );
+    } else if (videoAssetId === null) {
+      // Explicit removal from the edit form never persisted before.
+      await this.assetsService.unassignAssetsByResource(
+        court.id,
+        AssetType.CourtVideo,
+      );
     }
 
     if (images?.length) {
@@ -731,8 +880,10 @@ export class CourtsService {
         AssetType.CourtImage,
       );
     } else if (images?.length === 0) {
-      await this.assetsService.unassignAssets(
-        court.assets.map((asset) => asset.id),
+      // Only the photos: this used to unassign every asset, video included.
+      await this.assetsService.unassignAssetsByResource(
+        court.id,
+        AssetType.CourtImage,
       );
     }
 
@@ -818,6 +969,11 @@ export class CourtsService {
     if (court.branch.tenantId !== currentUser.tenantId) {
       throw new ForbiddenException(NOT_ALLOWED);
     }
+    // Paid, upcoming bookings would be orphaned (no refund, no notice, and
+    // the customer's booking screen breaks). Make the vendor cancel them first.
+    if (await this.countUpcomingBookings([id])) {
+      throw new BadRequestException(COURT_HAS_UPCOMING_BOOKINGS);
+    }
     await this.courtRepository.softDelete(id);
 
     runOnTransactionCommit(() => {
@@ -829,6 +985,27 @@ export class CourtsService {
   @Transactional()
   async deleteBranchCourts(branchId: string) {
     await this.courtRepository.softDelete({ branchId });
+  }
+
+  async findIdsByBranch(branchId: string): Promise<string[]> {
+    const courts = await this.courtRepository.find({
+      where: { branchId },
+      select: { id: true },
+    });
+    return courts.map((c) => c.id);
+  }
+
+  /** Bookings still to be played (or in play) on any of these courts. */
+  async countUpcomingBookings(courtIds: string[]): Promise<number> {
+    if (!courtIds.length) return 0;
+    return this.courtRepository.manager
+      .createQueryBuilder(Booking, 'b')
+      .where('b."courtId" IN (:...courtIds)', { courtIds })
+      .andWhere('b.status IN (:...live)', {
+        live: [BookingStatus.PENDING, BookingStatus.IN_PROGRESS],
+      })
+      .andWhere('b."endDate" > NOW()')
+      .getCount();
   }
 
   private assertCourtStatus(court: Court, allowed: CourtStatus[]) {
@@ -881,10 +1058,10 @@ export class CourtsService {
   @Transactional()
   async suspend(id: string, reason: string, reviewer: SessionUser): Promise<Court> {
     const court = await this.findForModeration(id);
-    this.assertCourtStatus(court, [
-      CourtStatus.AVAILABLE,
-      CourtStatus.PENDING_APPROVAL,
-    ]);
+    // Only a published court is suspended. A pending one that was suspended
+    // and later unsuspended came back as AVAILABLE — published without any
+    // review; for pending courts ops uses "request changes" instead.
+    this.assertCourtStatus(court, [CourtStatus.AVAILABLE]);
     await this.courtRepository.update(id, {
       status: CourtStatus.SUSPENDED,
       rejectionReason: reason,
@@ -1009,9 +1186,21 @@ export class CourtsService {
       .endOf('day')
       .toDate();
 
+    // Look for bookings a day further than the slots we generate. A venue
+    // open 18:00-02:00 produces slots that run into the next morning, and
+    // those bookings sit past endOfDay — so they were never loaded and the
+    // post-midnight slots showed as free even when taken. The generation
+    // window itself must stay one day, or the loop would emit a second day
+    // of slots.
+    const bookingLookupEnd = dayjs(endOfDay).add(1, 'day').toDate();
+
     const [bookings, reservedSlots] = await Promise.all([
-      this.slotsService.findBookingsInRange(id, startOfDay, endOfDay),
-      this.slotsService.getTemporarilyReservedSlots(id, startOfDay, endOfDay),
+      this.slotsService.findBookingsInRange(id, startOfDay, bookingLookupEnd),
+      this.slotsService.getTemporarilyReservedSlots(
+        id,
+        startOfDay,
+        bookingLookupEnd,
+      ),
     ]);
 
     return court.schedule.getSlots(
@@ -1026,12 +1215,28 @@ export class CourtsService {
   }
 
   async getDaysAvailability(schedule: Schedule, month: string, duration: number) {
-    const from = dayjs(month).startOf('month').toDate();
-    const to = dayjs(month).endOf('month').toDate();
+    // Build the range in the court's own timezone: on a UTC server the
+    // first/last day of the month was re-interpreted in Asia/Riyadh and
+    // came out duplicated or missing.
+    const tz = schedule.timeZone || 'UTC';
+    const from = dayjs.tz(month, 'YYYY-MM', tz).startOf('month').toDate();
+    const to = dayjs.tz(month, 'YYYY-MM', tz).endOf('month').toDate();
+
+    // Same reason as getAvailability: the last day of a cross-midnight month
+    // spills into the first hours of the next one.
+    const bookingLookupEnd = dayjs(to).add(1, 'day').toDate();
 
     const [bookings, reservedSlots] = await Promise.all([
-      this.slotsService.findBookingsInRange(schedule.courtId, from, to),
-      this.slotsService.getTemporarilyReservedSlots(schedule.courtId, from, to),
+      this.slotsService.findBookingsInRange(
+        schedule.courtId,
+        from,
+        bookingLookupEnd,
+      ),
+      this.slotsService.getTemporarilyReservedSlots(
+        schedule.courtId,
+        from,
+        bookingLookupEnd,
+      ),
     ]);
 
     return schedule.getDaysAvailability(
@@ -1064,8 +1269,21 @@ export class CourtsService {
     return this.courtRepository.increment({ id }, field, value);
   }
 
+  /**
+   * Floors at zero, exactly like BranchesService.decrement. A plain
+   * `decrement` let a counter go negative whenever a booking was cancelled
+   * that had never been counted in (anything created before this handler
+   * worked), and the vendor then saw "-150 SAR" revenue with no way back.
+   */
   async decrement(id: string, field: keyof Court, value: number) {
-    return this.courtRepository.decrement({ id }, field, value);
+    return this.courtRepository
+      .createQueryBuilder()
+      .update(Court)
+      .set({
+        [field]: () => `GREATEST("${String(field)}" - ${Number(value)}, 0)`,
+      })
+      .where('id = :id', { id })
+      .execute();
   }
 
   @OnEvent(CourtEvent.COURT_CREATED)

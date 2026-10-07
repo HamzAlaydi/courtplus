@@ -2,7 +2,7 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { useGetProfile } from "apis";
 import { ActivityStackParamList } from "navigation/types";
 import { useTranslation } from "react-i18next";
-import { formatDate, generateFullName } from "utils";
+import { formatDate, generateFullName, formatInZone } from "utils";
 
 export const useBookingTicket = () => {
   const { item } =
@@ -10,8 +10,9 @@ export const useBookingTicket = () => {
   const { data: profileData } = useGetProfile();
   const { t } = useTranslation();
 
-  const formattedStartTime = item.startDate.split("T")[1].slice(0, 5);
-  const formattedEndTime = item.endDate.split("T")[1].slice(0, 5);
+  const zone = item.timeZone;
+  const formattedStartTime = formatInZone(item.startDate, "HH:mm", zone);
+  const formattedEndTime = formatInZone(item.endDate, "HH:mm", zone);
   const formattedTime = `${formattedStartTime} - ${formattedEndTime}`;
 
   const player = item.participants.find(
@@ -25,7 +26,7 @@ export const useBookingTicket = () => {
     },
     {
       title: t("general.date"),
-      value: formatDate(item.startDate, "dd MMM yyyy"),
+      value: formatInZone(item.startDate, "dd MMM yyyy", zone),
     },
     {
       title: t("general.time"),

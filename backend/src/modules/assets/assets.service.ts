@@ -14,6 +14,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { type AssetAssignedEvent, AssetEvent } from './assets.events';
 import { GenerateUrlDto } from './dto/generate-url.dto';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
+import { DistributedLockService } from 'src/common/distributed-lock.service';
 
 @Injectable()
 export class AssetsService {
@@ -33,6 +34,7 @@ export class AssetsService {
     private readonly rekognitionService: RekognitionService,
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly lockService: DistributedLockService,
   ) {
     this.cdnUrl = this.configService.get('aws.cdnUrl');
   }
@@ -53,6 +55,27 @@ export class AssetsService {
         return 'video';
       case AssetType.TenantDocument:
         return 'application';
+    }
+  }
+
+  /**
+   * Upload ceiling signed into the S3 POST policy, per kind of asset.
+   *
+   * S3Service defaults to 10 MB and nothing ever overrode it, so EVERY upload
+   * was capped at 10 MB regardless of type. Images fit under that and worked;
+   * a court video did not, and S3 rejected the POST with a policy violation —
+   * which the dashboard could only report as a generic "upload failed" while
+   * its own copy advertised 100 MB.
+   */
+  private getMaxFileSize(type: AssetType): number {
+    const MB = 1024 * 1024;
+    switch (this.getAssetTypeToFileType(type)) {
+      case 'video':
+        return 100 * MB;
+      case 'application':
+        return 20 * MB;
+      default:
+        return 10 * MB;
     }
   }
 
@@ -77,6 +100,7 @@ export class AssetsService {
       ...data,
       key,
       fileType: this.getAssetTypeToFileType(data.type),
+      maxFileSize: this.getMaxFileSize(data.type),
     });
     const asset = await this.assetRepository.save({
       id,
@@ -87,11 +111,30 @@ export class AssetsService {
     return { s3: s3Response, id: asset.id, assetUrl: this.getUrl(asset.id) };
   }
 
+  /**
+   * Attach uploaded assets to a resource.
+   *
+   * This performed NO ownership check: assets were looked up by id alone, so
+   * any authenticated caller who knew (or enumerated) an asset id could attach
+   * someone else's image to their own court/branch/post, and the re-assignment
+   * simultaneously stripped it from the rightful owner's resource.
+   *
+   * Two guards now apply:
+   *   - an asset already attached to a DIFFERENT resource can never be
+   *     re-assigned (this alone makes stealing an in-use image impossible, and
+   *     needs no caller changes);
+   *   - when `uploaderId` is supplied, the asset must have been uploaded by
+   *     that user.
+   *
+   * `uploaderId` is optional so existing callers keep working; pass it
+   * wherever the session user is in scope.
+   */
   @Transactional()
   async assignAssets(
     assetIds: string[] | string,
     resourceId: string,
     type: AssetType,
+    uploaderId?: string,
   ) {
     const isMultipleAssets = Array.isArray(assetIds);
     const assets = await this.assetRepository.find({
@@ -102,6 +145,24 @@ export class AssetsService {
 
     if (assets.length !== (isMultipleAssets ? assetIds.length : 1)) {
       throw new NotFoundException(ASSET_NOT_FOUND);
+    }
+
+    for (const asset of assets) {
+      // Already attached elsewhere — treat as not found rather than leaking
+      // that the id exists and belongs to someone else.
+      if (asset.resourceId && asset.resourceId !== resourceId) {
+        this.logger.warn(
+          `Refusing to reassign asset ${asset.id} from resource ${asset.resourceId} to ${resourceId}`,
+        );
+        throw new NotFoundException(ASSET_NOT_FOUND);
+      }
+
+      if (uploaderId && asset.uploadedBy && asset.uploadedBy !== uploaderId) {
+        this.logger.warn(
+          `User ${uploaderId} attempted to assign asset ${asset.id} uploaded by ${asset.uploadedBy}`,
+        );
+        throw new NotFoundException(ASSET_NOT_FOUND);
+      }
     }
 
     const existingAssets = await this.assetRepository.find({
@@ -224,7 +285,15 @@ export class AssetsService {
 
   @Cron('0 */2 * * *')
   private async handleCleanUp() {
-    this.logger.log('Cleaning up assets');
-    await this.cleanUp();
+    // Single-runner across replicas: @nestjs/schedule fires on every instance,
+    // and concurrent cleanups would race on the same S3 objects and asset rows.
+    await this.lockService.runExclusively(
+      'assets:cleanup',
+      100 * 60 * 1000,
+      async () => {
+        this.logger.log('Cleaning up assets');
+        await this.cleanUp();
+      },
+    );
   }
 }

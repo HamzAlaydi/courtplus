@@ -49,14 +49,17 @@ import {
   SLOT_ALREADY_RESERVED,
   SLOT_OVERLAPS_WITH_BOOKING,
   COURT_NOT_FOUND,
+  BLOCKED_BY_VENUE,
+  PARTICIPANT_ALREADY_PAID,
+  BOOKING_NOT_JOINABLE,
   BOOKING_JOIN_APPROVAL_NOT_REQUIRED,
   ONLY_CREATOR_CAN_MANAGE,
   BOOKING_MAX_PARTICIPANTS_REACHED,
   BOOKING_GENDER_RESTRICTION,
-  BOOKING_LEVEL_REQUIREMENT,
   USER_ALREADY_HAS_BOOKING_DURING_TIME,
   BOOKING_NOT_OPEN,
   BOOKING_NOT_ACTIVE,
+  BOOKING_CANCELLATION_WINDOW_CLOSED,
   ONLY_CREATOR_CAN_REMOVE_PARTICIPANTS,
   CANNOT_REMOVE_BOOKING_CREATOR,
   ONLY_CREATOR_CAN_ADD_PARTICIPANTS,
@@ -77,7 +80,31 @@ import { BookingEventType } from './entities/event.entity';
 import { Review } from '../reviews/entities/review.entity';
 import { BookingResponseDto } from './dto/booking-response.dto';
 import { JoinRequestDto } from './dto/join-request.dto';
-import { BOOKING } from './booking.constants';
+import { BOOKING, roundMoney, splitSeatCount, splitShares} from './booking.constants';
+import { PayoutConstants } from 'src/modules/payouts/constants/payout.constants';
+import type { BookingConfirmedEmailProps } from 'src/emails/booking-confirmed';
+
+/**
+ * A Google Maps link for the confirmation email's "Get Directions" button.
+ *
+ * The API stores position as GeoJSON, so `coordinates` is [longitude,
+ * latitude] and NOT [lat, lng] - swapping them drops the pin in the wrong
+ * hemisphere. Returns undefined when the venue has no pin and no address, and
+ * the template then omits the button entirely.
+ */
+const buildMapsUrl = (location?: {
+  address?: string;
+  coordinates?: { coordinates?: number[] } | null;
+}): string | undefined => {
+  const [lng, lat] = location?.coordinates?.coordinates ?? [];
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+  if (location?.address) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.address)}`;
+  }
+  return undefined;
+};
 import { FindOptionsSelect } from 'typeorm';
 import { Transactional, runOnTransactionCommit } from 'typeorm-transactional';
 import { BookingCreatedEmailProps } from 'src/emails/staff-booking-created';
@@ -122,16 +149,50 @@ export class BookingsService {
       `[BOOKING_FLOW] Initiating booking - userId: ${sessionUser.id}, courtId: ${courtId}, startAt: ${startAt}, duration: ${duration}min, paymentType: ${paymentType}`,
     );
 
-    const court = await this.courtsService.findOne(courtId, {
-      schedule: true,
-      branch: true,
-    });
+    // `sessionUser` MUST be passed. CourtsService.findOne only applies the
+    // customer visibility filters — court.status = AVAILABLE,
+    // branch.suspendedAt IS NULL, tenant.blockedAt IS NULL — when a user is
+    // supplied. Omitting it made every one of those filters dead code, so a
+    // customer holding a court UUID from an earlier listing could book and pay
+    // for a court ops had suspended, a court under a suspended branch, a court
+    // of a blocked tenant, or one still awaiting approval. GET /courts/:id
+    // already 404s for exactly those cases; only the booking path leaked.
+    const court = await this.courtsService.findOne(
+      courtId,
+      {
+        schedule: true,
+        branch: true,
+      },
+      sessionUser,
+    );
+
+    // findOne returns null for an unknown or non-visible court; dereferencing
+    // it produced a 500 instead of a 404.
+    if (!court) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Booking failed - court not found or not bookable: ${courtId}`,
+      );
+      throw new NotFoundException(COURT_NOT_FOUND);
+    }
 
     if (!court.schedule) {
       this.logger.warn(
         `[BOOKING_FLOW] Booking failed - schedule not found for courtId: ${courtId}`,
       );
       throw new BadRequestException(SCHEDULE_NOT_FOUND);
+    }
+
+    // A venue can bar a customer from ITS courts only. This replaces the old
+    // platform-wide block that vendor staff could apply to anyone.
+    const venueTenantId = court.branch?.tenantId;
+    if (
+      venueTenantId &&
+      (await this.usersService.isBlockedForTenant(venueTenantId, sessionUser.id))
+    ) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Booking refused - customer blocked by venue - tenantId: ${venueTenantId}, userId: ${sessionUser.id}`,
+      );
+      throw new ForbiddenException(BLOCKED_BY_VENUE);
     }
 
     const startDate = parseBookingDateTime(startAt, court.schedule.timeZone);
@@ -183,21 +244,49 @@ export class BookingsService {
       `[BOOKING_FLOW] Slot reserved - courtId: ${courtId}, userId: ${sessionUser.id}`,
     );
 
-    const bookingAmount =
-      court.hourlyRate * (duration / BOOKING.MINUTES_PER_HOUR);
+    // Sanitise the invitee list BEFORE any money is computed or charged.
+    // The organiser is added as a participant by create(), so listing
+    // themself (or the same friend twice) later violated the unique
+    // (bookingId, userId) index — after the card had been charged. The
+    // booking was never created, nothing refunded it, and Stripe retried the
+    // webhook for three days. It also skewed the per-seat share.
+    const inviteeIds = Array.from(
+      new Set((participants ?? []).filter((id) => id && id !== sessionUser.id)),
+    );
+    if (inviteeIds.length !== (participants ?? []).length) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Invitee list cleaned - userId: ${sessionUser.id}, submitted: ${(participants ?? []).length}, kept: ${inviteeIds.length}`,
+      );
+    }
+    input = { ...input, participants: inviteeIds };
+
+    const bookingAmount = roundMoney(
+      court.hourlyRate * (duration / BOOKING.MINUTES_PER_HOUR),
+    );
+
+    // A split with nobody to split with is a whole booking. Left as SPLIT it
+    // produced holdAmount 0, which makes Stripe capture automatically while
+    // every later path still treats the payment as an uncaptured hold —
+    // the booking could then never settle, cancel or refund.
+    const seats = splitSeatCount(input);
+    const effectivePaymentType =
+      paymentType === PaymentType.SPLIT && seats <= 1
+        ? PaymentType.WHOLE
+        : paymentType;
 
     const paymentInfo: Partial<Payment> = {
       amount: bookingAmount,
       currency: court.currency,
-      data: input,
+      // Downstream (create(), processParticipantPayment) reads the payment
+      // type back off this snapshot, so it has to carry the effective one.
+      data: { ...input, paymentType: effectivePaymentType },
     };
-    if (paymentType === PaymentType.SPLIT) {
-      const playerAmount = bookingAmount / (participants.length + 1);
-      const holdAmount = bookingAmount - playerAmount;
-      paymentInfo.amount = playerAmount;
-      paymentInfo.holdAmount = holdAmount;
+    if (effectivePaymentType === PaymentType.SPLIT) {
+      const { share, organiserShare } = splitShares(bookingAmount, seats);
+      paymentInfo.amount = organiserShare;
+      paymentInfo.holdAmount = roundMoney(bookingAmount - organiserShare);
       this.logger.debug(
-        `[BOOKING_FLOW] Split payment calculated - totalAmount: ${bookingAmount}, playerAmount: ${playerAmount}, holdAmount: ${holdAmount}, participantCount: ${participants.length + 1}`,
+        `[BOOKING_FLOW] Split payment calculated - totalAmount: ${bookingAmount}, seats: ${seats}, organiserShare: ${organiserShare}, perSeatShare: ${share}, holdAmount: ${paymentInfo.holdAmount}`,
       );
     }
 
@@ -238,14 +327,43 @@ export class BookingsService {
       `[BOOKING_FLOW] Creating booking - userId: ${user.id}, userType: ${user.type}, courtId: ${courtId}, duration: ${duration}min, open: ${open}, paymentType: ${paymentType}`,
     );
 
-    const court = await this.courtsService.findOne(courtId, {
-      schedule: true,
-      branch: true,
-    });
+    // book() already sanitises the customer path, but create() is also the
+    // staff entry point and is re-entered from the payment webhook with the
+    // list stored on the payment. A repeated id violates the unique
+    // (bookingId, userId) index AFTER the card has been charged, and it also
+    // inflates the seat count the split divides by.
+    const submittedUserIds = userIds;
+    userIds = Array.from(
+      new Set(submittedUserIds.filter((id) => id && id !== user.id)),
+    );
+    if (userIds.length !== submittedUserIds.length) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Participant list normalised - submitted: ${submittedUserIds.length}, kept: ${userIds.length}`,
+      );
+    }
+
+    // This runs again at payment-capture time (processParticipantPayment ->
+    // create), so the court's state is re-checked rather than trusted from
+    // when the payment intent was created — a court suspended in between must
+    // not still produce a confirmed booking.
+    //
+    // Only a Customer is passed through to findOne. For Staff the existing
+    // explicit tenant check below is kept instead: `user` here is a
+    // Partial<SessionUser>, and letting findOne apply
+    // `branch.tenantId = :tenantId` with a possibly-undefined tenantId would
+    // silently turn valid staff bookings into 404s.
+    const court = await this.courtsService.findOne(
+      courtId,
+      {
+        schedule: true,
+        branch: true,
+      },
+      user.type === UserType.Customer ? (user as SessionUser) : undefined,
+    );
 
     if (!court) {
       this.logger.warn(
-        `[BOOKING_FLOW] Booking creation failed - court not found: ${courtId}`,
+        `[BOOKING_FLOW] Booking creation failed - court not found or not bookable: ${courtId}`,
       );
       throw new NotFoundException(COURT_NOT_FOUND);
     }
@@ -310,6 +428,16 @@ export class BookingsService {
     booking.hourlyRate = court.hourlyRate;
     booking.currency = court.currency;
     booking.autoAccept = autoAccept;
+    // Freeze the denominator now. Recomputing it later from whoever happened
+    // to be attached made the organiser share, the joiner shares and the
+    // settlement all divide by different numbers.
+    if (paymentType === PaymentType.SPLIT) {
+      booking.splitSeats = splitSeatCount({
+        open,
+        playersASide,
+        participants: userIds,
+      });
+    }
     if (open) {
       booking.gender = gender;
       booking.level = level;
@@ -457,6 +585,14 @@ export class BookingsService {
       }
 
       payment.status = PaymentStatus.COMPLETED;
+      // Persist the payment itself. The participant -> payment relation has
+      // no cascade, so saving the participant below left the payment row at
+      // PENDING: every later "all participants paid" check read PENDING from
+      // the DB, the creator's hold was never released, the booking never
+      // reached COMPLETED, and at settlement the participant's share was
+      // charged AGAIN to the creator (processPendingPayments treats a PENDING
+      // payment as unpaid) — the same seat paid twice.
+      await this.paymentsService.save(payment);
       this.participantsService.transitionParticipantStatus(participant, ParticipantStatus.READY);
       participant.payment = payment;
       await this.participantsService.save(participant);
@@ -477,32 +613,84 @@ export class BookingsService {
 
       const freshParticipants = await this.participantsService.getParticipants(bookingId);
       const creator = freshParticipants.find((p) => p.isCreator);
-      const nonCreatorParticipants = freshParticipants.filter((p) => !p.isCreator);
-
-      const allNonCreatorsPaid = nonCreatorParticipants.every(
-        (p) => p.status === ParticipantStatus.READY && p.payment?.status === PaymentStatus.COMPLETED,
+      // A participant who left (and was refunded) must not hold settlement
+      // hostage: their row stays on the booking as CANCELLED, so the "everyone
+      // has paid" test could never pass again and the organiser's hold was
+      // never captured — the venue was paid nothing for the whole booking.
+      const activeParticipants = freshParticipants.filter(
+        (p) => p.status !== ParticipantStatus.CANCELLED,
+      );
+      const nonCreatorParticipants = activeParticipants.filter(
+        (p) => !p.isCreator,
       );
 
-      if (allNonCreatorsPaid && creator?.payment?.status === PaymentStatus.HOLD) {
-        this.logger.log(
-          `[BOOKING_FLOW] All participants paid - releasing creator hold - bookingId: ${bookingId}, creatorPaymentId: ${creator.payment.id}`,
-        );
-        await this.paymentsService.release(creator.payment.id);
-        creator.payment.status = PaymentStatus.RELEASED;
-      }
-
-      const isAllParticipantsPaid = freshParticipants.every(
+      // An open match has seats with no participant row at all. Judging "has
+      // everyone paid?" on attached rows alone meant the FIRST joiner of a
+      // 4-seat match satisfied it: the organiser's share was captured and
+      // Stripe released the rest of the hold, so the empty seats could never
+      // be charged at settlement and the venue collected half the court.
+      const seatCount =
+        booking.splitSeats ??
+        splitSeatCount({
+          open: booking.open,
+          playersASide: booking.playersASide,
+          participants: nonCreatorParticipants,
+        });
+      const paidNonCreatorCount = nonCreatorParticipants.filter(
         (p) =>
           p.status === ParticipantStatus.READY &&
-          (p.payment?.status === PaymentStatus.COMPLETED || p.payment?.status === PaymentStatus.RELEASED),
-      );
+          p.payment?.status === PaymentStatus.COMPLETED,
+      ).length;
+      const everySeatPaid = paidNonCreatorCount >= seatCount - 1;
+
+      const allNonCreatorsPaid =
+        everySeatPaid &&
+        nonCreatorParticipants.every(
+          (p) => p.status === ParticipantStatus.READY && p.payment?.status === PaymentStatus.COMPLETED,
+        );
+
+      if (allNonCreatorsPaid && creator?.payment?.status === PaymentStatus.HOLD) {
+        // Everyone else has paid: collect the ORGANISER'S OWN share from the
+        // authorisation and let Stripe release the remainder. This used to
+        // cancel the whole hold, so the organiser of a split booking never
+        // paid for their seat — the court was paid for by everyone but them.
+        const creatorShare = Number(creator.payment.amount);
+        this.logger.log(
+          `[BOOKING_FLOW] All participants paid - capturing creator share ${creatorShare} - bookingId: ${bookingId}, creatorPaymentId: ${creator.payment.id}`,
+        );
+        await this.paymentsService.completePayment(creator.payment.id, creatorShare);
+        creator.payment.status = PaymentStatus.COMPLETED;
+
+        const creatorPaymentId = creator.payment.id;
+        const creatorUserId = creator.userId;
+        runOnTransactionCommit(() => {
+          this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
+            booking,
+            userId: creatorUserId,
+            paymentId: creatorPaymentId,
+            amount: creatorShare,
+            currency: booking.currency,
+          } satisfies BookingPaymentCapturedEventPayload);
+        });
+      }
+
+      // Same seat rule: a match with unsold seats is not fully paid yet, so
+      // it must not be marked COMPLETED (which would also credit the vendor
+      // for money that has not been collected).
+      const isAllParticipantsPaid =
+        everySeatPaid &&
+        activeParticipants.every(
+          (p) =>
+            p.status === ParticipantStatus.READY &&
+            (p.payment?.status === PaymentStatus.COMPLETED || p.payment?.status === PaymentStatus.RELEASED),
+        );
 
       if (isAllParticipantsPaid && booking.paymentStatus !== PaymentStatus.COMPLETED) {
         booking.paymentStatus = PaymentStatus.COMPLETED;
         await this.bookingsRepository.save(booking);
 
         this.logger.log(
-          `[BOOKING_FLOW] Booking payment completed - bookingId: ${bookingId}, totalParticipants: ${freshParticipants.length}`,
+          `[BOOKING_FLOW] Booking payment completed - bookingId: ${bookingId}, activeParticipants: ${activeParticipants.length}`,
         );
 
         runOnTransactionCommit(() => {
@@ -651,6 +839,9 @@ export class BookingsService {
       });
       qb.andWhere('branch.suspendedAt IS NULL');
       qb.andWhere('tenant.blockedAt IS NULL');
+      // A venue whose subscription lapsed stops appearing and stops taking
+      // NEW bookings; what customers already paid for is untouched.
+      qb.andWhere('tenant."subscriptionLapsedAt" IS NULL');
     }
     if (id) {
       qb.andWhere('booking.id = :id', { id });
@@ -662,6 +853,23 @@ export class BookingsService {
 
     if (openBookings) {
       qb.andWhere('booking.open = :open', { open: openBookings });
+    }
+
+    // A customer browsing open matches wants matches they can still join.
+    // Without these defaults the screen listed finished games from months ago
+    // with a "Book now" button, because the only filter was `open = true`.
+    // GET /bookings/open is match DISCOVERY: it may only ever return matches a
+    // customer can still join. The single filter used to be `open = true`, so
+    // the screen listed games that finished months earlier, each with a
+    // "Book now" button. ListOpenBookingsDto has no `status` field (the param
+    // is stripped by the whitelist), so these bounds cannot be overridden.
+    if (isLookingForOpenBookings && user.type === UserType.Customer) {
+      qb.andWhere('booking.endDate > :nowForOpen', { nowForOpen: new Date() })
+        .andWhere('booking.status = :joinableStatus', {
+          joinableStatus: BookingStatus.PENDING,
+        })
+        // Soonest first: a joinable match is only useful before it starts.
+        .orderBy('booking.startDate', 'ASC');
     }
 
     if (status && status.length > 0) {
@@ -851,14 +1059,26 @@ export class BookingsService {
     );
 
     if (isCreator || isStaff) {
+      // The status flips to IN_PROGRESS by a queued job at start time; if
+      // that job is late (or the queue is down) the status alone would still
+      // allow a full refund for a match that is already being played.
+      const started = booking.startDate && new Date(booking.startDate) <= new Date();
       if (
         booking.status === BookingStatus.IN_PROGRESS ||
-        booking.status === BookingStatus.COMPLETED
+        booking.status === BookingStatus.COMPLETED ||
+        started
       ) {
         this.logger.warn(
           `[BOOKING_FLOW] Cancellation failed - booking already started - bookingId: ${id}, status: ${booking.status}`,
         );
         throw new BadRequestException(BOOKING_NOT_ACTIVE);
+      }
+
+      // Policy: customers cancel free of charge only up to
+      // CANCELLATION_CUTOFF_HOURS before the start. The venue itself may
+      // cancel at any time (the customer is refunded).
+      if (!isStaff) {
+        this.assertCancellationWindowOpen(booking);
       }
 
       this.logger.log(
@@ -898,18 +1118,37 @@ export class BookingsService {
         }
       }
 
+      // Money went back (refund) or was never taken (hold released): say so
+      // on the booking, and keep the reason — both were dropped before, so a
+      // cancelled booking still read "paid" in the app and the vendor never
+      // saw why it was cancelled.
+      const moneyReturned = booking.participants.some(
+        (p) =>
+          p.payment &&
+          [PaymentStatus.COMPLETED, PaymentStatus.HOLD].includes(p.payment.status),
+      );
       await this.bookingsRepository.update(id, {
         status: BookingStatus.CANCELLED,
+        cancellationReason: cancellationReason?.trim() || null,
+        ...(moneyReturned ? { paymentStatus: PaymentStatus.REFUNDED } : {}),
       });
 
       this.logger.log(
         `[BOOKING_FLOW] Booking cancelled - bookingId: ${id}, cancelledBy: ${user.id}`,
       );
 
+      const cancelledBy = {
+        id: user.id,
+        type: user.type,
+        name: [user.firstName, user.lastName].filter(Boolean).join(' ') || undefined,
+      };
+      const reason = cancellationReason?.trim() || null;
       runOnTransactionCommit(() => {
         this.eventEmitter.emit(BookingEventType.CANCELLED, {
           booking,
-        });
+          cancelledBy,
+          reason,
+        } satisfies BookingCancelledEventPayload);
       });
     } else if (participant) {
       this.logger.log(
@@ -925,13 +1164,29 @@ export class BookingsService {
         );
         throw new BadRequestException(BOOKING_NOT_ACTIVE);
       }
+      // Same cut-off for a participant leaving as for the organiser.
+      this.assertCancellationWindowOpen(booking);
 
+      // Leaving is always allowed before the match starts, but the share is
+      // only refunded while the booking is still being paid for. Once every
+      // seat is paid the organiser's share has been captured and their hold
+      // released, so a refund here would leave the court short with nobody
+      // left to charge — that money came out of the vendor's revenue.
+      const settled = booking.paymentStatus === PaymentStatus.COMPLETED;
       if (participant.payment) {
-        if (participant.payment.status === PaymentStatus.COMPLETED) {
+        if (participant.payment.status === PaymentStatus.COMPLETED && settled) {
+          this.logger.log(
+            `[BOOKING_FLOW] Participant leaves a settled booking - no refund - bookingId: ${id}, userId: ${user.id}, paymentId: ${participant.payment.id}`,
+          );
+        } else if (participant.payment.status === PaymentStatus.COMPLETED) {
           this.logger.log(
             `[BOOKING_FLOW] Refunding leaving participant - bookingId: ${id}, userId: ${user.id}, paymentId: ${participant.payment.id}`,
           );
           await this.paymentsService.refund(participant.payment.id);
+          // The seat is open again.
+          await this.bookingsRepository.update(id, {
+            paymentStatus: PaymentStatus.PARTIALLY_PAID,
+          });
         } else if (participant.payment.status === PaymentStatus.HOLD) {
           this.logger.log(
             `[BOOKING_FLOW] Releasing leaving participant hold - bookingId: ${id}, userId: ${user.id}, paymentId: ${participant.payment.id}`,
@@ -964,6 +1219,19 @@ export class BookingsService {
         `[BOOKING_FLOW] Cancellation denied - user not authorized - bookingId: ${id}, userId: ${user.id}`,
       );
       throw new ForbiddenException(ONLY_CREATOR_CAN_CANCEL);
+    }
+  }
+
+  /** Customers may cancel/leave only until CANCELLATION_CUTOFF_HOURS before start. */
+  private assertCancellationWindowOpen(booking: Booking): void {
+    const cutoff =
+      new Date(booking.startDate).getTime() -
+      BOOKING.CANCELLATION_CUTOFF_HOURS * 60 * 60 * 1000;
+    if (Date.now() >= cutoff) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Cancellation refused - inside the ${BOOKING.CANCELLATION_CUTOFF_HOURS}h window - bookingId: ${booking.id}`,
+      );
+      throw new BadRequestException(BOOKING_CANCELLATION_WINDOW_CLOSED);
     }
   }
 
@@ -1107,13 +1375,60 @@ export class BookingsService {
   async pay(participant: Participant): Promise<PaymentResponseDto> {
     const { booking, user } = participant;
 
-    const amount =
-      (booking.hourlyRate * (booking.duration / BOOKING.MINUTES_PER_HOUR)) /
-      booking.participants.length;
-    return this.paymentsService.createPaymentIntentDetails(
-      { amount, bookingId: booking.id, currency: booking.currency },
+    // Guard against a second charge. The mobile Booking Details screen renders
+    // from a snapshot and keeps showing "Pay your part" after a successful
+    // payment; tapping it again used to mint another PaymentIntent, charge the
+    // card, and then fail in the webhook on a READY -> READY transition, so the
+    // money was neither recorded nor refunded.
+    if (participant.status !== ParticipantStatus.PENDING_PAYMENT) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Payment refused - participant not awaiting payment - bookingId: ${booking.id}, userId: ${user?.id}, status: ${participant.status}`,
+      );
+      throw new BadRequestException(PARTICIPANT_ALREADY_PAID);
+    }
+
+    if (
+      participant.payment &&
+      [PaymentStatus.COMPLETED, PaymentStatus.HOLD].includes(
+        participant.payment.status,
+      )
+    ) {
+      this.logger.warn(
+        `[BOOKING_FLOW] Payment refused - participant already has a settled payment - bookingId: ${booking.id}, paymentId: ${participant.payment.id}`,
+      );
+      throw new BadRequestException(PARTICIPANT_ALREADY_PAID);
+    }
+
+    // Every seat pays the same share of the court. This used to divide by the
+    // number of participants attached RIGHT NOW, so each joiner paid a
+    // different amount (100%, then 50%, then 33%...) and the venue collected
+    // far more than the court price.
+    const total = roundMoney(
+      booking.hourlyRate * (booking.duration / BOOKING.MINUTES_PER_HOUR),
+    );
+    // Prefer the denominator frozen at creation; fall back for rows created
+    // before splitSeats existed.
+    const seats =
+      booking.splitSeats ??
+      splitSeatCount({
+        open: booking.open,
+        playersASide: booking.playersASide,
+        participants: booking.participants?.filter((p) => !p.isCreator) ?? [],
+      });
+    const { share } = splitShares(total, seats);
+
+    const response = await this.paymentsService.createPaymentIntentDetails(
+      { amount: share, bookingId: booking.id, currency: booking.currency },
       user,
     );
+
+    // Expire the participant's intent like book() does for the organiser.
+    // Without this, an abandoned "pay your part" sheet left a live intent for
+    // ever: confirming it days later charged a seat that had since been
+    // covered by the organiser's hold, or paid for a cancelled booking.
+    await this.paymentsService.schedulePaymentCancellation(response.paymentId);
+
+    return response;
   }
   @Transactional()
   async respondToJoinRequest(
@@ -1238,9 +1553,13 @@ export class BookingsService {
 
     participant.booking.participants = participants;
 
-    if (participant.status === ParticipantStatus.READY) {
+    // Only someone who was actually invited may respond. Rejecting just READY
+    // let a PENDING_APPROVAL join-requester approve themselves onto the match
+    // without the organiser, and let a CANCELLED participant who had already
+    // left (and been refunded) walk back in.
+    if (participant.status !== ParticipantStatus.PENDING_RESPONSE) {
       this.logger.warn(
-        `[BOOKING_FLOW] Invitation response failed - already responded - bookingId: ${bookingId}, userId: ${user.id}, currentStatus: ${participant.status}`,
+        `[BOOKING_FLOW] Invitation response failed - not awaiting a response - bookingId: ${bookingId}, userId: ${user.id}, currentStatus: ${participant.status}`,
       );
       throw new ForbiddenException(ALREADY_RESPONDED);
     }
@@ -1254,6 +1573,11 @@ export class BookingsService {
       if (result.affected === 0) {
         throw new NotFoundException(PARTICIPANT_NOT_FOUND);
       }
+
+      // Only the DB row was updated; the in-memory copy still held the old
+      // status. pay() below rejects a participant who is not PENDING_PAYMENT,
+      // so accepting a split invitation would have been refused outright.
+      participant.status = newStatus;
 
       this.logger.log(
         `[BOOKING_FLOW] Invitation accepted - bookingId: ${bookingId}, userId: ${user.id}, newStatus: ${newStatus}`,
@@ -1429,6 +1753,10 @@ export class BookingsService {
         .leftJoinAndSelect('court.branch', 'branch')
         .leftJoinAndSelect('court.schedule', 'schedule')
         .leftJoinAndSelect('booking.participants', 'participants')
+        // The capacity check below reads each participant's payment status to
+        // keep a paid-but-departed seat off the market; without this relation
+        // it would silently see undefined and resell the seat.
+        .leftJoinAndSelect('participants.payment', 'participantPayment')
         .where('booking.id = :bookingId', { bookingId })
         .getOne();
 
@@ -1444,6 +1772,41 @@ export class BookingsService {
           `[BOOKING_FLOW] Join booking failed - booking not open: ${bookingId}`,
         );
         throw new ForbiddenException(BOOKING_NOT_OPEN);
+      }
+
+      // `open` alone said nothing about whether the match is still joinable:
+      // a cancelled or long-finished booking kept the flag, so a customer
+      // holding its id could join and be charged for a game that will never
+      // be played. The listing now hides these; this closes the direct call.
+      if (booking.status !== BookingStatus.PENDING) {
+        this.logger.warn(
+          `[BOOKING_FLOW] Join booking failed - booking not joinable - bookingId: ${bookingId}, status: ${booking.status}`,
+        );
+        throw new BadRequestException(BOOKING_NOT_JOINABLE);
+      }
+
+      if (booking.endDate <= new Date()) {
+        this.logger.warn(
+          `[BOOKING_FLOW] Join booking failed - booking already finished - bookingId: ${bookingId}, endDate: ${booking.endDate.toISOString()}`,
+        );
+        throw new BadRequestException(BOOKING_NOT_JOINABLE);
+      }
+
+      // The venue's block applies to joining an open match too. It was
+      // enforced only in book(), so a blocked customer could still walk in
+      // through someone else's match at the same venue.
+      const joinTenantId = booking.court?.branch?.tenantId;
+      if (
+        joinTenantId &&
+        (await this.usersService.isBlockedForTenant(
+          joinTenantId,
+          sessionUser.id,
+        ))
+      ) {
+        this.logger.warn(
+          `[BOOKING_FLOW] Join refused - customer blocked by venue - tenantId: ${joinTenantId}, userId: ${sessionUser.id}`,
+        );
+        throw new ForbiddenException(BLOCKED_BY_VENUE);
       }
 
       const overlappingBookings = await this.bookingsRepository
@@ -1473,40 +1836,60 @@ export class BookingsService {
 
       const user = await this.usersService.getById(sessionUser.id, { cached: false, relations: ['sports'] });
 
-      if (
-        !user.gender ||
-        (booking.gender === Gender.MALE && user.gender !== Gender.MALE) ||
-        (booking.gender === Gender.FEMALE && user.gender !== Gender.FEMALE)
-      ) {
+      // Gender is only a gate when the organiser actually restricted the
+      // match. The old condition led with `!user.gender`, so anybody who had
+      // never filled that field in was refused even by a match open to
+      // everyone — and the error told them it was a "gender restriction" on a
+      // match that had none.
+      const isGenderRestricted =
+        booking.gender === Gender.MALE || booking.gender === Gender.FEMALE;
+      if (isGenderRestricted && user.gender !== booking.gender) {
         this.logger.warn(
           `[BOOKING_FLOW] Join booking failed - gender restriction - bookingId: ${bookingId}, userId: ${sessionUser.id}, userGender: ${user.gender}, bookingGender: ${booking.gender}`,
         );
         throw new ForbiddenException(BOOKING_GENDER_RESTRICTION);
       }
 
-      if (booking.level) {
-        const userSport = user.sports?.find(
-          (sport) => sport.name === booking.court.sport,
-        );
-        if (!userSport || userSport.level !== booking.level) {
-          this.logger.warn(
-            `[BOOKING_FLOW] Join booking failed - level requirement - bookingId: ${bookingId}, userId: ${sessionUser.id}, requiredLevel: ${booking.level}, userLevel: ${userSport?.level}`,
-          );
-          throw new ForbiddenException(BOOKING_LEVEL_REQUIREMENT);
-        }
-      }
+      // Level is ADVISORY, never a gate (product decision, 2026-09-26).
+      //
+      // It used to require an EXACT match on the player's saved level for
+      // that sport, so an advanced player was refused from an intermediate
+      // match, and anyone who had never recorded a level for that sport —
+      // which is almost everyone, since nothing in the signup flow asks —
+      // could not join any levelled match at all. Open matches exist to find
+      // players; the organiser still sees each level on the join request and
+      // can decline. The requirement is shown on the match card so it reads
+      // as the preference it is.
 
+      // A seat that was PAID FOR is taken, even if its player later left: a
+      // participant who leaves a settled booking keeps no refund, so putting
+      // their seat back on sale collected the same seat's price twice.
       const participantCount = booking.participants.filter(
         (p) =>
           p.status === ParticipantStatus.READY ||
           p.status === ParticipantStatus.ENTERED ||
           p.status === ParticipantStatus.PENDING_APPROVAL ||
-          p.status === ParticipantStatus.PENDING_PAYMENT,
+          p.status === ParticipantStatus.PENDING_PAYMENT ||
+          (p.status === ParticipantStatus.CANCELLED &&
+            p.payment?.status === PaymentStatus.COMPLETED),
       ).length;
 
-      if (participantCount >= BOOKING.MAX_PARTICIPANTS_PER_BOOKING) {
+      // Cap by the seats this match actually has, not just the global maximum:
+      // a 1-a-side open match has two seats, so the old check let four people
+      // in and collected far more than the court price.
+      const matchSeats = Math.min(
+        BOOKING.MAX_PARTICIPANTS_PER_BOOKING,
+        booking.splitSeats ??
+          splitSeatCount({
+            open: booking.open,
+            playersASide: booking.playersASide,
+            participants: booking.participants?.filter((p) => !p.isCreator) ?? [],
+          }),
+      );
+
+      if (participantCount >= matchSeats) {
         this.logger.warn(
-          `[BOOKING_FLOW] Join booking failed - max participants reached - bookingId: ${bookingId}, currentCount: ${participantCount}`,
+          `[BOOKING_FLOW] Join booking failed - match is full - bookingId: ${bookingId}, currentCount: ${participantCount}, seats: ${matchSeats}`,
         );
         throw new BadRequestException(BOOKING_MAX_PARTICIPANTS_REACHED);
       }
@@ -1590,6 +1973,27 @@ export class BookingsService {
   }
 
 
+  /**
+   * Settle a split booking's hold on request from the expiry sweep.
+   *
+   * SlotsService cannot call BookingsService directly (BookingsService already
+   * depends on it), so the sweep emits this and awaits it via emitAsync.
+   */
+  @OnEvent(BookingEventType.SETTLE_PENDING)
+  async handleSettlePending({ booking }: { booking: Booking }): Promise<void> {
+    if (!booking?.id || booking.paymentType !== PaymentType.SPLIT) {
+      return;
+    }
+    try {
+      await this.processPendingPayments(booking.id);
+    } catch (error) {
+      this.logger.error(
+        `Failed to settle pending payments for booking ${booking.id}: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+    }
+  }
+
   @Transactional()
   async processPendingPayments(bookingId: string) {
     this.logger.log(`Processing pending payments for booking ${bookingId}`);
@@ -1602,11 +2006,42 @@ export class BookingsService {
 
       const participants = await this.participantsService.getParticipants(bookingId);
 
+      // Seats nobody paid for. A FAILED payment is an unpaid seat too; the
+      // organiser (HOLD) is never in this list.
       const participantsWithPendingPayments = participants.filter(
-        (p) => !p.payment || p.payment.status === PaymentStatus.PENDING,
+        (p) =>
+          !p.isCreator &&
+          (!p.payment ||
+            [PaymentStatus.PENDING, PaymentStatus.FAILED].includes(
+              p.payment.status,
+            )),
       );
 
-      if (participantsWithPendingPayments.length === 0) {
+      // How many seats the court is divided into, frozen at creation.
+      const seats =
+        booking.splitSeats ??
+        splitSeatCount({
+          open: booking.open,
+          playersASide: booking.playersASide,
+          participants: participants.filter((p) => !p.isCreator),
+        });
+
+      // Seats that were never taken count as unpaid too. An open match that
+      // nobody joined has NO non-creator participant rows at all, so the old
+      // check returned here and captured nothing: the organiser's
+      // authorisation simply expired at Stripe and the venue was paid nothing
+      // for a court that had been blocked all evening.
+      const paidNonCreators = participants.filter(
+        (p) =>
+          !p.isCreator &&
+          p.payment &&
+          [PaymentStatus.COMPLETED, PaymentStatus.RELEASED].includes(
+            p.payment.status,
+          ),
+      ).length;
+      const unpaidSeats = Math.max(0, seats - 1 - paidNonCreators);
+
+      if (unpaidSeats === 0 && participantsWithPendingPayments.length === 0) {
         this.logger.log('No pending payments to process');
         return null;
       }
@@ -1628,10 +2063,15 @@ export class BookingsService {
         };
       }
 
-      const totalParticipants = participants.length;
-      const amountPerParticipant = booking.totalAmount / totalParticipants;
-      const totalToDeduct =
-        amountPerParticipant * participantsWithPendingPayments.length;
+      // Same denominator as creation and /pay. Using `participants.length`
+      // here meant the per-seat amount changed whenever somebody joined or
+      // left, so the organiser was charged a different share than the one the
+      // joiners had been quoted.
+      const { share: amountPerParticipant } = splitShares(
+        Number(booking.totalAmount),
+        seats,
+      );
+      const totalToDeduct = roundMoney(amountPerParticipant * unpaidSeats);
 
       if (creatorPayment.holdAmount < totalToDeduct) {
         this.logger.warn(
@@ -1644,43 +2084,58 @@ export class BookingsService {
         creatorPayment.holdAmount,
       );
 
-      await this.paymentsService.completePayment(
-        creatorPayment.id,
-        actualDeduction,
-      );
+      // The organiser pays their own seat PLUS every seat nobody paid for.
+      // Capturing only the deduction left the organiser's own share
+      // uncollected on every split booking that reached settlement.
+      const creatorShare = Number(creatorPayment.amount);
+      const captureTotal = creatorShare + actualDeduction;
+      await this.paymentsService.completePayment(creatorPayment.id, captureTotal);
 
-      if (booking.userId && actualDeduction > 0) {
+      if (booking.userId && captureTotal > 0) {
         runOnTransactionCommit(() => {
           this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
             booking,
             userId: booking.userId as string,
             paymentId: creatorPayment.id,
-            amount: actualDeduction,
+            amount: captureTotal,
             currency: booking.currency,
           } satisfies BookingPaymentCapturedEventPayload);
         });
       }
 
+      // Those seats are now covered by the organiser. Their own
+      // PaymentIntents were never confirmed, so they cannot be captured —
+      // the old loop tried, threw on the first one, and rolled the whole
+      // settlement back AFTER the organiser's capture had already happened
+      // at Stripe. Cancel them so a late payment cannot charge a seat twice.
       for (const participant of participantsWithPendingPayments) {
         if (participant.paymentId) {
-          await this.paymentsService.completePayment(
-            participant.paymentId,
-            amountPerParticipant,
-          );
-
-          runOnTransactionCommit(() => {
-            this.eventEmitter.emit(BookingEventType.PAYMENT_CAPTURED, {
-              booking,
-              userId: participant.userId,
-              paymentId: participant.paymentId as string,
-              amount: amountPerParticipant,
-              currency: booking.currency,
-            } satisfies BookingPaymentCapturedEventPayload);
-          });
+          await this.paymentsService.cancelPayment(participant.paymentId);
         }
       }
 
       this.logger.log(`Deducted ${actualDeduction} from creator's held amount`);
+
+      // The court is now fully paid for: the organiser covered their own seat
+      // and every unpaid one. Without this the booking stayed PARTIALLY_PAID,
+      // PAYMENT_COMPLETED was never emitted, and BalanceService — which holds
+      // vendor revenue on that event and whose reconciler only looks at
+      // COMPLETED bookings — never credited the venue a single riyal for any
+      // split booking settled this way.
+      if (booking.paymentStatus !== PaymentStatus.COMPLETED) {
+        booking.paymentStatus = PaymentStatus.COMPLETED;
+        await this.bookingsRepository.save(booking);
+
+        this.logger.log(
+          `[BOOKING_FLOW] Booking payment completed via hold settlement - bookingId: ${bookingId}, captured: ${captureTotal}`,
+        );
+
+        runOnTransactionCommit(() => {
+          this.eventEmitter.emit(BookingEventType.PAYMENT_COMPLETED, {
+            booking,
+          });
+        });
+      }
 
       return {
         pendingParticipants: participantsWithPendingPayments.map(
@@ -1840,6 +2295,19 @@ export class BookingsService {
     }))
 
     if (booking.user) {
+      // What this customer is actually on the hook for right now. On a whole
+      // booking that is the court total; on a split it is only the
+      // organiser's seat, and `roundMoney` matches what book() charged - the
+      // raw total is an unrounded float that disagreed with the card.
+      const isSplit =
+        booking.paymentType === PaymentType.SPLIT &&
+        booking.paymentStatus !== PaymentStatus.COMPLETED;
+      const seats = booking.splitSeats ?? 1;
+      const bookingTotal = Number(booking.totalAmount);
+      const organiserAmount = isSplit
+        ? splitShares(bookingTotal, seats).organiserShare
+        : roundMoney(bookingTotal);
+
       promises.push(this.notificationsService.sendNotification(booking.userId, {
         type: NotificationType.BOOKING_CREATED,
         data: {
@@ -1852,7 +2320,31 @@ export class BookingsService {
           endTime: endDateLocal.format('h:mm A'),
         },
         resourceId: booking.id,
-        sendEmail: false,
+        // The venue was emailed about this booking from the very first
+        // release; the person who paid for it was not. They had an in-app
+        // row and nothing in their inbox to show at the gate.
+        sendEmail: true,
+        emailData: {
+          customerName: booking.user.fullName,
+          courtName: booking.court.name,
+          branchName: booking.court.branch.name,
+          branchAddress: booking.court.branch.location?.address,
+          date: startDateLocal.format('MMM DD, YYYY'),
+          startTime: startDateLocal.format('h:mm A'),
+          endTime: endDateLocal.format('h:mm A'),
+          sportType: booking.court.sport,
+          paymentAmount: organiserAmount.toFixed(2),
+          currency: booking.currency || PayoutConstants.DEFAULT_CURRENCY,
+          // A split booking is NOT paid at this point: the organiser's card
+          // carries an uncaptured hold for the whole court and they will be
+          // charged only their own seat. Saying "booked and paid" with the
+          // court total was a receipt for up to 4x what they owe, for a
+          // session that is not secured until every seat is paid.
+          isSplit,
+          seats,
+          bookingId: booking.id,
+          mapsUrl: buildMapsUrl(booking.court.branch?.location),
+        } satisfies BookingConfirmedEmailProps,
       }));
       promises.push(this.notificationsService.notifyStaff(
         { tenantId: booking.court.branch.tenantId, branchId: booking.court.branch.id },
@@ -1889,6 +2381,8 @@ export class BookingsService {
   @OnEvent(BookingEventType.CANCELLED)
   private async handleBookingCancelled({
     booking,
+    cancelledBy,
+    reason,
   }: BookingCancelledEventPayload) {
     this.logger.log(
       `[BOOKING_EVENT] Handling booking cancelled - bookingId: ${booking.id}, userId: ${booking.userId}`,
@@ -1905,8 +2399,17 @@ export class BookingsService {
         event: BookingEventType.CANCELLED,
       }),
       this.remindersService.removeReminders(booking.id),
+      // The in-app/push text used to be a bare "Your booking has been
+      // cancelled" with only a bookingId — no court, no time, no reason.
       this.notifyParticipants(booking.id, NotificationType.BOOKING_CANCELLED, {
         bookingId: booking.id,
+        courtId: booking.courtId,
+        courtName: booking.court.name,
+        date: startDateLocal.format('MMM DD, YYYY'),
+        startTime: startDateLocal.format('h:mm A'),
+        byVenue: cancelledBy?.type === UserType.Staff,
+        reason: reason || undefined,
+        reasonSuffix: reason ? `: ${reason}` : '',
       }, [], {
         courtName: booking.court.name,
         branchName: booking.court.branch.name,
@@ -1914,18 +2417,25 @@ export class BookingsService {
         startTime: startDateLocal.format('h:mm A'),
         endTime: endDateLocal.format('h:mm A'),
         sportType: booking.court.sport,
-        cancelledByName: booking.user?.fullName,
-        cancellationReason: booking.cancellationReason,
+        cancelledByName:
+          cancelledBy?.type === UserType.Staff
+            ? booking.court.branch.name
+            : cancelledBy?.name || booking.user?.fullName,
+        cancellationReason: reason || booking.cancellationReason,
       }),
       this.notificationsService.notifyStaff(
         { tenantId: booking.court.branch.tenantId, branchId: booking.court.branch.id },
         {
           type: NotificationType.BOOKING_CANCELLED,
           data: {
+            kind: NotificationType.BOOKING_CANCELLED,
             bookingId: booking.id,
             courtId: booking.courtId,
             court: booking.court.name,
             courtName: booking.court.name,
+            date: startDateLocal.format('MMM DD, YYYY'),
+            startTime: startDateLocal.format('h:mm A'),
+            reasonSuffix: reason ? `: ${reason}` : '',
           },
           emailData: {
             bookingId: booking.id,
@@ -1933,9 +2443,14 @@ export class BookingsService {
             branchName: booking.court.branch.name,
             originalDate: startDateLocal.format('MMM DD, YYYY'),
             originalTime: `${startDateLocal.format('h:mm A')} - ${endDateLocal.format('h:mm A')}`,
-            cancelledBy: booking.user?.fullName || 'Staff',
-            cancellationReason: 'Cancelled by user',
-            refundStatus: 'Processing',
+            // Was hard-coded to the customer's name and "Cancelled by user"
+            // even when the venue's own staff cancelled.
+            cancelledBy:
+              cancelledBy?.type === UserType.Staff
+                ? `${booking.court.branch.name} (staff)`
+                : cancelledBy?.name || booking.user?.fullName || 'Customer',
+            cancellationReason: reason || 'No reason given',
+            refundStatus: 'Refunded to the original payment method',
             contactPerson: '',
             contactPhone: '',
             contactEmail: '',

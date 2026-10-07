@@ -1,116 +1,29 @@
-# Render Blueprint — Court+ backend API (monorepo: builds from backend/)
-# Dashboard: New → Blueprint → select the HamzAlaydi/courtplus repo.
-# After first deploy, fill the env vars marked sync: false in the Render dashboard
-# (copy values from your local backend/.env), then run migrations once from the
-# Render Shell: pnpm run migration:run
-services:
-  - type: web
-    name: courtplus-api
-    runtime: docker
-    rootDir: backend
-    plan: starter
-    healthCheckPath: /reference/api
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 3000
-      - key: DATABASE_HOST
-        fromDatabase:
-          name: courtplus-db
-          property: host
-      - key: DATABASE_PORT
-        fromDatabase:
-          name: courtplus-db
-          property: port
-      - key: DATABASE_USERNAME
-        fromDatabase:
-          name: courtplus-db
-          property: user
-      - key: DATABASE_PASSWORD
-        fromDatabase:
-          name: courtplus-db
-          property: password
-      - key: DATABASE_NAME
-        fromDatabase:
-          name: courtplus-db
-          property: database
-      - key: REDIS_HOST
-        fromService:
-          type: keyvalue
-          name: courtplus-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: keyvalue
-          name: courtplus-redis
-          property: port
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JWT_REFRESH_SECRET
-        generateValue: true
-      # --- fill these in the Render dashboard (sync: false = never stored here) ---
-      - key: TWILIO_ACCOUNT_SID
-        sync: false
-      - key: TWILIO_AUTH_TOKEN
-        sync: false
-      - key: TWILIO_VERIFY_SERVICE_SID
-        sync: false
-      - key: AWS_REGION
-        sync: false
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false
-      - key: AWS_BUCKET
-        sync: false
-      - key: AWS_CDN_URL
-        sync: false
-      - key: CLOUDFRONT_DISTRIBUTION_ID
-        sync: false
-      - key: SES_FROM_EMAIL
-        sync: false
-      - key: CONTACT_INBOX_EMAIL
-        sync: false
-      - key: FIREBASE_PROJECT_ID
-        sync: false
-      - key: FIREBASE_PRIVATE_KEY_ID
-        sync: false
-      - key: FIREBASE_PRIVATE_KEY
-        sync: false
-      - key: GOOGLE_MAPS_API_KEY
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_PUBLIC_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: STRIPE_SUBSCRIPTIONS_WEBHOOK_SECRET
-        sync: false
-      - key: STRIPE_CONNECT_WEBHOOK_SECRET
-        sync: false
-      - key: STRIPE_BRANCH_PRODUCT_ID
-        sync: false
-      - key: STRIPE_BRANCH_PRICE_ID
-        sync: false
-      - key: APP_NAME
-        value: Court+
-      - key: APP_LOGO_URL
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
-      - key: COURT_PLUS_PERCENTAGE
-        value: "0.2"
+# ⚠️ NOT THE PRODUCTION DEPLOYMENT. DO NOT APPLY THIS BLUEPRINT. ⚠️
+#
+# Court+ does not run on Render. Production is a single AWS EC2 instance running
+# backend/docker-compose.prod.yml (api + postgis + redis + caddy), with the three
+# frontends on Vercel. See OPERATIONS.md §5 for the real deploy procedure.
+#
+# This file is kept only as a reference for the environment-variable set. It is
+# deliberately left non-applyable because applying it would be actively harmful:
+#
+#   - It would stand up a SECOND live environment pointed at the same Stripe,
+#     Twilio, AWS and Firebase credentials as production — duplicate webhook
+#     consumers, duplicate charges, duplicate SMS.
+#   - `plan: free` Postgres has no backups and is deleted after 90 days of
+#     inactivity. Court+ already has no database backups; this would add a
+#     second copy of that problem.
+#   - healthCheckPath pointed at /reference/api — the Swagger docs page — so
+#     Render would report the service healthy while the database was down.
+#     A real probe now exists at /health/ready.
+#   - It never sets STRIPE_CONNECT_WEBHOOK_SECRET, MAIL_DRIVER, SMTP_USER,
+#     SMTP_PASS, STRIPE_BRANCH_ADDON_PRICE_ID or STRIPE_COURT_ADDON_PRICE_ID,
+#     all of which are read at runtime.
+#
+# If Render ever becomes the real target, rewrite this from scratch against the
+# current validation schema in backend/src/config/validation.ts rather than
+# trusting the list below.
 
-  - type: keyvalue
-    name: courtplus-redis
-    plan: free
-    ipAllowList: [] # Render services only
-
-databases:
-  - name: courtplus-db
-    plan: free
-    # After creation, enable PostGIS once from the Render Shell / psql:
-    #   CREATE EXTENSION IF NOT EXISTS postgis;
-    #   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+# Intentionally left with no `services:` or `databases:` key so that a
+# `render blueprint launch` against this file is a no-op rather than a surprise
+# second production environment.

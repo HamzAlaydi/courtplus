@@ -27,6 +27,7 @@ import {
 import { UsersService } from 'src/modules/users/users.service';
 import { INVALID_CREDENTIALS, TOO_MANY_REQUESTS } from '../shared/error-codes';
 import { DeviceId } from 'src/decorators/device.decorator';
+import { normalizeEmailKey, normalizePhoneKey, authAttemptKey} from './util/throttle-key';
 
 @ApiTags('Users Authentication')
 @Controller('auth/customers')
@@ -142,7 +143,14 @@ export class UserAuthController {
     auth: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `login-phone-${request.body.phoneNumber}`;
+        // Identity + origin. Keyed on the phone alone, six requests from
+        // anyone who knew the number blocked that customer's login for an
+        // hour.
+        return authAttemptKey(
+          'login-phone',
+          normalizePhoneKey(request.body.phoneNumber),
+          getIpAddress(req),
+        );
       },
     },
   })
@@ -166,7 +174,12 @@ export class UserAuthController {
     phone: {
       generateKey(req) {
         const request = req.switchToHttp().getRequest();
-        return `send-code-${request.body.phoneNumber}`;
+        // DELIBERATELY keyed on the phone alone, unlike login above: this
+        // endpoint sends a real SMS, so the limit exists to stop anyone
+        // bombing one victim's handset (and our Twilio bill) from many
+        // addresses. Adding the origin here would give each attacker their
+        // own budget against the same number.
+        return `send-code-${normalizePhoneKey(request.body.phoneNumber)}`;
       },
     },
   })

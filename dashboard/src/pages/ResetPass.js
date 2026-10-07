@@ -1,3 +1,4 @@
+import { notifyError } from "../utils/errorMessages";
 import { Form, Button, Input, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -68,13 +69,17 @@ export default function ResetPass() {
     console.log(formData);
 
     resetPass(formData)
-      .then(() => {
-        notify("success", "Password has been reset successfully.");
+      .then((res) => {
+        // 201 { isValid:false, errorCode } means wrong code/e-mail.
+        if (res && res.isValid === false) {
+          notify("error", t(`errors.${res.errorCode}`, t("errors.INVALID_CODE")));
+          return;
+        }
+        notify("success", t("auth.password_reset_success", "Password has been reset successfully."));
         navigate("/auth/signin");
       })
       .catch((err) => {
-        console.log(err);
-        notify("error", err?.response?.data?.message || "Reset failed.");
+        notifyError(notify, err, t);
       })
       .finally(() => {
         setLoading(false);
@@ -88,7 +93,7 @@ export default function ResetPass() {
           <img src="/assets/images/logo-horizontal.png" alt="" />
           <img src="/assets/images/icons/auth-key.png" alt="" />
         </div>
-        <h2>Reset Your Password</h2>
+        <h2>{t("auth.reset_title")}</h2>
 
         <div className="auth-form">
           <p style={{ marginBottom: "2rem" }}>
@@ -99,30 +104,30 @@ export default function ResetPass() {
           <Form layout="vertical" onFinish={onFinish}>
             <Form.Item
               name="code"
-              label="Verification Code"
-              rules={[{ required: true, message: "Code is required" }]}
+              label={t("auth.code")}
+              rules={[{ required: true, message: t("auth.code_required") }]}
             >
-              <Input placeholder="Enter the 6-digit code" />
+              <Input placeholder={t("auth.code_placeholder")} />
             </Form.Item>
 
             <Form.Item
-              label="New Password"
+              label={t("auth.new_password")}
               name="password"
               rules={[
-                { required: true, message: "Please enter your password" },
-                { min: 6, message: "Password must be at least 6 characters" },
+                { required: true, message: t("auth.password_required") },
+                { min: 8, message: t("auth.password_min") },
               ]}
               hasFeedback
             >
-              <Input.Password placeholder="Enter new password" />
+              <Input.Password placeholder={t("auth.new_password_placeholder")} />
             </Form.Item>
 
             <Form.Item
-              label="Confirm New Password"
+              label={t("auth.confirm_new_password")}
               name="confirmPassword"
               dependencies={["password"]}
               rules={[
-                { required: true, message: "Please confirm your password" },
+                { required: true, message: t("auth.confirm_password_required") },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue("password") === value) {
@@ -134,7 +139,7 @@ export default function ResetPass() {
               ]}
               hasFeedback
             >
-              <Input.Password placeholder="Confirm new password" />
+              <Input.Password placeholder={t("auth.confirm_new_password_placeholder")} />
             </Form.Item>
 
             <Form.Item>
@@ -172,7 +177,7 @@ export default function ResetPass() {
 
       <div className="auth-cover cover-signup">
         <img src="/assets/images/icons/icon-sport.png" alt="" />
-        <h1>Start swinging your racket into happiness.</h1>
+        <h1>{t("auth.hero_title")}</h1>
         <p>
           Create a free account and get full access to hundreds of courts around
           you. No credit card needed. Trusted by over 4,000 sports enthusiasts.

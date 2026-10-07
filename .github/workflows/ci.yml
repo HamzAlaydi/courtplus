@@ -1,0 +1,194 @@
+## Court+ CI
+#
+# There was no CI at all. Deploys are manual (ssh + `docker compose up --build`)
+# and the image is built ON the production box, so a commit that does not
+# compile is only discovered ~10 minutes into a deploy, with the previous image
+# possibly already pruned. Two of the five most recent commits before this
+# pipeline existed were exactly that failure: "Fix DI cycle crash on boot" and
+# "Add missing BookingEventType import (build fix)".
+#
+# Jobs are path-filtered so a website copy change does not run the backend suite.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push supersedes an in-flight run for the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      website: ${{ steps.filter.outputs.website }}
+      ops: ${{ steps.filter.outputs.ops }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/ci.yml'
+            dashboard:
+              - 'dashboard/**'
+            website:
+              - 'website/**'
+            ops:
+              - 'ops/**'
+            mobile:
+              - 'courtplusmobile/**'
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    services:
+      # The app requires PostGIS, not stock Postgres — match production.
+      postgres:
+        image: postgis/postgis:16-3.4-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: courtplus_test
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: ['5432:5432']
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: ['6379:6379']
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      # Fails if the lockfile and package.json disagree, so CI tests the exact
+      # dependency tree production will install.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Lint
+        run: npx eslint "{src,apps,libs,test}/**/*.ts" --max-warnings=0
+        continue-on-error: true
+
+      - name: Unit tests
+        run: pnpm test -- --ci
+
+      # Catches the class of failure that has actually broken this service:
+      # a build error or a DI cycle that only appears at compile/boot.
+      - name: Build
+        run: pnpm run build
+
+      - name: Migrations apply cleanly from scratch
+        run: pnpm run migration:run
+        env:
+          NODE_ENV: test
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USERNAME: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_NAME: courtplus_test
+
+      - name: Docker image builds
+        run: docker build -t courtplus-api:ci .
+
+  frontend:
+    needs: changes
+    if: |
+      needs.changes.outputs.dashboard == 'true' ||
+      needs.changes.outputs.website == 'true' ||
+      needs.changes.outputs.ops == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: dashboard
+            enabled: ${{ needs.changes.outputs.dashboard }}
+          - app: website
+            enabled: ${{ needs.changes.outputs.website }}
+          - app: ops
+            enabled: ${{ needs.changes.outputs.ops }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+        if: matrix.enabled == 'true'
+      - uses: actions/setup-node@v4
+        if: matrix.enabled == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+        if: matrix.enabled == 'true'
+      - run: npm run build
+        if: matrix.enabled == 'true'
+        env:
+          # CRA treats warnings as errors when CI=true; the dashboard has
+          # pre-existing warnings that should not block a deploy.
+          CI: false
+
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: courtplusmobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: courtplusmobile/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn tsc --noEmit
+        continue-on-error: true
+      - run: yarn jest --ci --passWithNoTests
+
+  secrets:
+    # The production .env is hand-edited on the EC2 box and copied by hand into
+    # Vercel. A committed credential is a realistic failure mode here.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

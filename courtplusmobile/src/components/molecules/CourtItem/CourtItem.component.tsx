@@ -53,11 +53,20 @@ const CourtItem = ({
           overrideStyle={themedStyles.brancName}
         />
         <View style={themedStyles.rowContainer}>
+          {item.isAirConditioned && (
+            <Image
+              source={Images.airConditioner}
+              style={themedStyles.featureIcon}
+            />
+          )}
+          {item.isWomenOnly && (
+            <Image source={Images.womenOnly} style={themedStyles.featureIcon} />
+          )}
           <Image source={Images.star} />
           <CustomText
             font="headline3"
             weight="semiBold"
-            text={`${item.avgRating}`}
+            text={Number(item.avgRating ?? 0).toFixed(1)}
             overrideStyle={themedStyles.rating}
           />
         </View>

@@ -11,6 +11,7 @@ import {
   IsLongitude,
   IsEnum,
   Matches,
+  IsBoolean,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationInputDto } from 'src/common/pagination.input.dto';
@@ -87,6 +88,24 @@ export class ListCourtsDto extends PaginationInputDto {
     enum: CourtStatus,
   })
   status?: CourtStatus;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({
+    description: 'Only return air-conditioned courts when true',
+    example: true,
+  })
+  isAirConditioned?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({
+    description: 'Only return women-only courts when true',
+    example: true,
+  })
+  isWomenOnly?: boolean;
 
   @IsOptional()
   @IsNumber()

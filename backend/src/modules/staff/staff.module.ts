@@ -9,9 +9,10 @@ import { TenantsModule } from '../tenants/tenants.module';
 import { AuthModule } from '../auth/auth.module';
 import { BranchStaffer } from './entities/branch-staffer.entity';
 import { BranchesModule } from '../branches/branches.module';
+import { VendorRegistration } from 'src/modules/vendors/entities/vendor-registration.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Staffer, StaffInvitation, BranchStaffer]),
+    TypeOrmModule.forFeature([Staffer, StaffInvitation, BranchStaffer, VendorRegistration]),
     SharedModule,
     TenantsModule,
     forwardRef(() => AuthModule),

@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
 import { Images } from "theme";
 import { useNewMatch } from "./NewMatch.logic";
-import { playersAside } from "utils";
+
 
 const NewMatchScreen = () => {
   const { t } = useTranslation();
@@ -22,8 +22,9 @@ const NewMatchScreen = () => {
     list,
     themedStyles,
     levelBottomSheetRef,
-    autoAccept,
-    setAutoAccept,
+    requiresApproval,
+    setRequiresApproval,
+    matchSizes,
     selectedLevel,
     setSelectedLevel,
     onCloseLevelModal,
@@ -71,7 +72,7 @@ const NewMatchScreen = () => {
             text={t("openMatch.gameType")}
           />
           <View style={themedStyles.gameContainer}>
-            {playersAside.map((item) => (
+            {matchSizes.map((item) => (
               <Chip
                 key={item.key}
                 isSelected={item.key === playerAside?.key}
@@ -121,8 +122,8 @@ const NewMatchScreen = () => {
             overrideStyle={themedStyles.memberText}
           />
           <CustomSwitch
-            value={autoAccept}
-            onValueChange={setAutoAccept}
+            value={requiresApproval}
+            onValueChange={setRequiresApproval}
             overrideStyle={themedStyles.switch}
           />
           <Image source={Images.info} style={themedStyles.info} />
@@ -153,6 +154,7 @@ const NewMatchScreen = () => {
         ref={genderModalRef}
         onSelectGender={onSelectGender}
         selectedGender={selectedGender}
+        includeMixed
       />
     </MainWrapper>
   );

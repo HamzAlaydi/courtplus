@@ -10,7 +10,15 @@ import { useTranslation } from "react-i18next";
 import { mapGenderValue } from "utils";
 
 const GenderModal = forwardRef<BottomSheetModal, GenderModalProps>(
-  ({ onSelectGender, isWhite = false, selectedGender = "" }, ref) => {
+  (
+    {
+      onSelectGender,
+      isWhite = false,
+      selectedGender = "",
+      includeMixed = false,
+    },
+    ref,
+  ) => {
     const [gender, setGender] = useState<string>(() =>
       selectedGender ? mapGenderValue(selectedGender)?.value || "" : ""
     );
@@ -43,6 +51,14 @@ const GenderModal = forwardRef<BottomSheetModal, GenderModalProps>(
             onPress={() => handleSelectGender("female")}
             isDark={isWhite}
           />
+          {includeMixed && (
+            <RadioButton
+              title={t("openMatch.mixedGender")}
+              isSelected={gender === "other"}
+              onPress={() => handleSelectGender("other")}
+              isDark={isWhite}
+            />
+          )}
         </View>
         <CustomButton
           title={t("general.save")}

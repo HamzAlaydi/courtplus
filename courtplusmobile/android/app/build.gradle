@@ -78,6 +78,18 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    // Pinned because NDK 27 dropped the `gold` linker while CMake 3.22 (the
+    // version AGP picks by default) still probes for it when checking
+    // interprocedural optimisation. Release builds enable IPO, so they failed
+    // at configure with "invalid linker name in argument '-fuse-ld=gold'"
+    // while debug builds — which do not enable IPO — kept working.
+    // Install with: sdkmanager "cmake;3.31.1"
+    externalNativeBuild {
+        cmake {
+            version "3.31.1"
+        }
+    }
+
     namespace "net.courtplus"
     defaultConfig {
         applicationId "net.courtplus"
@@ -93,15 +105,38 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Release signing comes from properties that are NEVER committed:
+        // put them in ~/.gradle/gradle.properties or pass them on the command
+        // line / CI secrets. The keystore itself stays out of the repository.
+        //
+        //   COURTPLUS_UPLOAD_STORE_FILE=courtplus-upload.keystore
+        //   COURTPLUS_UPLOAD_STORE_PASSWORD=...
+        //   COURTPLUS_UPLOAD_KEY_ALIAS=courtplus-upload
+        //   COURTPLUS_UPLOAD_KEY_PASSWORD=...
+        release {
+            if (project.hasProperty('COURTPLUS_UPLOAD_STORE_FILE')) {
+                storeFile file(COURTPLUS_UPLOAD_STORE_FILE)
+                storePassword COURTPLUS_UPLOAD_STORE_PASSWORD
+                keyAlias COURTPLUS_UPLOAD_KEY_ALIAS
+                keyPassword COURTPLUS_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // The release build used to be signed with the PUBLIC debug key:
+            // Google Play refuses such a bundle, and anyone could have produced
+            // an "update" that installed over the real app. Without the upload
+            // keystore properties the release artifact is now left UNSIGNED,
+            // which cannot be mistaken for a shippable build.
+            if (project.hasProperty('COURTPLUS_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig null
+            }
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
 

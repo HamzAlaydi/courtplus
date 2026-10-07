@@ -140,6 +140,16 @@ export default function CourtApprovalsPage() {
           { title: "Vendor", render: (_, c) => c.branch?.tenant?.name ?? "—" },
           { title: "Sport", dataIndex: "sport" },
           {
+            title: "A/C",
+            width: 80,
+            render: (_, c) => (c.isAirConditioned ? <Tag color="cyan">Yes</Tag> : <Tag>No</Tag>),
+          },
+          {
+            title: "Women",
+            width: 90,
+            render: (_, c) => (c.isWomenOnly ? <Tag color="magenta">Yes</Tag> : <Tag>No</Tag>),
+          },
+          {
             title: "Status",
             dataIndex: "status",
             render: (s: CourtStatus) => <StatusTag status={s} />,
@@ -211,6 +221,8 @@ export default function CourtApprovalsPage() {
               { key: "vendor", label: "Vendor", children: selected.branch?.tenant?.name ?? "—" },
               { key: "sport", label: "Sport", children: selected.sport },
               { key: "surface", label: "Surface", children: selected.surface },
+              { key: "isAirConditioned", label: "Air conditioned", children: selected.isAirConditioned ? "Yes" : "No" },
+              { key: "isWomenOnly", label: "Women only", children: selected.isWomenOnly ? "Yes" : "No" },
               { key: "size", label: "Size", children: `${selected.size} (${selected.length}m × ${selected.width}m)` },
               { key: "rate", label: "Hourly rate", children: `${selected.hourlyRate} ${selected.currency ?? ""}`.trim() },
               { key: "location", label: "Location", children: selected.location?.name ?? selected.branch?.location?.name ?? "—" },
@@ -222,8 +234,11 @@ export default function CourtApprovalsPage() {
                 : []),
             ]} />
 
+            {/* Only the actions the backend accepts for this status: the
+                old drawer offered Approve/Suspend on every court and every
+                click outside the right state was a 400. */}
             <Space style={{ marginTop: 24 }} wrap>
-              {selected.status === "suspended" ? (
+              {selected.status === "suspended" && (
                 <Popconfirm
                   title="Unsuspend this court?"
                   onConfirm={() => unsuspendMutation.mutate(selected.id)}
@@ -232,26 +247,37 @@ export default function CourtApprovalsPage() {
                     Unsuspend
                   </Button>
                 </Popconfirm>
-              ) : (
-                <Popconfirm
-                  title="Approve this court?"
-                  description="It will become visible to customers."
-                  onConfirm={() => approveMutation.mutate(selected.id)}
-                >
-                  <Button type="primary" loading={approveMutation.isPending}>
-                    Approve
-                  </Button>
-                </Popconfirm>
               )}
-              {selected.status !== "suspended" && (
+              {selected.status === "pending_approval" && (
                 <>
+                  <Popconfirm
+                    title="Approve this court?"
+                    description="It will become visible to customers."
+                    onConfirm={() => approveMutation.mutate(selected.id)}
+                  >
+                    <Button type="primary" loading={approveMutation.isPending}>
+                      Approve
+                    </Button>
+                  </Popconfirm>
                   <Button onClick={() => setReasonAction("request-changes")}>
                     Request Changes
                   </Button>
-                  <Button danger onClick={() => setReasonAction("suspend")}>
-                    Suspend
-                  </Button>
                 </>
+              )}
+              {selected.status === "available" && (
+                <Button danger onClick={() => setReasonAction("suspend")}>
+                  Suspend
+                </Button>
+              )}
+              {selected.status === "changes_requested" && (
+                <Typography.Text type="secondary">
+                  Waiting for the vendor to resubmit.
+                </Typography.Text>
+              )}
+              {selected.status === "pending_payment" && (
+                <Typography.Text type="secondary">
+                  Waiting for the vendor's payment.
+                </Typography.Text>
               )}
             </Space>
           </>

@@ -86,7 +86,9 @@ export default function Branches() {
     name: branch.name,
     location: branch.location?.name || "N/A",
     addedDate: dayjs(branch.createdAt).format("YYYY-MM-DD"),
-    totalRevenue: "$ " + branch.totalRevenue,
+    totalRevenue: `${Number(branch.totalRevenue ?? 0).toLocaleString()} ${t(
+      "home.currency"
+    )}`,
     action: branch.id,
   }));
 

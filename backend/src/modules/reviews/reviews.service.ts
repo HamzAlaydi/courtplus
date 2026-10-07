@@ -128,9 +128,19 @@ export class ReviewsService {
     } = query;
 
     // Build the base query with consistent joins
+    // Public profile columns only: the full User entity (phone, e-mail,
+    // date of birth, Stripe customer id) used to ship with every review.
     const qb = this.reviewRepository
       .createQueryBuilder('review')
-      .leftJoinAndSelect('review.user', 'user');
+      .leftJoin('review.user', 'user')
+      .addSelect([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.username',
+        'user.avatarUrl',
+        'user.gender',
+      ]);
 
     const needsBookingJoin = bookingId || courtId || branchId;
     if (needsBookingJoin) {

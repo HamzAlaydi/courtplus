@@ -62,7 +62,8 @@
     "mobileNumber": "Mobile Number",
     "apply": "Apply",
     "camera": "Camera",
-    "gallery": "Gallery"
+    "gallery": "Gallery",
+    "keep": "Keep"
   },
   "language": {
     "title": "Choose Your language",
@@ -70,13 +71,14 @@
     "english": "English"
   },
   "onboarding": {
-    "title1": "Your Path to Play, Anytime, Anywhere.",
-    "title2": "Your Path to Play, Anytime, Anywhere.",
-    "title3": "Your Path to Play, Anytime, Anywhere.",
-    "description1": "Find your court easily and play anywhere you want with us!",
-    "description2": "Find your court easily and play anywhere you want with us!",
-    "description3": "Find your court easily and play anywhere you want with us!",
-    "getStarted": "Get Started"
+    "title1": "Find a court near you",
+    "title2": "Book in seconds",
+    "title3": "Play and rate",
+    "description1": "Browse football, tennis and padel courts around you, with real availability and prices.",
+    "description2": "Pick a time, pay in the app or split the cost with your friends — your spot is confirmed instantly.",
+    "description3": "Get reminders before the match, check in at the court and rate it afterwards.",
+    "getStarted": "Get started",
+    "terms": "By continuing you agree to our Terms of Service and Privacy Policy."
   },
   "auth": {
     "noAccount": "Don't have an account? ",
@@ -100,7 +102,7 @@
     "findCourts": "Find a courts, coaches + more",
     "noCourts": "No courts are currently available in this area.",
     "playMatch": "Play amazing Match",
-    "searchCourt": "Find a court or center",
+    "searchCourt": "Search courts",
     "noMoments": "No moments to show.",
     "details": "Details",
     "availability": "Availability",
@@ -120,7 +122,16 @@
     "noReviews": "No reviews to show.",
     "noCourtsAvailable": "No Courts are available now",
     "noCourtsSubtitle": "Try adjusting your filters or exploring a different area.",
-    "noMomentsSubtitle": "Moments shared on this court will appear here."
+    "noMomentsSubtitle": "Moments shared on this court will appear here.",
+    "notAvailable": "This court is no longer available.",
+    "openInMaps": "Open in Google Maps",
+    "locationUnavailable": "This venue has no location on file yet",
+    "airConditioning": "Air Conditioning",
+    "airConditioned": "Air conditioned",
+    "notAirConditioned": "Not air conditioned",
+    "womenOnly": "Women Only",
+    "womenOnlyYes": "Yes — fully enclosed",
+    "womenOnlyNo": "Open to everyone"
   },
   "completeProfile": {
     "title": "Complete Your Profile Setup",
@@ -363,7 +374,11 @@
     "SMS_SEND_FAILED": "We couldn't send the SMS. Please try again in a moment.",
     "STORAGE_SERVICE_UNAVAILABLE": "File storage is temporarily unavailable. Please try again later.",
     "LOCATION_SERVICE_UNAVAILABLE": "Location services are temporarily unavailable. Please try again later.",
-    "UPLOAD_FAILED": "The image couldn't be uploaded. Please try again."
+    "UPLOAD_FAILED": "The image couldn't be uploaded. Please try again.",
+    "BOOKING_CANCELLATION_WINDOW_CLOSED": "Bookings can be cancelled up to 12 hours before the start.",
+    "PARTICIPANT_ALREADY_PAID": "You have already paid your part for this match.",
+    "BLOCKED_BY_VENUE": "This venue is not accepting bookings from your account.",
+    "BOOKING_NOT_JOINABLE": "This match can no longer be joined."
   },
   "form": {
     "phone": "Phone is required",
@@ -398,7 +413,39 @@
     "playerID": "Player ID",
     "relatedCoach": "Related Coach",
     "captureMoment": "Capture a Court+ Moment",
-    "noBookingsSubtitle": "Your upcoming and past bookings will appear here."
+    "noBookingsSubtitle": "Your upcoming and past bookings will appear here.",
+    "cancelBooking": "Cancel booking",
+    "leaveMatch": "Leave match",
+    "cancelConfirmTitle": "Cancel this booking?",
+    "cancelConfirmMessage": "Free cancellation up to 12 hours before the start: everything paid for this booking is refunded to the original payment method.",
+    "leaveConfirmTitle": "Leave this match?",
+    "leaveConfirmMessage": "You can leave up to 12 hours before the start. Your share is refunded only if the match has not been fully paid yet.",
+    "cancelled": "Booking cancelled",
+    "left": "You left the match",
+    "cancelClosed": "Cancellation closes 12 hours before the start.",
+    "activityLog": "Activity Log",
+    "noActivitySubtitle": "Everything that happens in this booking will show up here.",
+    "events": {
+      "created": "{{name}} created the booking",
+      "started": "The match started",
+      "ended": "The match ended",
+      "participant_entered": "{{name}} entered the court",
+      "participant_cancelled": "{{name}} left the match",
+      "participant_removed": "{{name}} removed a player",
+      "participant_added": "{{name}} added a player",
+      "participant_joined": "{{name}} joined the match",
+      "participant_invitation_accepted": "{{name}} accepted the invitation",
+      "participant_invitation_rejected": "{{name}} declined the invitation",
+      "participant_payment_completed": "{{name}} paid their share",
+      "participant_join_request_submitted": "{{name}} asked to join the match",
+      "participant_join_request_approved": "Join request approved for {{name}}",
+      "participant_join_request_rejected": "Join request declined for {{name}}",
+      "cancelled": "{{name}} cancelled the booking",
+      "moment_posted": "{{name}} shared a Court+ moment",
+      "payment_completed": "The booking was paid in full",
+      "somePlayer": "A player",
+      "unknown": "Booking activity"
+    }
   },
   "community": {
     "search": "Search for friends",
@@ -423,7 +470,11 @@
     "title": "Filters",
     "sport": "Sport",
     "availability": "Availability",
-    "duration": "Duration"
+    "duration": "Duration",
+    "radius": "Search radius",
+    "noPlaceFound": "No place found for that search.",
+    "airConditioned": "Air conditioned only",
+    "womenOnly": "Women-only courts"
   },
   "booking": {
     "title": "Booking",
@@ -450,7 +501,9 @@
     "totalSelectedTime": "Total Selected Time",
     "totalCost": "Total Cost",
     "noSlots": "No Times are Added Until now",
-    "noEvents": "No Events until now"
+    "noEvents": "No Events until now",
+    "cancellationPolicy": "Free cancellation up to 12 hours before the start; after that the booking is non-refundable.",
+    "selectionMustBeContiguous": "Please pick back-to-back times with no gaps."
   },
   "branchDetails": {
     "sessions": "sessions",
@@ -517,7 +570,16 @@
     "addPlayers": "Add Players",
     "playersNameEmailPhone": "players name, Email, phonenumber",
     "pickDay": "Pick a day",
-    "noMatchesSubtitle": "There are no open matches right now. Start your own and invite players!"
+    "noMatchesSubtitle": "There are no open matches right now. Start your own and invite players!",
+    "mixedGender": "Mixed",
+    "joined": "You joined the match. Find it in your activity.",
+    "joinRequested": "Request sent. The organizer will confirm your seat.",
+    "continueToPayment": "Continue to payment",
+    "fiveASide": "5 a side (10 players)",
+    "sixASide": "6 a side (12 players)",
+    "sevenASide": "7 a side (14 players)",
+    "elevenASide": "11 a side (22 players)",
+    "matchSize": "Match size"
   },
   "recoverAccount": {
     "welcomeBack": "Welcome back!",

@@ -28,6 +28,21 @@ export default (colors: ColorsType) =>
       marginTop: verticalScale(4.18),
       color: colors.BLACK,
     },
+    restrictionsContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing[8],
+      marginTop: verticalScale(8),
+    },
+    restrictionBadge: {
+      backgroundColor: colors.LIGHT_GREY,
+      borderRadius: spacing[8],
+      paddingHorizontal: horizontalScale(10),
+      paddingVertical: verticalScale(4),
+    },
+    restrictionText: {
+      color: colors.SLATE_GRAY,
+    },
     locationContainer: {
       marginTop: verticalScale(15),
       flexDirection: "row",

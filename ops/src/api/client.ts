@@ -92,7 +92,15 @@ client.interceptors.request.use(async (config) => {
     const now = Math.floor(Date.now() / 1000);
     if (exp && exp - now < 60) {
       token = await refreshAuthToken();
-      if (!token) return Promise.reject(new Error("Token refresh failed"));
+      if (!token) {
+        // Expired/revoked session: go to the login page instead of leaving
+        // every page on a permanent skeleton.
+        tokenStore.clear();
+        if (!window.location.pathname.startsWith("/login")) {
+          window.location.href = "/login";
+        }
+        return Promise.reject(new Error("Token refresh failed"));
+      }
     }
   }
   if (token) {

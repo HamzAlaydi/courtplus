@@ -17,6 +17,8 @@ export interface CourtsRequest {
   minRating?: number;
   startAt?: string;
   duration?: number;
+  isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
 }
 
 /** Default geo-filter radius in meters when the device location is known. */

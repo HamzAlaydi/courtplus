@@ -91,6 +91,8 @@ export interface Court {
   assets?: Asset[];
   sport: string;
   surface: string;
+  isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
   size: string;
   length: number;
   width: number;
@@ -107,6 +109,9 @@ export interface UnsuspendRequest {
   tenant?: Tenant;
   message: string;
   resolvedAt?: string | null;
+  /** How ops closed it; null while still pending. */
+  outcome?: "approved" | "denied" | null;
+  resolutionReason?: string | null;
   createdAt: string;
 }
 
@@ -158,4 +163,23 @@ export interface AppNotification {
   readAt?: string | null;
   seenAt?: string | null;
   createdAt: string;
+}
+
+export type PayoutStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
+
+export interface Payout {
+  id: string;
+  tenantId: string;
+  amount: number;
+  currency: string;
+  status: PayoutStatus;
+  provider: string;
+  providerPayoutId?: string | null;
+  requestedByStaffId?: string | null;
+  sentAt?: string | null;
+  failureReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  tenant?: Tenant | null;
+  requestedBy?: StaffUser | null;
 }

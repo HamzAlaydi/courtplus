@@ -1,3 +1,4 @@
+import { useAppStore } from "store";
 import { axiosInstance } from "apis";
 import { ApiResponse, enableNotificationPermission, endPoints } from "utils";
 import {
@@ -76,11 +77,22 @@ export const saveNotificationToken = async (token: string) => {
 // Dedupes uploads so the token is only sent when it actually changes.
 let lastUploadedToken: string | null = null;
 
+/** Call on logout so the next login on this device uploads the token again. */
+export const resetNotificationToken = () => {
+  lastUploadedToken = null;
+};
+
 const uploadToken = async (token: string) => {
-  if (!token || token === lastUploadedToken) return;
+  if (!token) return;
+  // Keyed by session as well: after logout + login on the same device the
+  // token is unchanged but belongs to a NEW session row, so it must be sent
+  // again or the new account never receives push notifications.
+  const session = useAppStore.getState().userTokens?.accessToken ?? "";
+  const key = `${session}|${token}`;
+  if (key === lastUploadedToken) return;
   const saved = await saveNotificationToken(token);
   if (saved) {
-    lastUploadedToken = token;
+    lastUploadedToken = key;
   }
 };
 

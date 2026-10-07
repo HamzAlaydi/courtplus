@@ -4,8 +4,8 @@ export const getMe = async () => await staffService.getMe();
 
 export const updateMe = async (data) => await staffService.updateMe(data);
 
-export const getAllStaff = async (branchId) =>
-  await staffService.getAllStaff(branchId);
+export const getAllStaff = async (params) =>
+  await staffService.getAllStaff(params);
 
 export const getAllStaffInvitations = async () =>
   await staffService.getAllStaffInvitations();
@@ -30,6 +30,12 @@ export const assignStaffToBranch = async (data) => {
   const res = await staffService.assignStaffToBranch(data);
   return res;
 };
+
+export const unassignStaffFromBranch = async (data) =>
+  await staffService.unassignStaffFromBranch(data);
+
+export const updateStaffRole = async (id, data) =>
+  await staffService.updateStaffRole(id, data);
 
 export const deleteAcc = async (data) => await staffService.deleteAcc(data);
 

@@ -1,3 +1,4 @@
+import { CommonModule } from './common/common.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
@@ -23,7 +24,10 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { PayoutsModule } from './modules/payouts/payouts.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { OpsModule } from './modules/ops/ops.module';
+import { HealthModule } from './modules/health/health.module';
+import { VendorsModule } from './modules/vendors/vendors.module';
 export const APP_MODULES = [
+  CommonModule,
   AdminModule,
   SharedModule,
   AuthModule,
@@ -49,4 +53,6 @@ export const APP_MODULES = [
   SubscriptionsModule,
   ContactModule,
   OpsModule,
+  HealthModule,
+  VendorsModule,
 ];

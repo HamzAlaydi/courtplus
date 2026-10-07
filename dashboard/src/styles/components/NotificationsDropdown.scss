@@ -1,91 +1,306 @@
-.notifications-dropdown {
-  width: 350px;
-  height: 40rem;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  border: 1px solid #eee;
-  border-radius: 1.6rem;
-  padding: 1.5rem;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+// Notifications bell + panel (header).
+//
+// The panel used to be a 40rem-tall box with a full-width type select, every
+// unread row painted solid lime and raw `toLocaleString()` timestamps. It now
+// reads like a feed: icon per kind, title + relative time on one line, the
+// message underneath, a soft tint plus a dot for unread, and hover actions.
+// Everything positional uses logical properties so the Arabic (RTL) layout
+// mirrors correctly.
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+$nd-lime: #c0ff42;
+$nd-navy: #0f1c3f;
+$nd-text: #1b1f2a;
+$nd-muted: #6b7280;
+$nd-border: #eef0f3;
 
-    h4 {
-      margin: 0;
-      font-size: 17px;
-      font-weight: 600;
-    }
+.notif-trigger {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $nd-text;
+  transition: background 0.15s ease;
 
-    .btn-mark-all {
-      padding: 0 8px;
-      height: 22px;
-      font-size: 11px;
-      border-radius: 4px;
-    }
+  &:hover,
+  &:focus-visible {
+    background: rgba(15, 28, 63, 0.06);
+    outline: none;
   }
 
-  .filter-row {
-    margin: 1rem 0;
-
-    .filter-dropdown {
-      width: 100%;
-    }
+  .notif-icon {
+    font-size: 20px;
   }
 
-  .scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 3px; // avoid scrollbar overlay
-  }
-
-  .notification-list {
-    .ant-list-item {
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-bottom: 8px;
-      transition: background 0.2s ease, transform 0.2s ease;
-
-      &:hover {
-        background: #f7f7f7;
-        transform: translateY(-1px);
-      }
-
-      &.unread {
-        background: #c0ff424f;
-      }
-
-      .item-content {
-        .title {
-          font-weight: 600;
-          font-size: 14px;
-        }
-        .content {
-          font-size: 13px;
-          color: #666;
-        }
-        .time {
-          font-size: 11px;
-          color: #999;
-          margin-top: 4px;
-        }
-      }
-    }
-  }
-
-  .btn-load-more {
-    margin-top: 10px;
-    height: 28px !important;
-    font-size: 12px;
-    border-radius: 6px;
+  .ant-badge .ant-scroll-number {
+    box-shadow: 0 0 0 2px #fff;
   }
 }
 
-.notif-icon {
-  font-size: 22px;
-  cursor: pointer;
+.notifications-popover {
+  .ant-popover-inner {
+    padding: 0;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(15, 28, 63, 0.14), 0 2px 8px rgba(15, 28, 63, 0.06);
+    overflow: hidden;
+  }
+}
+
+.notifications-dropdown {
+  width: min(400px, calc(100vw - 16px));
+  max-height: min(560px, calc(100vh - 96px));
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: $nd-text;
+
+  .nd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 16px 10px;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .nd-mark-all {
+      padding: 0 4px;
+      height: 24px;
+      font-size: 12px;
+      color: $nd-navy;
+
+      &:disabled {
+        color: #b7bcc7;
+      }
+    }
+  }
+
+  .nd-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 16px 10px;
+    border-bottom: 1px solid $nd-border;
+
+    .ant-segmented {
+      background: #f1f3f6;
+      border-radius: 999px;
+      padding: 2px;
+
+      .ant-segmented-item {
+        border-radius: 999px;
+        font-size: 12px;
+      }
+
+      .ant-segmented-item-selected {
+        background: $nd-navy;
+        color: #fff;
+      }
+    }
+
+    .nd-type {
+      min-width: 120px;
+      max-width: 180px;
+
+      .ant-select-selector {
+        border-radius: 999px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .nd-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px 8px 8px;
+  }
+
+  .nd-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    color: $nd-muted;
+
+    .ant-empty-description {
+      color: $nd-muted;
+      font-size: 13px;
+    }
+  }
+
+  .nd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nd-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 28px;
+    align-items: start;
+    gap: 10px;
+    padding: 10px 10px 10px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: #f5f7fa;
+      outline: none;
+    }
+
+    // Unread: soft brand tint and a dot at the leading edge.
+    &.is-unread {
+      background: rgba(192, 255, 66, 0.16);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline-start: 4px;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        margin-top: -3px;
+        border-radius: 50%;
+        background: #7ccb00;
+      }
+
+      &:hover {
+        background: rgba(192, 255, 66, 0.28);
+      }
+
+      .nd-title {
+        font-weight: 700;
+      }
+    }
+
+    .nd-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+
+      &.tone-success {
+        background: #e7f8e9;
+        color: #1f8f3a;
+      }
+      &.tone-danger {
+        background: #fdecec;
+        color: #c62828;
+      }
+      &.tone-warning {
+        background: #fff4dc;
+        color: #b26a00;
+      }
+      &.tone-info {
+        background: #e9eefb;
+        color: #2f4bb3;
+      }
+      &.tone-neutral {
+        background: #f1f3f6;
+        color: $nd-muted;
+      }
+    }
+
+    .nd-body {
+      min-width: 0;
+    }
+
+    .nd-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .nd-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nd-time {
+      flex-shrink: 0;
+      font-size: 11px;
+      color: $nd-muted;
+      white-space: nowrap;
+    }
+
+    .nd-text {
+      margin: 3px 0 0;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #4b5563;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    // Per-item "mark as read": only visible on hover/focus so the list stays
+    // calm, but always reachable by keyboard.
+    .nd-read-btn {
+      appearance: none;
+      border: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: transparent;
+      color: $nd-muted;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s ease, background 0.15s ease;
+
+      &:hover {
+        background: rgba(15, 28, 63, 0.08);
+        color: $nd-navy;
+      }
+    }
+
+    &:hover .nd-read-btn,
+    .nd-read-btn:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  .nd-load-more {
+    margin-top: 6px;
+    color: $nd-navy;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-trigger,
+  .notifications-dropdown .nd-item,
+  .notifications-dropdown .nd-read-btn {
+    transition: none;
+  }
 }

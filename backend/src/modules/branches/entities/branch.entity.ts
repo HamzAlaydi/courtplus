@@ -1,3 +1,4 @@
+import { moneyTransformer } from 'src/common/money.transformer';
 import {
   Column,
   DeleteDateColumn,
@@ -133,7 +134,7 @@ export class Branch extends BaseEntity {
     description: 'The total revenue for the branch',
     example: 100,
   })
-  @Column({ default: 0 })
+  @Column('numeric', { precision: 14, scale: 2, default: 0, transformer: moneyTransformer })
   totalRevenue: number;
 
   @ApiProperty({
@@ -161,7 +162,7 @@ export class Branch extends BaseEntity {
     description: 'The average rating for the branch',
     example: 4.5,
   })
-  @Column({ default: 0 })
+  @Column('float', { default: 0 })
   avgRating: number;
 
   @ApiProperty({

@@ -13,6 +13,7 @@ import {
   message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { blockUser, getUsers, unBlockUser } from "../actions/admin_action";
 const { Option } = Select;
 
@@ -26,6 +27,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function Users() {
+  const { t } = useTranslation();
   // ✅ Query params
   const [queryParams, setQueryParams] = useState({
     page: 1,
@@ -145,7 +147,7 @@ export default function Users() {
       dataIndex: "totalSpent",
       key: "spending",
       sorter: true,
-      render: (v) => `$${v}`,
+      render: (v) => `${Number(v ?? 0).toLocaleString()} ${t("home.currency")}`,
     },
     {
       title: "Status",

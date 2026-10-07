@@ -174,6 +174,14 @@ export class Booking extends BaseEntity {
 
   @ApiProperty({
     description:
+      'How many seats share the cost of a split booking. Fixed at creation so the organiser share, each joiner share and the settlement all divide by the same number.',
+    required: false,
+  })
+  @Column('int', { nullable: true })
+  splitSeats?: number;
+
+  @ApiProperty({
+    description:
       'Whether an open match require booking creator to approve join requests',
     required: false,
   })

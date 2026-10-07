@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React from "react";
 import { CustomButton, CustomText } from "atoms/index";
 import { Image, TouchableOpacity, View } from "react-native";
@@ -36,24 +37,25 @@ const UserFollowRow = ({
     return Images.femaleProfile;
   };
 
+  const { t } = useTranslation();
   const button = useMemo(() => {
     if (isFollowing) {
       return {
-        title: "Unfollow",
+        title: t("profile.unfollow"),
         onPress: onUnfollow,
       };
     }
     if (isFollowed) {
       return {
-        title: "Follow Back",
+        title: t("notifications.followBack"),
         onPress: onFollow,
       };
     }
     return {
-      title: "Follow",
+      title: t("profile.follow"),
       onPress: onFollow,
     };
-  }, [isFollowing, isFollowed, onFollow, onUnfollow]);
+  }, [isFollowing, isFollowed, onFollow, onUnfollow, t]);
 
   return (
     <TouchableOpacity onPress={onPress} style={themedStyles.container}>

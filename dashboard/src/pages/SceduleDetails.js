@@ -8,8 +8,7 @@ import {
   Tooltip,
   Modal,
   Spin,
-  List,
-} from "antd";
+  List, Input } from "antd";
 import {
   CalendarOutlined,
   ClockCircleOutlined,
@@ -33,6 +32,9 @@ const ScheduleDetails = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
+  // Sent with the cancellation so the customer's notification and the
+  // booking record say why; it was not collected at all before.
+  const [cancelReason, setCancelReason] = React.useState("");
 
   const { data: match, isLoading } = useQuery({
     queryKey: ["match", id],
@@ -195,19 +197,28 @@ const ScheduleDetails = () => {
               </Link>
             </h3>
             <div className="rating">⭐ {match.court?.avgRating || 0} / 5</div>
+            {/* The court model has `surface` and `size`; the previous
+                `surfaceType`/`capacity` never existed, so both read N/A. */}
             <div className="surface">
               {t("scheduleDetails.surface")}:{" "}
-              {match.court?.surfaceType || "N/A"}
+              {match.court?.surface
+                ? t(`courtForm.surface_${match.court.surface}`, match.court.surface)
+                : "N/A"}
             </div>
             <div className="capacity">
-              {t("scheduleDetails.capacity")}: {match.court?.capacity || "N/A"}
+              {t("scheduleDetails.capacity")}:{" "}
+              {match.playersASide
+                ? `${match.playersASide} vs ${match.playersASide}`
+                : match.court?.size
+                  ? t(`courtForm.size_${match.court.size}`, match.court.size)
+                  : "N/A"}
             </div>
           </div>
 
           <div className="payment">
             <div className="label">{t("scheduleDetails.payment")}</div>
             <div className="amount">
-              {parseFloat(match.totalAmount).toFixed(2)} SAR
+              {parseFloat(match.totalAmount).toFixed(2)} {t("home.currency")}
             </div>
             <div
               className={`status ${
@@ -230,7 +241,7 @@ const ScheduleDetails = () => {
         open={isCancelModalOpen}
         onOk={async () => {
           try {
-            await cancelMatchById(match.id);
+            await cancelMatchById(match.id, cancelReason.trim());
             notify("success", t("scheduleDetails.cancel_success"));
             navigate("/schedule");
           } catch (error) {
@@ -246,6 +257,14 @@ const ScheduleDetails = () => {
         okButtonProps={{ danger: true }}
       >
         <p>{t("scheduleDetails.cancel_warning")}</p>
+        <Input.TextArea
+          rows={3}
+          maxLength={500}
+          showCount
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+          placeholder={t("scheduleDetails.cancel_reason_placeholder")}
+        />
       </Modal>
     </div>
   );

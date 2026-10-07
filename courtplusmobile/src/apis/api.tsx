@@ -75,8 +75,24 @@ const refreshToken = async (
       refreshToken: response.data?.refreshToken,
     };
   } catch (error) {
-    throw new Error("Token refresh failed");
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    const err = new Error("Token refresh failed") as Error & { status?: number };
+    err.status = status;
+    throw err;
   }
+};
+
+// Concurrent 401s (Activity tab fires several queries at once) each posted
+// the same single-use refresh token; the second one failed and logged the
+// customer out at random. Share one in-flight refresh instead.
+let refreshInFlight: Promise<{ accessToken: string; refreshToken: string }> | null = null;
+const refreshOnce = (token: string) => {
+  if (!refreshInFlight) {
+    refreshInFlight = refreshToken(token).finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 };
 
 instance.interceptors.response.use(
@@ -102,12 +118,18 @@ instance.interceptors.response.use(
         return handleError(error);
       }
       try {
-        const newTokens = await refreshToken(userTokens.refreshToken);
+        const newTokens = await refreshOnce(userTokens.refreshToken);
         setUserTokens(newTokens);
         originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
         return instance(originalRequest);
-      } catch (_) {
-        return handleLogout();
+      } catch (refreshError) {
+        const status = (refreshError as { status?: number })?.status;
+        // Only a rejected token means the session is gone; a network blip
+        // or a server restart must not log the customer out.
+        if (status === 401 || status === 403) {
+          return handleLogout();
+        }
+        return Promise.reject(errorResponse);
       }
     }
 

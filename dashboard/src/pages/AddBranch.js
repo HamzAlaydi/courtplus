@@ -2,6 +2,7 @@ import {
   Button,
   Form,
   Input,
+  Modal,
   Radio,
   Spin,
   Switch,
@@ -26,6 +27,7 @@ import {
   updateBranch,
 } from "../actions/branch_action";
 import { useNavigate, useParams } from "react-router-dom";
+import { getBranchAvailability } from "../actions/subscription_action";
 import WorkingHours from "../components/WorkingHours";
 import { useQuery } from "@tanstack/react-query";
 import { MdDeleteOutline } from "react-icons/md";
@@ -33,6 +35,9 @@ import ModalDelete from "../components/ModalDelete";
 import { uploadImageToS3 } from "../utils/functions";
 import { notifyError } from "../utils/errorMessages";
 import LocationSelector from "../components/LocationSelector";
+
+const formatMoney = (cents, currency) =>
+  `${((cents ?? 0) / 100).toLocaleString()} ${(currency || "").toUpperCase()}`;
 
 export default function AddBranch() {
   const { t } = useTranslation();
@@ -46,6 +51,12 @@ export default function AddBranch() {
     queryFn: () => getBranches(),
     keepPreviousData: true,
     enabled: false,
+  });
+
+  const { data: branchAvailability } = useQuery({
+    queryKey: ["branch-availability"],
+    queryFn: getBranchAvailability,
+    enabled: !id,
   });
 
   // 🔹 Fetch branch data using `useQuery`
@@ -67,6 +78,10 @@ export default function AddBranch() {
   const [isCourtVisible, setIsCourtVisible] = useState(true); // Default value
   const [availabilities, setAvailabilities] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // Holds the form data while the vendor confirms a paid add-on. Courts
+  // already warned before charging; branches billed silently and the vendor
+  // first saw the amount on the invoice.
+  const [pendingCreate, setPendingCreate] = useState(null);
 
   useEffect(() => {
     if (branch) {
@@ -183,17 +198,31 @@ export default function AddBranch() {
           notifyError(notify, err, t, "branchForm.notifications.update_failed");
         });
     } else {
-      createBranch(formData)
-        .then(() => {
-          refetchBranches();
-          navigate("/branches");
-          notify("success", t("branchForm.notifications.created"));
-        })
-        .catch((err) => {
-          console.log(err);
-          notifyError(notify, err, t, "branchForm.notifications.create_failed");
-        });
+      if (branchAvailability?.canCreate === false) {
+        notify("error", t("billing.branch_creation_blocked"));
+        navigate("/billing");
+        return;
+      }
+      if (branchAvailability?.nextBranchChargeCents > 0) {
+        // Paid add-on: confirm the price before the card is charged.
+        setPendingCreate(formData);
+        return;
+      }
+      submitCreate(formData);
     }
+  };
+
+  const submitCreate = (formData) => {
+    createBranch(formData)
+      .then(() => {
+        refetchBranches();
+        navigate("/branches");
+        notify("success", t("branchForm.notifications.created"));
+      })
+      .catch((err) => {
+        console.log(err);
+        notifyError(notify, err, t, "branchForm.notifications.create_failed");
+      });
   };
 
   const handleConfirm = () => {
@@ -338,7 +367,7 @@ export default function AddBranch() {
                     <Radio.Button value="occupied">
                       {t("branchForm.status_occupied")}
                     </Radio.Button>
-                    <Radio.Button value="maintenance">
+                    <Radio.Button value="under_maintenance">
                       {t("branchForm.status_maintenance")}
                     </Radio.Button>
                   </Radio.Group>
@@ -389,6 +418,30 @@ export default function AddBranch() {
             </div>
           </Form>
         </div>
+        <Modal
+          open={!!pendingCreate}
+          title={t("billing.branch_addon_confirm_title")}
+          okText={t("common.yes")}
+          cancelText={t("common.cancel")}
+          onOk={() => {
+            const data = pendingCreate;
+            setPendingCreate(null);
+            submitCreate(data);
+          }}
+          onCancel={() => setPendingCreate(null)}
+        >
+          {t(
+            branchAvailability?.chargedNow
+              ? "billing.branch_addon_confirm"
+              : "billing.branch_addon_pending_sub",
+            {
+              amount: formatMoney(
+                branchAvailability?.nextBranchChargeCents,
+                branchAvailability?.currency
+              ),
+            }
+          )}
+        </Modal>
         <ModalDelete
           visible={isModalVisible}
           onCancel={() => setIsModalVisible(false)}

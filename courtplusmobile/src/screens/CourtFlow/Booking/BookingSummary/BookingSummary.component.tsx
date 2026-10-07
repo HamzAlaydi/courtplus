@@ -25,6 +25,7 @@ const BookingSummaryScreen = () => {
   const themedStyles = useMemo(() => styles(colors), [colors]);
 
   const {
+    isSplitPaymentEnabled,
     courtData,
     timeSummary,
     participants,
@@ -60,23 +61,35 @@ const BookingSummaryScreen = () => {
             selectedTime={formattedTime}
             participants={participants ?? []}
           />
-          <View style={themedStyles.paymentOptionsContainer}>
-            <PaymentOptionItem
-              title={t("booking.payPart")}
-              isSelected={isSplitPaymentSelected}
-              onPress={() => onPaymentTypeChange(PaymentType.SPLIT)}
-              amount={Number(totalAmountSplitted)}
-            />
-            <PaymentOptionItem
-              title={t("booking.payEverything")}
-              isSelected={isWholePaymentSelected}
-              onPress={() => onPaymentTypeChange(PaymentType.WHOLE)}
-              amount={totalAmount}
-            />
-          </View>
+          {isSplitPaymentEnabled ? (
+            <View style={themedStyles.paymentOptionsContainer}>
+              <PaymentOptionItem
+                title={t("booking.payPart")}
+                isSelected={isSplitPaymentSelected}
+                onPress={() => onPaymentTypeChange(PaymentType.SPLIT)}
+                amount={Number(totalAmountSplitted)}
+              />
+              <PaymentOptionItem
+                title={t("booking.payEverything")}
+                isSelected={isWholePaymentSelected}
+                onPress={() => onPaymentTypeChange(PaymentType.WHOLE)}
+                amount={totalAmount}
+              />
+            </View>
+          ) : (
+            <View style={themedStyles.paymentOptionsContainer}>
+              <PaymentOptionItem
+                title={t("booking.payEverything")}
+                isSelected
+                onPress={() => onPaymentTypeChange(PaymentType.WHOLE)}
+                amount={totalAmount}
+              />
+            </View>
+          )}
 
           <DottedContainer overrideStyle={themedStyles.termsContainer}>
             <CustomText text={t("booking.termsAndConditionsDescription")} />
+            <CustomText text={t("booking.cancellationPolicy")} />
           </DottedContainer>
         </View>
       </ScrollView>

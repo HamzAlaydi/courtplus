@@ -4,6 +4,7 @@ import { AssetsService } from './assets.service';
 import { AssetType } from './entities/asset.entity';
 import type { SessionUser } from '../auth/@types/session';
 import { UserType } from '../auth/@types/user.type';
+import { DistributedLockService } from 'src/common/distributed-lock.service';
 
 describe('AssetsController', () => {
   let controller: AssetsController;
@@ -26,6 +27,10 @@ describe('AssetsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AssetsController],
       providers: [
+        {
+          provide: DistributedLockService,
+          useValue: { runExclusively: jest.fn(async (_k, _t, fn) => { await fn(); return true; }) },
+        },
         {
           provide: AssetsService,
           useValue: mockAssetsService,

@@ -24,6 +24,7 @@ const SavedScreen = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    onRemove,
   } = useSaved();
 
   const renderItem = ({ item }: { item: Bookmark }) => {
@@ -45,8 +46,13 @@ const SavedScreen = () => {
         image={Images.openMatch}
         title={currentItem.name}
         locationName={currentItem.location}
-        onPress={() => {}}
-        onBookmarkPress={() => {}}
+        onPress={() =>
+          navigate("CourtStack", {
+            screen: item.type === "court" ? "CourtDetails" : "BranchDetails",
+            params: { id: item.resourceId },
+          } as never)
+        }
+        onBookmarkPress={() => onRemove(item)}
       />
     );
   };

@@ -21,3 +21,9 @@ export async function markNotificationRead(id: string): Promise<void> {
 export async function markAllNotificationsSeen(): Promise<void> {
   await client.post("/notifications/mark-seen");
 }
+
+/** One request instead of a PATCH per item. */
+export async function markAllNotificationsRead(): Promise<{ updated: number }> {
+  const { data } = await client.patch<{ updated: number }>("/notifications/read-all");
+  return data;
+}

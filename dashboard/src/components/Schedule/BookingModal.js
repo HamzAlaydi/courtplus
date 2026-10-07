@@ -67,14 +67,22 @@ const calculateBookingDetails = (date, timeSlots) => {
   // Sort slots by start time
   const sortedSlots = timeSlots
     .map((slot) => {
-      const [start, end] = slot.split("-");
-      return { start, end };
+      // "YYYY-MM-DD|HH:mm-HH:mm"; the date half is absent on older payloads.
+      const [slotDate, range] = slot.includes("|")
+        ? slot.split("|")
+        : ["", slot];
+      const [start, end] = range.split("-");
+      return { slotDate, start, end };
     })
-    .sort((a, b) => a.start.localeCompare(b.start));
+    .sort((a, b) =>
+      `${a.slotDate} ${a.start}`.localeCompare(`${b.slotDate} ${b.start}`)
+    );
 
-  // Get the earliest start time and format as YYYY-MM-DD HH:mm
-  const startTime = sortedSlots[0].start;
-  const startAt = `${dayjs(date).format("YYYY-MM-DD")} ${startTime}`;
+  // Start from the slot's OWN date so a post-midnight slot books the right
+  // night, falling back to the selected day when the API did not send one.
+  const firstSlot = sortedSlots[0];
+  const startDate = firstSlot.slotDate || dayjs(date).format("YYYY-MM-DD");
+  const startAt = `${startDate} ${firstSlot.start}`;
 
   // Calculate total duration in minutes
   let duration = 0;
@@ -180,17 +188,23 @@ const BookingModal = ({ open, onClose }) => {
 
     if (selectedCourtId) {
       setIsLoadingData(true);
+      // Two bugs here: the action destructures `courtId` (not
+      // `selectedCourtId`), so the request went out without a court and
+      // failed; and a MONTH response was written into the day slots, wiping
+      // the time list. Month results belong in monthAvailability.
       getCourtAvailabilty({
-        selectedCourtId,
+        courtId: selectedCourtId,
         params: { month },
       })
         .then((res) => {
-          setDayAvailability(res);
+          setMonthAvailability(res);
         })
         .catch(() => {
-          setDayAvailability(null);
+          setMonthAvailability(null);
+        })
+        .finally(() => {
+          setIsLoadingData(false);
         });
-      setIsLoadingData(false);
     }
   };
 
@@ -328,9 +342,17 @@ const BookingModal = ({ open, onClose }) => {
             }
 
             const renderSlot = (slot) => {
-              const slotKey = `${slot.startTime}-${slot.endTime}`;
+              // The API now tells us which calendar day each slot starts on.
+              // Keying on the time alone meant a venue open past midnight had
+              // two different slots share one key, and the booking was always
+              // built on the opening day — booking the wrong night.
+              const slotKey = `${slot.date ?? ""}|${slot.startTime}-${slot.endTime}`;
               const isSelected = formData.time.includes(slotKey);
-              const isBooked = slot.isReserved;
+              // The API returns `available` (see Slot in
+              // backend/src/modules/courts/dto/slots-response.dto.ts). Reading
+              // `isReserved` always yielded undefined, so every taken slot
+              // looked free and staff could double-book a court.
+              const isBooked = slot.available === false;
 
               const handleToggleSlot = () => {
                 if (isBooked) return;

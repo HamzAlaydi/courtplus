@@ -24,7 +24,7 @@ const SortModal = forwardRef<BottomSheetModal, SortModalProps>(
     });
 
     return (
-      <BottomSheetOverlay isWhite ref={ref} title="Sort">
+      <BottomSheetOverlay isWhite ref={ref} title={t("filters.sort")}>
         <View style={styles.content}>
           {sortItems.map((sort) => (
             <RadioButton

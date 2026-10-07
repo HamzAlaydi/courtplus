@@ -1,3 +1,4 @@
+import { NormalizePhone } from 'src/common/phone.transform';
 import {
   IsEmail,
   IsString,
@@ -41,6 +42,7 @@ export class PhoneLoginDto {
     description: 'User phone number',
     example: '+201000000000',
   })
+  @NormalizePhone()
   @IsPhoneNumber(undefined, { message: INVALID_PHONE_NUMBER })
   phoneNumber: string;
 

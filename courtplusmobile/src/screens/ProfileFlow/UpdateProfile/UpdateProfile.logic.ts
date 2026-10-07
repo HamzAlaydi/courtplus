@@ -25,7 +25,8 @@ export const useUpdateProfile = () => {
     defaultValues: {
       fullName: generateFullName(user!!),
       username: user?.username || "",
-      dateOfBirth: formatDate(user?.dateOfBirth || "", "dd/MM/yyyy"),
+      // Google/Apple accounts have no DOB: formatDate("") threw RangeError.
+      dateOfBirth: user?.dateOfBirth ? formatDate(user.dateOfBirth, "dd/MM/yyyy") : "",
       bio: user?.bio,
       gender: mapGenderValue(user?.gender)?.title ?? "",
     },
@@ -39,14 +40,25 @@ export const useUpdateProfile = () => {
   const onSubmit = async (data: UpdateProfileFields) => {
     try {
       toggleLoading(true);
-      const response = await checkUsernameMutation({ username: data.username });
+      // check-username rejects the user's OWN username, so an unchanged
+      // username made every profile save impossible.
+      const usernameChanged = data.username !== user?.username;
+      const response = usernameChanged
+        ? await checkUsernameMutation({ username: data.username })
+        : { OK: true, available: true, suggestions: [] };
       if (response?.OK && response?.available) {
+        const [firstName, ...rest] = data.fullName.trim().split(/\s+/);
+        // The form shows dd/MM/yyyy; the API parses ISO. Sent raw, 05/09
+        // became September 5th / May 9th depending on the day.
+        const dateOfBirth = data.dateOfBirth
+          ? data.dateOfBirth.split("/").reverse().join("-")
+          : undefined;
         await editProfileMutation({
           user: {
-            firstName: data.fullName.split(" ")[0],
-            lastName: data.fullName.split(" ")[1],
+            firstName,
+            lastName: rest.join(" ") || undefined,
             username: data.username,
-            dateOfBirth: data.dateOfBirth,
+            dateOfBirth,
             bio: data.bio,
             gender: mapGenderTitle(data.gender)?.value ?? "",
           },

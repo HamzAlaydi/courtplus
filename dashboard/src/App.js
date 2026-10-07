@@ -1,6 +1,6 @@
 import { ConfigProvider } from "antd";
 import { useTranslation } from "react-i18next";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -23,6 +23,7 @@ import Schedule from "./pages/Schedule";
 import SettingsPage from "./pages/Settings";
 import SignInForm from "./pages/SigninForm";
 import SignUpForm from "./pages/SignupForm";
+import Team from "./pages/Team";
 import Users from "./pages/Users";
 
 function App() {
@@ -81,7 +82,11 @@ function App() {
             <Route path="billing" element={<Billing />} />
             <Route path="schedule" element={<Schedule />} />
             <Route path="schedule/:id" element={<ScheduleDetails />} />
+            <Route path="team" element={<Team />} />
             <Route path="settings" element={<SettingsPage />} />
+            {/* Anything else used to render the layout with an empty outlet:
+                a blank page with a sidebar. Send it home instead. */}
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Route>
         </Routes>
       </div>

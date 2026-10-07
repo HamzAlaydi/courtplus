@@ -19,7 +19,10 @@ export class TenantPayoutSettings extends BaseEntity {
   @Column('boolean', { default: false })
   isActive: boolean;
 
-  @Column()
+  // Optional: a Connect-managed payout has no bank details on our side. This
+  // was NOT NULL, so creating a settings row during Stripe onboarding failed
+  // AFTER the Express account had been created (500 + orphaned account).
+  @Column({ nullable: true })
   bankName?: string;
 
   @Column({ nullable: true })

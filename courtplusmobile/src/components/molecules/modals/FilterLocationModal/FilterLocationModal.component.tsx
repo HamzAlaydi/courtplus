@@ -18,7 +18,17 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
-  const { location, address, onValueChange, radius } = useFilterLocationModal();
+  const {
+    location,
+    address,
+    query,
+    setQuery,
+    onSearch,
+    onValueChange,
+    radius,
+    onDone,
+    onClear,
+  } = useFilterLocationModal();
 
   return (
     <BottomSheetOverlay isWhite ref={ref} title={t("general.location")}>
@@ -26,15 +36,19 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
         <Input
           placeholder={t("general.search")}
           leftComponent={<Image source={Images.search} />}
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={onSearch}
+          returnKeyType="search"
         />
         <View style={themedStyles.mapContainer}>
           <MapView
             provider={PROVIDER_GOOGLE}
-            initialRegion={{
+            region={{
               latitude: location?.lat ?? 0,
               longitude: location?.long ?? 0,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
+              latitudeDelta: Math.max(0.02, radius / 55),
+              longitudeDelta: Math.max(0.02, radius / 55),
             }}
             loadingEnabled
             style={themedStyles.map}
@@ -45,7 +59,7 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
                 latitude: location?.lat ?? 0,
                 longitude: location?.long ?? 0,
               }}
-              radius={1500}
+              radius={radius * 1000}
               strokeColor="rgba(0, 200, 83, 0.6)"
               fillColor="rgba(0, 200, 83, 0.2)"
             />
@@ -57,7 +71,7 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
         </View>
         <View style={themedStyles.radiusContainer}>
           <CustomText
-            text={t("court.chooseTime")}
+            text={t("filters.radius")}
             font="headline3"
             weight="medium"
           />
@@ -72,8 +86,8 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
         <ButtonsRow
           title={t("general.clear")}
           secondaryTitle={t("general.done")}
-          onPress={() => {}}
-          onSecondaryPress={() => {}}
+          onPress={onClear}
+          onSecondaryPress={onDone}
           overrideStyle={themedStyles.buttonContainer}
         />
       </View>

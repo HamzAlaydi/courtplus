@@ -172,25 +172,36 @@ export class Schedule extends BaseEntity {
     const dayOfWeek = slotStart.day();
 
 
-    const availabilities = this.availabilities.filter((avail) =>
-      avail.days.includes(dayOfWeek),
-    );
+    // Windows that start today, plus windows from YESTERDAY that run past
+    // midnight (e.g. Saturday 16:00-02:00 covers Sunday 00:00-02:00). The
+    // latter were ignored, so every post-midnight slot was unbookable.
+    const previousDay = (dayOfWeek + 6) % 7;
+    const candidates: Array<{ avail: Availability; anchor: dayjs.Dayjs }> = [
+      ...this.availabilities
+        .filter((avail) => avail.days.includes(dayOfWeek))
+        .map((avail) => ({ avail, anchor: slotStart })),
+      ...this.availabilities
+        .filter(
+          (avail) =>
+            avail.days.includes(previousDay) && avail.endTime <= avail.startTime,
+        )
+        .map((avail) => ({ avail, anchor: slotStart.subtract(1, 'day') })),
+    ];
 
-    if (availabilities.length === 0) {
+    if (candidates.length === 0) {
       return false;
     }
 
-    return availabilities.some((avail) => {
+    return candidates.some(({ avail, anchor }) => {
       const [startHour, startMinute] = avail.startTime.split(':').map(Number);
       const [endHour, endMinute] = avail.endTime.split(':').map(Number);
 
-      const availStart = slotStart
-        .hour(startHour)
-        .minute(startMinute)
-        .second(0);
-      let availEnd = slotStart.hour(endHour).minute(endMinute).second(0);
+      const availStart = anchor.hour(startHour).minute(startMinute).second(0);
+      let availEnd = anchor.hour(endHour).minute(endMinute).second(0);
 
-      if (availEnd.isBefore(availStart)) {
+      // Matches Availability.getSlots: an equal start and end is a 24-hour
+      // window, not an empty one.
+      if (availEnd.isSameOrBefore(availStart)) {
         availEnd = availEnd.add(1, 'day');
       }
 
@@ -232,7 +243,13 @@ export class Schedule extends BaseEntity {
             reservedSlots,
           );
 
+          // Availability.getSlots already rolls `start` onto the next day
+          // when the window crosses midnight (18:00-02:00), so formatting it
+          // carries that day forward. Without a date the caller only saw
+          // "01:00" and attributed it to the opening day, booking the wrong
+          // night and showing next-day slots as free.
           slots.push({
+            date: start.format('YYYY-MM-DD'),
             startTime: start.format('HH:mm'),
             endTime: end.format('HH:mm'),
             available,

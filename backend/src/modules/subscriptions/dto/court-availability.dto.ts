@@ -9,6 +9,23 @@ export class CourtAvailabilityResponseDto {
   canCreate: boolean;
 
   @ApiProperty({
+    description:
+      'What one more court adds to the monthly bill, in minor units (0 when it fits the included units)',
+    example: 1000,
+  })
+  nextCourtChargeCents: number;
+
+  @ApiProperty({ example: 'usd' })
+  currency: string;
+
+  @ApiProperty({
+    description:
+      'True when the tenant has a live Stripe subscription, so the prorated add-on is charged immediately on creation',
+    example: true,
+  })
+  chargedNow: boolean;
+
+  @ApiProperty({
     description: 'Current number of courts',
     example: 3,
   })

@@ -57,6 +57,12 @@ const CourtCard = ({ name, id, image, status, court }) => {
           <Tag color={STATUS_COLORS[status] || "default"}>
             {t(`courtCard.status.${status}`, status)}
           </Tag>
+          {court?.isAirConditioned && (
+            <Tag color="cyan">{t("courtCard.air_conditioned")}</Tag>
+          )}
+          {court?.isWomenOnly && (
+            <Tag color="magenta">{t("courtCard.women_only")}</Tag>
+          )}
           {showReason && (
             <Popover
               content={court.rejectionReason}
@@ -73,7 +79,7 @@ const CourtCard = ({ name, id, image, status, court }) => {
         <div className="stat">
           <span>{t("courtCard.income_month")}</span>
           <h3>
-            {court?.totalRevenue?.toLocaleString() ?? 0} <span>SAR</span>
+            {court?.totalRevenue?.toLocaleString() ?? 0} <span>{t("home.currency")}</span>
           </h3>
         </div>
 

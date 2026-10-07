@@ -18,7 +18,8 @@ import {
 } from 'typeorm';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
-import { Branch } from './entities/branch.entity';
+import { BranchStaffer } from 'src/modules/staff/entities/branch-staffer.entity';
+import { Branch, BranchStatus } from './entities/branch.entity';
 import { ListBranchesDto } from './dto/list-branches.dto';
 import { LocationsService } from './locations.service';
 import type { SessionUser } from '../auth/@types/session';
@@ -26,6 +27,7 @@ import { AssetsService } from 'src/modules/assets/assets.service';
 import {
   BRANCH_NOT_FOUND,
   BRANCH_CREATION_NOT_ALLOWED,
+  BRANCH_HAS_UPCOMING_BOOKINGS,
   NOT_ALLOWED,
   INVALID_BRANCH_STATUS_TRANSITION,
 } from '../shared/error-codes';
@@ -52,6 +54,8 @@ export class BranchesService {
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
+    @InjectRepository(BranchStaffer)
+    private readonly branchStafferRepository: Repository<BranchStaffer>,
     @InjectRepository(Booking)
     private readonly bookingRepository: Repository<Booking>,
     private readonly locationsService: LocationsService,
@@ -83,9 +87,10 @@ export class BranchesService {
   ) {
     const availability = await this.tenantsService.getBranchCreationAvailability(currentUser.tenantId);
 
-    // if (!availability.canCreate) {
-    //   throw new ForbiddenException(BRANCH_CREATION_NOT_ALLOWED);
-    // }
+    // Lapsed subscription: no new units (see SubscriptionsService.canAddUnits).
+    if (!availability.canCreate) {
+      throw new ForbiddenException(BRANCH_CREATION_NOT_ALLOWED);
+    }
 
 
     let location;
@@ -108,6 +113,21 @@ export class BranchesService {
     };
 
     const branch = await this.branchRepository.save(branchData);
+
+    // Admin-role staff only see branches they are assigned to (see the
+    // BranchStaffer join in findAll). Without this, an Admin could create a
+    // branch and then never see, edit or add courts to it again.
+    if (
+      currentUser.role !== StaffRole.OWNER &&
+      currentUser.role !== StaffRole.SUPER_ADMIN
+    ) {
+      await this.branchStafferRepository.save(
+        this.branchStafferRepository.create({
+          branchId: branch.id,
+          stafferId: currentUser.id,
+        }),
+      );
+    }
 
     if (coverAssetId) {
       const assets = await this.assetsService.assignAssets(
@@ -197,6 +217,19 @@ export class BranchesService {
       queryBuilder.leftJoin('branch.tenant', 'tenant');
       queryBuilder.andWhere('branch.suspendedAt IS NULL');
       queryBuilder.andWhere('tenant.blockedAt IS NULL');
+      // A venue whose subscription lapsed stops appearing and stops taking
+      // NEW bookings; what customers already paid for is untouched.
+      queryBuilder.andWhere('tenant."subscriptionLapsedAt" IS NULL');
+      queryBuilder.andWhere('branch.isVisible IS DISTINCT FROM false');
+      queryBuilder.andWhere('branch.status NOT IN (:...hiddenBranchStatuses)', {
+        // "occupied" means every court is busy right now, not that the venue is
+        // shut: requiring status = 'open' hid a working branch and all of its
+        // courts from customers. Only closed and under-maintenance hide.
+        hiddenBranchStatuses: [
+          BranchStatus.CLOSED,
+          BranchStatus.UNDER_MAINTENANCE,
+        ],
+      });
     }
 
     if (search) {
@@ -251,6 +284,8 @@ export class BranchesService {
     }
 
     const [branches, total] = await queryBuilder
+      .orderBy('branch.createdAt', 'DESC')
+      .addOrderBy('branch.id', 'ASC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
@@ -301,7 +336,9 @@ export class BranchesService {
       where.tenantId = user.tenantId;
 
       if (user.role !== StaffRole.SUPER_ADMIN && user.role !== StaffRole.OWNER) {
-        where.staff = { id: user.id };
+        // BranchStaffer rows carry the staffer in `stafferId`; matching on the
+        // row id meant Admin/User staff got BRANCH_NOT_FOUND on every branch.
+        where.staff = { stafferId: user.id };
       }
     } else if (user?.type === UserType.Customer) {
       where.suspendedAt = IsNull();
@@ -443,13 +480,24 @@ export class BranchesService {
       throw new ForbiddenException('You are not allowed to delete this branch');
     }
 
+    // Paid upcoming bookings on any of its courts would be orphaned.
+    const courtIds = await this.courtsService.findIdsByBranch(id);
+    if (await this.courtsService.countUpcomingBookings(courtIds)) {
+      throw new BadRequestException(BRANCH_HAS_UPCOMING_BOOKINGS);
+    }
+
     await this.courtsService.deleteBranchCourts(id);
 
     await this.branchRepository.softDelete(id);
 
-    this.eventEmitter.emit(BranchEvent.BRANCH_DELETED, {
-      branch,
-    } as BranchEventPayload);
+    // After commit, like every sibling: the subscription sync that listens to
+    // this recounts branches/courts, and inside the transaction it still saw
+    // the deleted ones — so the Stripe quantities were not reduced.
+    runOnTransactionCommit(() => {
+      this.eventEmitter.emit(BranchEvent.BRANCH_DELETED, {
+        branch,
+      } as BranchEventPayload);
+    });
 
     await this.invalidateMonthStatsCache(id);
   }
@@ -585,8 +633,23 @@ export class BranchesService {
   }
 
   @Transactional()
+  /**
+   * Decrement a branch counter, flooring at zero.
+   *
+   * These columns are all counts or totals that cannot be negative in
+   * reality. A plain decrement let a stat that had never been incremented —
+   * or that had been rebuilt by a backfill — go below zero and be shown to
+   * the vendor as a negative number of bookings.
+   */
   async decrement(id: string, field: keyof Branch, value: number) {
-    return this.branchRepository.decrement({ id }, field, value);
+    return this.branchRepository
+      .createQueryBuilder()
+      .update(Branch)
+      .set({
+        [field]: () => `GREATEST("${String(field)}" - ${Number(value)}, 0)`,
+      })
+      .where('id = :id', { id })
+      .execute();
   }
 
   @Transactional()
@@ -599,6 +662,7 @@ export class BranchesService {
       currentMonthBookings?: number;
       currentMonthRevenue?: number;
       upcomingBookings?: number;
+      totalOpenBookings?: number;
     },
   ) {
     const updates: Array<{ field: keyof Branch; value: number }> = [];
@@ -617,6 +681,13 @@ export class BranchesService {
       updates.push({
         field: 'upcomingBookings',
         value: stats.upcomingBookings,
+      });
+    }
+
+    if (stats.totalOpenBookings !== undefined) {
+      updates.push({
+        field: 'totalOpenBookings',
+        value: stats.totalOpenBookings,
       });
     }
 

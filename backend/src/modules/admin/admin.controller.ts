@@ -8,6 +8,7 @@ import {
   Patch,
   Query,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -28,6 +29,7 @@ import { ListTenantsDto, ListTenantsResponseDto } from './dto/admin-tenants.dto'
 import type { SessionUser } from '../auth/@types/session';
 import { Audited } from 'src/decorators/audited.decorator';
 import { LogAction, LogEntity } from '../logging/entities/log.entity';
+import { NOT_ALLOWED } from '../shared/error-codes';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -67,8 +69,11 @@ export class AdminController {
     status: 204,
     description: 'User blocked successfully',
   })
-  async blockUser(@Param('id', ParseUUIDPipe) userId: string): Promise<void> {
-    await this.usersService.blockUser(userId, true);
+  async blockUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @CurrentUser() currentUser: SessionUser,
+  ): Promise<void> {
+    await this.applyBlock(userId, currentUser, true);
   }
 
   @Patch('users/:id/unblock')
@@ -84,8 +89,41 @@ export class AdminController {
     status: 204,
     description: 'User unblocked successfully',
   })
-  async unblockUser(@Param('id', ParseUUIDPipe) userId: string): Promise<void> {
-    await this.usersService.blockUser(userId, false);
+  async unblockUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @CurrentUser() currentUser: SessionUser,
+  ): Promise<void> {
+    await this.applyBlock(userId, currentUser, false);
+  }
+
+  /**
+   * SuperAdmin blocks platform-wide; vendor staff block only at their own
+   * venue.
+   *
+   * Both roles used to hit the same platform-wide switch with no tenant
+   * check, so any vendor Owner or Admin could lock any customer — including
+   * a competitor's — out of the entire marketplace.
+   */
+  private async applyBlock(
+    userId: string,
+    currentUser: SessionUser,
+    blocked: boolean,
+  ): Promise<void> {
+    if (currentUser.role === StaffRole.SUPER_ADMIN) {
+      await this.usersService.blockUser(userId, blocked);
+      return;
+    }
+
+    if (!currentUser.tenantId) {
+      throw new ForbiddenException(NOT_ALLOWED);
+    }
+
+    await this.usersService.setTenantBlock(
+      currentUser.tenantId,
+      userId,
+      blocked,
+      currentUser.id,
+    );
   }
 
   @Get('tenants')

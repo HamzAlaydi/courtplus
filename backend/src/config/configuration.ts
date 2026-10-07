@@ -47,6 +47,22 @@ export default async function getConfig() {
       secret: env.JWT_SECRET,
       refreshSecret: env.JWT_REFRESH_SECRET,
     },
+    auth: {
+      // Local development convenience only. Validation rejects this whenever
+      // NODE_ENV=production, and TwilioService refuses to boot if it slips through.
+      devOtpBypassCode: env.DEV_OTP_BYPASS_CODE,
+      // Pre-launch testing: fixed phone OTP, allowed in production. Phone
+      // codes only — VerificationService never reads it for e-mail codes.
+      testPhoneOtpCode: env.TEST_PHONE_OTP_CODE,
+    },
+    platform: {
+      // Commission Court+ retains from each booking, expressed as a fraction.
+      // This is the single source of truth — see payouts/constants.
+      commissionRate: Number(env.COURT_PLUS_PERCENTAGE ?? 0.2),
+    },
+    payouts: {
+      defaultCountry: env.PAYOUTS_DEFAULT_COUNTRY || 'SA',
+    },
     stripe: {
       secretKey: env.STRIPE_SECRET_KEY,
       publicKey: env.STRIPE_PUBLIC_KEY,

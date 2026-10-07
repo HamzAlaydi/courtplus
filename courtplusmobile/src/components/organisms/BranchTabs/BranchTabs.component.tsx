@@ -11,7 +11,7 @@ import { CustomText } from "atoms/index";
 import { Images } from "theme";
 import { useTranslation } from "react-i18next";
 
-const BranchTabs = ({ tabs, overrideStyle, courts }: BranchTabsProps) => {
+const BranchTabs = ({ tabs, overrideStyle, courts, onCourtPress }: BranchTabsProps) => {
   const {
     currentTheme: { colors },
   } = useThemeContext();
@@ -23,7 +23,13 @@ const BranchTabs = ({ tabs, overrideStyle, courts }: BranchTabsProps) => {
     courts?.filter((court) => court.sport === selectedTab?.key) ?? [];
 
   const renderItem = ({ item }: ListRenderItemInfo<Court>) => {
-    return <CourtItem showBottomInfo={false} item={item} onPress={() => {}} />;
+    return (
+      <CourtItem
+        showBottomInfo={false}
+        item={item}
+        onPress={() => onCourtPress?.(item)}
+      />
+    );
   };
 
   const renderSectionHeader = () => {

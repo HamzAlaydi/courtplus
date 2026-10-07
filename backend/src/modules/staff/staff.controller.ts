@@ -198,7 +198,11 @@ export class StaffController {
     @CurrentUser() currentUser: SessionUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
-    await this.staffService.changePassword(currentUser.id, changePasswordDto);
+    await this.staffService.changePassword(
+      currentUser.id,
+      changePasswordDto,
+      currentUser.sid,
+    );
   }
 
   @ApiOperation({ summary: 'Request email change' })

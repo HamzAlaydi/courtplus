@@ -2,7 +2,7 @@ import { Platform } from "react-native";
 
 // Flip to false when you want dev builds to hit the LOCAL backend instead
 // (Android then uses `adb reverse tcp:3000 tcp:3000` over USB).
-const USE_PROD_IN_DEV = true;
+const USE_PROD_IN_DEV = false;
 
 // In dev builds, hit the local backend. Android uses `adb reverse tcp:3000`
 // (run once per device connection) so localhost works on both emulator and

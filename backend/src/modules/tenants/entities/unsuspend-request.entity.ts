@@ -3,6 +3,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { Tenant } from './tenant.entity';
 
+/** How ops closed an unsuspend request. */
+export enum UnsuspendRequestOutcome {
+  APPROVED = 'approved',
+  DENIED = 'denied',
+}
+
 @Entity('unsuspend_requests')
 @Index('unsuspend_request_tenant_id_idx', ['tenantId'])
 export class UnsuspendRequest extends BaseEntity {
@@ -27,6 +33,29 @@ export class UnsuspendRequest extends BaseEntity {
   })
   @Column({ type: 'timestamp', nullable: true })
   resolvedAt?: Date;
+
+  @ApiProperty({
+    description:
+      'How the request was closed. Null while the request is still pending.',
+    enum: UnsuspendRequestOutcome,
+    nullable: true,
+    required: false,
+  })
+  @Column({
+    type: 'enum',
+    enum: UnsuspendRequestOutcome,
+    enumName: 'UnsuspendRequestOutcome',
+    nullable: true,
+  })
+  outcome?: UnsuspendRequestOutcome;
+
+  @ApiProperty({
+    description: 'Why ops denied the request; shown to the vendor',
+    nullable: true,
+    required: false,
+  })
+  @Column({ type: 'text', nullable: true })
+  resolutionReason?: string;
 
   @ApiProperty({
     description: 'The tenant that submitted the request',

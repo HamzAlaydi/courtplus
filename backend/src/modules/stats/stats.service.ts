@@ -21,6 +21,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import type {
   BookingCreatedEventPayload,
   BookingCancelledEventPayload,
+  BookingEndedEventPayload,
   BookingPaymentCapturedEventPayload,
   BookingPaymentRefundedEventPayload,
 } from '../bookings/bookings.events';
@@ -179,6 +180,21 @@ export class StatsService {
     };
   }
 
+  /**
+   * Revenue per day, keyed on WHEN THE MONEY WAS TAKEN.
+   *
+   * This used to group on `booking.startDate` — the day the match is played —
+   * and then clip the range at `now`. Every payment captured for a future
+   * booking therefore vanished from "Revenue - last 30 days": a venue that
+   * sold ten sessions today for next month saw a flat zero, and the revenue
+   * it did show was filed under the wrong day. On the live database that hid
+   * 500 of 1,400 SAR.
+   *
+   * Cancelled bookings need no special case here: refunding flips the payment
+   * row to `refunded`, so the `completed` filter already excludes it. That
+   * also fixes the old query's blind spot, where a booking cancelled without
+   * a refund still counted its money.
+   */
   private async getRevenueChart(
     courtIds: string[],
     startDate: Date,
@@ -186,32 +202,26 @@ export class StatsService {
   ): Promise<ChartStatsResponseDto> {
     const result = await this.bookingsRepository
       .createQueryBuilder('booking')
-      .leftJoin(
+      .innerJoin(
         'payments',
         'payment',
         'payment."bookingId" = booking.id AND payment.status = :capturedStatus',
       )
       .select([
-        'DATE(booking.startDate) as date',
-        'COALESCE(SUM(payment.amount), 0) as revenue',
+        'DATE(payment."createdAt") as date',
+        'SUM(payment.amount) as revenue',
       ])
       .where('booking.courtId IN (:...courtIds)', { courtIds })
-      .andWhere('booking.startDate >= :startDate', { startDate })
-      .andWhere('booking.startDate <= :endDate', { endDate })
-      .andWhere('booking.status != :cancelled', {
-        cancelled: BookingStatus.CANCELLED,
-      })
+      .andWhere('payment."createdAt" >= :startDate', { startDate })
+      .andWhere('payment."createdAt" <= :endDate', { endDate })
       .setParameter('capturedStatus', PaymentStatus.COMPLETED)
-      .groupBy('DATE(booking.startDate)')
+      .groupBy('DATE(payment."createdAt")')
       .orderBy('date', 'ASC')
       .getRawMany();
 
-    const points: DataPoint[] = result.map((row) => ({
-      x: this.formatDate(new Date(row.date)),
-      y: Number(row.revenue) || 0,
-    }));
-
-    return { points };
+    return {
+      points: this.fillMissingDays(result, 'revenue', startDate, endDate),
+    };
   }
 
   private async getReviewsChart(
@@ -263,6 +273,18 @@ export class StatsService {
     return { points };
   }
 
+  /**
+   * Bookings TAKEN per day, so it sits beside the revenue chart and answers
+   * the same question about the same day.
+   *
+   * Two changes from the original. It groups on `createdAt` rather than
+   * `startDate`, which previously meant the two cards were plotting different
+   * things — one "sessions scheduled", the other "money earned" — and looked
+   * broken whenever they disagreed. And it now excludes cancelled bookings,
+   * which the revenue side already did: on the live database this card was
+   * reporting five bookings on a day where every single one had been
+   * cancelled, right next to a revenue card correctly showing zero.
+   */
   private async getTotalBookingsChart(
     courtIds: string[],
     startDate: Date,
@@ -270,20 +292,61 @@ export class StatsService {
   ): Promise<ChartStatsResponseDto> {
     const result = await this.bookingsRepository
       .createQueryBuilder('booking')
-      .select(['DATE(booking.startDate) as date', 'COUNT(booking.id) as count'])
+      .select([
+        'DATE(booking.createdAt) as date',
+        'COUNT(booking.id) as count',
+      ])
       .where('booking.courtId IN (:...courtIds)', { courtIds })
-      .andWhere('booking.startDate >= :startDate', { startDate })
-      .andWhere('booking.startDate <= :endDate', { endDate })
-      .groupBy('DATE(booking.startDate)')
+      .andWhere('booking.createdAt >= :startDate', { startDate })
+      .andWhere('booking.createdAt <= :endDate', { endDate })
+      .andWhere('booking.status != :cancelled', {
+        cancelled: BookingStatus.CANCELLED,
+      })
+      .groupBy('DATE(booking.createdAt)')
       .orderBy('date', 'ASC')
       .getRawMany();
 
-    const points: DataPoint[] = result.map((row) => ({
-      x: this.formatDate(new Date(row.date)),
-      y: Number(row.count) || 0,
-    }));
+    return {
+      points: this.fillMissingDays(result, 'count', startDate, endDate),
+    };
+  }
 
-    return { points };
+  /**
+   * Turns sparse grouped rows into one point per day across the whole range.
+   *
+   * Without this a range containing a single day of activity produced a
+   * single point, which the dashboard's line chart draws as a lone dot with
+   * no line at all — it reads as "the chart is broken". Gaps between days
+   * were also joined straight across, implying activity that never happened.
+   */
+  private fillMissingDays(
+    rows: Array<Record<string, unknown>>,
+    valueKey: string,
+    startDate: Date,
+    endDate: Date,
+  ): DataPoint[] {
+    const byDay = new Map<string, number>();
+    for (const row of rows) {
+      byDay.set(
+        this.formatDate(new Date(row.date as string)),
+        Number(row[valueKey]) || 0,
+      );
+    }
+
+    const points: DataPoint[] = [];
+    const cursor = new Date(startDate);
+    cursor.setHours(0, 0, 0, 0);
+    const last = new Date(endDate);
+    last.setHours(0, 0, 0, 0);
+
+    // Guard against an inverted or absurd range producing an unbounded loop.
+    for (let guard = 0; cursor <= last && guard < 400; guard += 1) {
+      const key = this.formatDate(cursor);
+      points.push({ x: key, y: byDay.get(key) ?? 0 });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return points;
   }
 
   private formatDate(date: Date): string {
@@ -330,6 +393,18 @@ export class StatsService {
       await this.updateCourtStatsForBookingCancelled(booking);
     } catch (error) {
       this.logger.error('Failed to update stats for booking cancelled', error);
+    }
+  }
+
+  // Only CANCELLED took a match back out of the branch's open-match counter,
+  // so a match that was actually played stayed counted as a pending open match
+  // forever.
+  @OnEvent(BookingEventType.ENDED)
+  async handleBookingEnded({ booking }: BookingEndedEventPayload) {
+    try {
+      await this.updateBranchStatsForBookingEnded(booking);
+    } catch (error) {
+      this.logger.error('Failed to update stats for booking ended', error);
     }
   }
 
@@ -433,6 +508,9 @@ export class StatsService {
       minutesBooked: booking.duration,
       ...(isCurrentMonth && { currentMonthBookings: 1 }),
       ...(isFuture && { upcomingBookings: 1 }),
+      // The open-match counter was only ever going to be decremented, so it
+      // sat at zero for every branch. Count the match in when it is created.
+      ...(booking.open && { totalOpenBookings: 1 }),
     };
 
     await this.branchesService.updateMatchStats(branchId, stats);
@@ -456,6 +534,7 @@ export class StatsService {
       currentMonthBookings?: number;
       currentMonthRevenue?: number;
       upcomingBookings?: number;
+      totalOpenBookings?: number;
     } = {
       totalBookings: -1,
       minutesBooked: -booking.duration,
@@ -467,6 +546,10 @@ export class StatsService {
     if (isFuture) {
       stats.upcomingBookings = -1;
     }
+    // A cancelled open match is no longer looking for players either.
+    if (booking.open) {
+      stats.totalOpenBookings = -1;
+    }
 
     // Revenue is NOT decremented here: revenue is tracked per captured
     // payment, and the cancel flow refunds those payments - each refund emits
@@ -475,16 +558,51 @@ export class StatsService {
     await this.branchesService.updateMatchStats(branchId, stats);
   }
 
+  private async updateBranchStatsForBookingEnded(booking: Booking) {
+    if (!booking?.open) return;
+
+    // The court counts open matches too now, so it has to release them on the
+    // same event or it would only ever climb.
+    await this.courtsService.decrement(
+      booking.courtId,
+      'totalOpenBookings',
+      1,
+    );
+
+    const branchId = await this.branchesService.getBranchIdFromCourtId(
+      booking.courtId,
+    );
+    if (!branchId) return;
+
+    // Goes through the same helper as creation and cancellation, which floors
+    // at zero, so matches that were already open before this counter worked
+    // cannot drive a branch negative.
+    await this.branchesService.updateMatchStats(branchId, {
+      totalOpenBookings: -1,
+    });
+  }
+
   private async updateCourtStatsForBookingCreated(booking: Booking) {
     const now = dayjs();
     const bookingDate = dayjs(booking.startDate);
     const isFuture = bookingDate.isAfter(now);
 
+    // The branch has always counted this; the court never did, so
+    // courts.totalBookings sat at 0 forever and the mobile court page
+    // rendered "0 sessions" for a court with a season of history.
+    await this.courtsService.increment(booking.courtId, 'totalBookings', 1);
     await this.courtsService.increment(
       booking.courtId,
       'minutesBooked',
       booking.duration,
     );
+    if (booking.open) {
+      await this.courtsService.increment(
+        booking.courtId,
+        'totalOpenBookings',
+        1,
+      );
+    }
     if (isFuture) {
       await this.courtsService.increment(
         booking.courtId,
@@ -499,11 +617,19 @@ export class StatsService {
     const bookingDate = dayjs(booking.startDate);
     const isFuture = bookingDate.isAfter(now);
 
+    await this.courtsService.decrement(booking.courtId, 'totalBookings', 1);
     await this.courtsService.decrement(
       booking.courtId,
       'minutesBooked',
       booking.duration,
     );
+    if (booking.open) {
+      await this.courtsService.decrement(
+        booking.courtId,
+        'totalOpenBookings',
+        1,
+      );
+    }
     if (isFuture) {
       await this.courtsService.decrement(
         booking.courtId,

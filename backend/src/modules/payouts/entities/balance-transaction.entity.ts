@@ -5,6 +5,7 @@ import { Booking } from 'src/modules/bookings/entities/booking.entity';
 import { Payment } from 'src/modules/payments/entities/payment.entity';
 import { Payout } from './payout.entity';
 import { TransactionType } from '../constants/payout.constants';
+import { moneyTransformer } from 'src/common/money.transformer';
 
 @Entity('balance_transactions')
 @Index(['tenantId', 'createdAt'])
@@ -16,7 +17,7 @@ export class BalanceTransaction extends BaseEntity {
   @Column('enum', { enum: TransactionType, enumName: 'TransactionType' })
   type: TransactionType;
 
-  @Column('float')
+  @Column('numeric', { precision: 14, scale: 2, transformer: moneyTransformer })
   amount: number;
 
   @Column()

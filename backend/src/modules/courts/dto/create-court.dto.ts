@@ -9,6 +9,7 @@ import {
   IsObject,
   ValidateNested,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { CourtStatus, CourtSurface } from '../entities/court.entity';
 import { CreateUpdateScheduleDto } from 'src/modules/schedules/dto/create-update-schedule.dto';
@@ -140,6 +141,24 @@ export class CreateCourtDto {
   @IsEnum(Sport)
   @IsNotEmpty()
   sport: Sport;
+
+  @ApiProperty({
+    description: 'Whether the court is air conditioned',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isAirConditioned?: boolean;
+
+  @ApiProperty({
+    description: 'Whether the court is women only: fully enclosed and private',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isWomenOnly?: boolean;
 
   @ApiProperty({
     description: 'The schedule of the court',
