@@ -3,4 +3,5 @@ export type CourtSpecsProps = {
   widthSingles: number;
   long: number;
   isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
 };

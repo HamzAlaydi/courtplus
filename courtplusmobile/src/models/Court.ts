@@ -30,6 +30,7 @@ export type Court = {
   size: string;
   surface: string;
   isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
   status: string;
   locationId: string;
   deletedAt: null;

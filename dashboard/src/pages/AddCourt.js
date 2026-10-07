@@ -113,6 +113,7 @@ export default function CourtForm() {
         hourlyRate: court.hourlyRate || 0,
         surface: court.surface || "grass",
         isAirConditioned: !!court.isAirConditioned,
+        isWomenOnly: !!court.isWomenOnly,
         zone: court.schedule?.timeZone || "Asia/Riyadh",
       });
 
@@ -429,7 +430,11 @@ export default function CourtForm() {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{ zone: "Asia/Riyadh", isAirConditioned: false }}
+        initialValues={{
+          zone: "Asia/Riyadh",
+          isAirConditioned: false,
+          isWomenOnly: false,
+        }}
       >
         <div className="form-section">
           <div className="form-group">
@@ -571,6 +576,17 @@ export default function CourtForm() {
                 className="toggle-switch"
                 checkedChildren={t("courtForm.air_conditioned_yes")}
                 unCheckedChildren={t("courtForm.air_conditioned_no")}
+              />
+            </Form.Item>
+            <Form.Item
+              name="isWomenOnly"
+              label={t("courtForm.women_only")}
+              valuePropName="checked"
+            >
+              <Switch
+                className="toggle-switch"
+                checkedChildren={t("courtForm.women_only_yes")}
+                unCheckedChildren={t("courtForm.women_only_no")}
               />
             </Form.Item>
             <Form.Item label={t("courtForm.place_name")}>

@@ -45,7 +45,7 @@ export default (colors: ColorsType) =>
       color: colors.SLATE_GRAY,
       marginTop: isRTL ? verticalScale(4) : 0,
     },
-    acIcon: {
+    featureIcon: {
       width: spacing[16],
       height: spacing[16],
       tintColor: colors.SLATE_GRAY,

@@ -66,7 +66,7 @@ export default (colors: ColorsType) =>
       fontFamily: getFontType("semiBold"),
       marginTop: isRTL ? verticalScale(4) : 0,
     },
-    acIcon: {
+    featureIcon: {
       width: spacing[14],
       height: spacing[14],
       tintColor: colors.SLATE_GRAY,

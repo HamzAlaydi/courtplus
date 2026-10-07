@@ -63,6 +63,7 @@ const CUSTOMER_COURT_COLUMNS = [
   'court.hourlyRate',
   'court.sport',
   'court.isAirConditioned',
+  'court.isWomenOnly',
   'court.minDuration',
   'court.bookmarksCount',
   'court.postsCount',
@@ -214,6 +215,7 @@ export class CourtsService {
       radius,
       status,
       isAirConditioned,
+      isWomenOnly,
       minRating,
       rating,
       page = 1,
@@ -365,9 +367,12 @@ export class CourtsService {
       });
     }
 
-    // The app sends true or omits the param, so false means "no filter".
+    // The app sends true or omits these params, so false means "no filter".
     if (isAirConditioned === true) {
       queryBuilder.andWhere('court.isAirConditioned = true');
+    }
+    if (isWomenOnly === true) {
+      queryBuilder.andWhere('court.isWomenOnly = true');
     }
 
     if (minRating) {

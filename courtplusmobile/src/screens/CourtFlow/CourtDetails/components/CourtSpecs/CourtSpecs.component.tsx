@@ -12,6 +12,7 @@ const CourtSpecs = ({
   widthSingles,
   long,
   isAirConditioned,
+  isWomenOnly,
 }: CourtSpecsProps) => {
   const {
     currentTheme: { colors },
@@ -41,6 +42,13 @@ const CourtSpecs = ({
       description: isAirConditioned
         ? t("court.airConditioned")
         : t("court.notAirConditioned"),
+    },
+    {
+      image: Images.womenOnly,
+      title: t("court.womenOnly"),
+      description: isWomenOnly
+        ? t("court.womenOnlyYes")
+        : t("court.womenOnlyNo"),
     },
   ];
 

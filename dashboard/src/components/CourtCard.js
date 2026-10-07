@@ -60,6 +60,9 @@ const CourtCard = ({ name, id, image, status, court }) => {
           {court?.isAirConditioned && (
             <Tag color="cyan">{t("courtCard.air_conditioned")}</Tag>
           )}
+          {court?.isWomenOnly && (
+            <Tag color="magenta">{t("courtCard.women_only")}</Tag>
+          )}
           {showReason && (
             <Popover
               content={court.rejectionReason}

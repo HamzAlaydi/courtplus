@@ -172,7 +172,10 @@
     "locationUnavailable": "لا يوجد موقع مسجّل لهذا الملعب بعد",
     "airConditioning": "التكييف",
     "airConditioned": "مكيف",
-    "notAirConditioned": "غير مكيف"
+    "notAirConditioned": "غير مكيف",
+    "womenOnly": "مخصص للنساء",
+    "womenOnlyYes": "نعم — مغلق بالكامل",
+    "womenOnlyNo": "متاح للجميع"
   },
   "completeProfile": {
     "title": " أكمل إعداد ملفك الشخصي",
@@ -470,7 +473,8 @@
     "duration": "المدة",
     "radius": "نطاق البحث",
     "noPlaceFound": "لم يُعثر على مكان بهذا الاسم.",
-    "airConditioned": "الملاعب المكيفة فقط"
+    "airConditioned": "الملاعب المكيفة فقط",
+    "womenOnly": "الملاعب المخصصة للنساء فقط"
   },
   "booking": {
     "title": "اختيار وقت الحجز",

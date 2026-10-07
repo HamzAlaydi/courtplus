@@ -287,7 +287,8 @@
     "resubmit": "تعديل وإعادة إرسال",
     "resubmit_success": "تمت إعادة إرسال الملعب للموافقة",
     "resubmit_failed": "فشل إعادة إرسال الملعب",
-    "air_conditioned": "مكيّف"
+    "air_conditioned": "مكيّف",
+    "women_only": "للنساء"
   },
   "common": {
     "submit": "إرسال",
@@ -323,6 +324,9 @@
     "air_conditioned": "مكيّف",
     "air_conditioned_yes": "نعم",
     "air_conditioned_no": "لا",
+    "women_only": "مخصص للنساء (مغلق بالكامل)",
+    "women_only_yes": "نعم",
+    "women_only_no": "لا",
     "place_name": "اسم المكان",
     "status": "حالة الملعب",
     "status_tooltip": "سيؤدي هذا إلى جعل الملعب مرئيًا للمستخدمين",
@@ -382,6 +386,9 @@
     "air_conditioned": "التكييف",
     "air_conditioned_yes": "مكيّف",
     "air_conditioned_no": "غير مكيّف",
+    "women_only": "مخصص للنساء",
+    "women_only_yes": "مخصص للنساء — مغلق بالكامل",
+    "women_only_no": "متاح للجميع",
     "location": "الموقع",
     "size": "حجم الملعب",
     "size_full": "ملعب كامل",

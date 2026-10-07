@@ -54,7 +54,13 @@ const CourtItem = ({
         />
         <View style={themedStyles.rowContainer}>
           {item.isAirConditioned && (
-            <Image source={Images.airConditioner} style={themedStyles.acIcon} />
+            <Image
+              source={Images.airConditioner}
+              style={themedStyles.featureIcon}
+            />
+          )}
+          {item.isWomenOnly && (
+            <Image source={Images.womenOnly} style={themedStyles.featureIcon} />
           )}
           <Image source={Images.star} />
           <CustomText

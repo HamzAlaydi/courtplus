@@ -59,6 +59,7 @@ export const useCourts = () => {
       startAt: filters?.startAt,
       duration: filters?.startAt ? filters?.duration : undefined,
       isAirConditioned: filters?.isAirConditioned,
+      isWomenOnly: filters?.isWomenOnly,
       sortBy: sortQuery[0],
       sortDirection: sortQuery[1],
     },

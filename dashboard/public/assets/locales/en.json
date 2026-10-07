@@ -271,7 +271,8 @@
     "resubmit": "Edit & Resubmit",
     "resubmit_success": "Court resubmitted for approval",
     "resubmit_failed": "Failed to resubmit court",
-    "air_conditioned": "Air conditioned"
+    "air_conditioned": "Air conditioned",
+    "women_only": "Women only"
   },
   "common": {
     "submit": "Submit",
@@ -307,6 +308,9 @@
     "air_conditioned": "Air Conditioned",
     "air_conditioned_yes": "Yes",
     "air_conditioned_no": "No",
+    "women_only": "Women Only (fully enclosed)",
+    "women_only_yes": "Yes",
+    "women_only_no": "No",
     "place_name": "Place Name",
     "status": "Court Status",
     "status_tooltip": "This will make the court visible to end users",
@@ -366,6 +370,9 @@
     "air_conditioned": "Air Conditioning",
     "air_conditioned_yes": "Air Conditioned",
     "air_conditioned_no": "Not Air Conditioned",
+    "women_only": "Women Only",
+    "women_only_yes": "Women Only — Fully Enclosed",
+    "women_only_no": "Open to Everyone",
     "location": "Location",
     "size": "Court Size",
     "size_full": "Full Court",

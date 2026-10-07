@@ -92,6 +92,7 @@ export interface Court {
   sport: string;
   surface: string;
   isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
   size: string;
   length: number;
   width: number;

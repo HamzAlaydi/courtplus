@@ -43,6 +43,7 @@ const CourtTabs = ({ court }: CourtTabsProps) => {
             widthSingles={court.width}
             long={court.length}
             isAirConditioned={court.isAirConditioned}
+            isWomenOnly={court.isWomenOnly}
           />
         )}
         {selectedTab.key === "moments" && <CourtMoments courtId={court.id} />}

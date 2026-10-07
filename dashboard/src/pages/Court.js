@@ -74,6 +74,14 @@ export default function Court() {
             </strong>
           </h5>
           <h5 className="info-item">
+            <span>{t("court.women_only")}</span>
+            <strong>
+              {court?.isWomenOnly
+                ? t("court.women_only_yes")
+                : t("court.women_only_no")}
+            </strong>
+          </h5>
+          <h5 className="info-item">
             <span>{t("court.size")}</span>
             <strong>{t(`court.size_${court?.size}`)}</strong>
           </h5>

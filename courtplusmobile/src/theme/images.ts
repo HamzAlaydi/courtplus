@@ -240,6 +240,9 @@ export const Images = {
   airConditioner: Image.resolveAssetSource(
     require("../../assets/images/airConditioner/airConditioner.png")
   ),
+  womenOnly: Image.resolveAssetSource(
+    require("../../assets/images/womenOnly/womenOnly.png")
+  ),
   cloud: Image.resolveAssetSource(
     require("../../assets/images/cloud/cloud.png")
   ),

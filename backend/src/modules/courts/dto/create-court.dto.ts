@@ -152,6 +152,15 @@ export class CreateCourtDto {
   isAirConditioned?: boolean;
 
   @ApiProperty({
+    description: 'Whether the court is women only: fully enclosed and private',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isWomenOnly?: boolean;
+
+  @ApiProperty({
     description: 'The schedule of the court',
     type: CreateUpdateScheduleDto,
     example: {

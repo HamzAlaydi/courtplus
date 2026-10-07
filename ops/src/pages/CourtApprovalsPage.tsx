@@ -145,6 +145,11 @@ export default function CourtApprovalsPage() {
             render: (_, c) => (c.isAirConditioned ? <Tag color="cyan">Yes</Tag> : <Tag>No</Tag>),
           },
           {
+            title: "Women",
+            width: 90,
+            render: (_, c) => (c.isWomenOnly ? <Tag color="magenta">Yes</Tag> : <Tag>No</Tag>),
+          },
+          {
             title: "Status",
             dataIndex: "status",
             render: (s: CourtStatus) => <StatusTag status={s} />,
@@ -217,6 +222,7 @@ export default function CourtApprovalsPage() {
               { key: "sport", label: "Sport", children: selected.sport },
               { key: "surface", label: "Surface", children: selected.surface },
               { key: "isAirConditioned", label: "Air conditioned", children: selected.isAirConditioned ? "Yes" : "No" },
+              { key: "isWomenOnly", label: "Women only", children: selected.isWomenOnly ? "Yes" : "No" },
               { key: "size", label: "Size", children: `${selected.size} (${selected.length}m × ${selected.width}m)` },
               { key: "rate", label: "Hourly rate", children: `${selected.hourlyRate} ${selected.currency ?? ""}`.trim() },
               { key: "location", label: "Location", children: selected.location?.name ?? selected.branch?.location?.name ?? "—" },

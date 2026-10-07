@@ -128,7 +128,10 @@
     "locationUnavailable": "This venue has no location on file yet",
     "airConditioning": "Air Conditioning",
     "airConditioned": "Air conditioned",
-    "notAirConditioned": "Not air conditioned"
+    "notAirConditioned": "Not air conditioned",
+    "womenOnly": "Women Only",
+    "womenOnlyYes": "Yes — fully enclosed",
+    "womenOnlyNo": "Open to everyone"
   },
   "completeProfile": {
     "title": "Complete Your Profile Setup",
@@ -470,7 +473,8 @@
     "duration": "Duration",
     "radius": "Search radius",
     "noPlaceFound": "No place found for that search.",
-    "airConditioned": "Air conditioned only"
+    "airConditioned": "Air conditioned only",
+    "womenOnly": "Women-only courts"
   },
   "booking": {
     "title": "Booking",

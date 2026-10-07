@@ -99,6 +99,15 @@ export class ListCourtsDto extends PaginationInputDto {
   isAirConditioned?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({
+    description: 'Only return women-only courts when true',
+    example: true,
+  })
+  isWomenOnly?: boolean;
+
+  @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(5)

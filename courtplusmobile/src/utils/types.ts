@@ -96,6 +96,7 @@ export type Filters = {
   startAt?: string;
   duration?: number;
   isAirConditioned?: boolean;
+  isWomenOnly?: boolean;
 };
 
 export type PaginatedItems<T> = {

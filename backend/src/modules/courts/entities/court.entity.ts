@@ -184,6 +184,13 @@ export class Court extends BaseEntity {
   isAirConditioned: boolean;
 
   @ApiProperty({
+    description: 'Whether the court is women only: fully enclosed and private',
+    example: false,
+  })
+  @Column({ default: false })
+  isWomenOnly: boolean;
+
+  @ApiProperty({
     description: 'The distance to the court from the user',
     example: 10,
   })
