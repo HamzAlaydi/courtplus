@@ -40,18 +40,22 @@ const LevelSelectionModal = forwardRef<
       <View>
         <CustomText
           text={t("profile.timePreferenceDesc")}
-          font="chip"
-          weight="medium"
+          font="headline3"
+          weight="regular"
           overrideStyle={themedStyles.description}
         />
         <View style={themedStyles.itemsContainer}>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <RadioButton
               isSelected={item.key === levelItem?.key}
               onPress={() => setLevelItem(item)}
               key={item.key}
               isDark
               title={item.title}
+              overrideStyle={[
+                themedStyles.item,
+                index < items.length - 1 && themedStyles.itemDivider,
+              ]}
             />
           ))}
         </View>
@@ -59,7 +63,7 @@ const LevelSelectionModal = forwardRef<
           title={t("general.done")}
           onPress={onLevelItemSelect}
           disabled={isNextButtonDisabled}
-          variant={isNextButtonDisabled ? "disabledDark" : "dark"}
+          variant={isNextButtonDisabled ? "disabledDark" : "primary"}
           overrideStyle={themedStyles.button}
         />
       </View>

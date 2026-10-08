@@ -1,22 +1,19 @@
-import { Header, WidgetWrapper } from "molecules/index";
+import { Header } from "molecules/index";
 import { MainWrapper } from "organisms/index";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Text } from "react-native";
+import DocumentContent from "./components/DocumentContent/DocumentContent.component";
+import styles from "./Terms.styles";
 
 const TermsScreen = () => {
   const { t } = useTranslation();
   return (
-    <MainWrapper scrollEnabled whiteBackground>
+    <MainWrapper scrollEnabled overrideContentStyle={styles.content}>
       <Header whiteColor title={t("settings.termsOfUse")} />
-      <WidgetWrapper
-        overrideStyle={{
-          marginTop: 46,
-        }}
-      >
-        <Text>{t("settings.termsOfUseHeadline")}</Text>
-        <Text>{t("settings.termsOfUseContent")}</Text>
-      </WidgetWrapper>
+      <DocumentContent
+        headline={t("settings.termsOfUseHeadline")}
+        content={t("settings.termsOfUseContent")}
+      />
     </MainWrapper>
   );
 };

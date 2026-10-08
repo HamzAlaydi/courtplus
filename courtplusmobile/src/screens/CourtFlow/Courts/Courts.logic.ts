@@ -11,6 +11,7 @@ import { Item, SportFilterItem, sports } from "utils";
 export const useCourts = () => {
   const location = useUserStore((store) => store.location);
   const filters = useUserStore((store) => store.filters);
+  const updateFilters = useUserStore((store) => store.updateFilters);
   const [selectedSports, setSelectedSports] = useState<SportFilterItem[]>([
     sports[0],
   ]);
@@ -39,6 +40,24 @@ export const useCourts = () => {
   const isFiltersActive = useMemo(
     () => !!filters && Object.values(filters).some(Boolean),
     [filters]
+  );
+
+  const filterSports = useMemo(
+    () => filters?.sport?.split(",").filter(Boolean) ?? [],
+    [filters?.sport]
+  );
+
+  /** One per chip shown under the search row (each sport counts once). */
+  const activeFiltersCount = useMemo(
+    () =>
+      filterSports.length +
+      [
+        filters?.minRating,
+        filters?.startAt,
+        filters?.isAirConditioned,
+        filters?.isWomenOnly,
+      ].filter(Boolean).length,
+    [filterSports, filters]
   );
 
   const {
@@ -96,6 +115,23 @@ export const useCourts = () => {
     navigate("CourtStack", { screen: "CourtFilter" });
   };
 
+  const onRemoveSportFilter = (sport: string) => {
+    const remaining = filterSports.filter((item) => item !== sport);
+    updateFilters({
+      sport: remaining.length ? remaining.join(",") : undefined,
+    });
+  };
+
+  const onRemoveFilter = (
+    key: "minRating" | "startAt" | "isAirConditioned" | "isWomenOnly"
+  ) => {
+    updateFilters(
+      key === "startAt"
+        ? { startAt: undefined, duration: undefined }
+        : { [key]: undefined }
+    );
+  };
+
   return {
     courts,
     isLoading,
@@ -117,5 +153,10 @@ export const useCourts = () => {
     onClearSort,
     onFilterPress,
     isFiltersActive,
+    filters,
+    filterSports,
+    activeFiltersCount,
+    onRemoveSportFilter,
+    onRemoveFilter,
   };
 };

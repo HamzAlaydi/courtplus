@@ -27,7 +27,7 @@ const OTPInput = forwardRef<OtpInputRef, OTPInputProps>(
     return (
       <OtpInput
         ref={ref}
-        focusColor={colors.GREEN_YELLOWISH}
+        focusColor={isDark ? colors.INK : colors.LIME}
         numberOfDigits={6}
         autoFocus={autoFocus}
         type="numeric"
@@ -38,7 +38,7 @@ const OTPInput = forwardRef<OtpInputRef, OTPInputProps>(
           pinCodeContainerStyle: themedStyles.container,
           focusedPinCodeContainerStyle: themedStyles.focusedContainer,
           containerStyle: overrideStyle,
-          filledPinCodeContainerStyle: themedStyles.focusedContainer,
+          filledPinCodeContainerStyle: themedStyles.filledContainer,
           pinCodeTextStyle: themedStyles.pinCodeText,
         }}
         onFilled={onFilled}

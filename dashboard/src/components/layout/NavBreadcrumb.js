@@ -11,7 +11,9 @@ const SEGMENT_KEYS = {
   courts: "sideNav.courts",
   schedule: "sideNav.schedule",
   billing: "sideNav.billing",
-  settings: "nav.settings",
+  team: "sideNav.team",
+  // The page's own heading ("Account settings" in Arabic), now shown here
+  settings: "settings.title",
   add: "breadcrumb.add",
   edit: "breadcrumb.edit",
 };
@@ -24,6 +26,10 @@ const formatBreadcrumb = (str) => {
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
 };
 
+/**
+ * Top-bar heading: the current section in the display face, with the
+ * breadcrumb trail above it once the route is more than one level deep.
+ */
 const NavBreadcrumb = () => {
   const location = useLocation();
   const { t } = useTranslation();
@@ -33,15 +39,13 @@ const NavBreadcrumb = () => {
     return key ? t(key) : formatBreadcrumb(segment);
   };
 
-  // If the path is exactly "/" or "/home", just return "Home" only
-  if (location.pathname === "/" || location.pathname === "/home") {
-    return (
-      <Breadcrumb separator=">" items={[{ title: t("sideNav.home") }]} />
-    );
-  }
-
   // Split pathname and remove empty values
   const pathSnippets = location.pathname.split("/").filter((i) => i);
+  const isHome =
+    pathSnippets.length === 0 ||
+    (pathSnippets.length === 1 && pathSnippets[0] === "home");
+
+  const title = isHome ? t("sideNav.home") : getSegmentLabel(pathSnippets[0]);
 
   const breadcrumbItems = [
     {
@@ -59,7 +63,18 @@ const NavBreadcrumb = () => {
     }),
   ];
 
-  return <Breadcrumb separator=">" items={breadcrumbItems} />;
+  return (
+    <div className="nav-heading">
+      {pathSnippets.length > 1 && (
+        <Breadcrumb
+          className="nav-trail"
+          separator="/"
+          items={breadcrumbItems}
+        />
+      )}
+      <h1 className="nav-title">{title}</h1>
+    </div>
+  );
 };
 
 export default NavBreadcrumb;

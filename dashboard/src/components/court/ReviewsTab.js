@@ -17,31 +17,32 @@ export default function ReviewsTab({ courtId }) {
 
   if (isLoading)
     return (
-      <div style={{ textAlign: "center", padding: 40 }}>
+      <div className="court-tab-state">
         <Spin size="large" />
       </div>
     );
 
   if (isError)
     return (
-      <div style={{ textAlign: "center", padding: 20 }}>
+      <div className="court-tab-state court-tab-state--error">
         {t("reviews.errorLoading")}
       </div>
     );
 
   if (reviews.length === 0)
     return (
-      <Empty description={t("reviews.noReviews")} style={{ padding: 20 }} />
+      <div className="court-tab-state">
+        <Empty description={t("reviews.noReviews")} />
+      </div>
     );
 
   return (
-    <div
-      className={`reviews-wrapper ${isRTL ? "rtl" : ""}`}
-      style={{ padding: "1rem" }}
-    >
+    <div className={`reviews-wrapper ${isRTL ? "rtl" : ""}`}>
       <List
         itemLayout="vertical"
         dataSource={reviews}
+        split={false}
+        className="reviews-list"
         renderItem={(review) => {
           const user = review.user || {};
           const name = `${user.firstName || ""} ${user.lastName || ""}`.trim();
@@ -50,9 +51,9 @@ export default function ReviewsTab({ courtId }) {
             <List.Item className="review-item">
               <div className="review-header">
                 <Avatar
-                  size={48}
+                  size={44}
                   src={user.avatarUrl}
-                  style={{ backgroundColor: "#ddd", marginInlineEnd: "10px" }}
+                  className="review-avatar"
                 >
                   {user.firstName?.[0]}
                 </Avatar>
@@ -61,12 +62,13 @@ export default function ReviewsTab({ courtId }) {
                   <strong className="review-name">
                     {name || t("reviews.unknownUser")}
                   </strong>
-                  <div className="review-rating">
-                    <Rate disabled defaultValue={review.rating} allowHalf />
-                  </div>
                   <small className="review-date">
                     {new Date(review.booking?.startDate).toLocaleDateString()}
                   </small>
+                </div>
+
+                <div className="review-rating">
+                  <Rate disabled defaultValue={review.rating} allowHalf />
                 </div>
               </div>
 

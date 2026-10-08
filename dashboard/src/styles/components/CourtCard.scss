@@ -1,120 +1,363 @@
 @use "../base/index" as *;
 
-.court-card {
-  position: relative;
-  border: $border;
-  padding: 1rem 8rem 1rem 1rem;
-  display: flex;
-  align-items: center;
-  border-radius: $border-radius;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
-  gap: 2rem;
+// Grid of court cards (Courts page, Branch page). Entrance uses the shared
+// fade-up keyframes with a backwards fill so the hover lift still applies
+// once the card has settled.
+.courts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: $cp-gap-grid;
+  align-items: stretch;
 
-  [dir="rtl"] &,
-  .rtl & {
-    flex-direction: row-reverse;
+  > * {
+    animation: cpFadeUp 280ms $cp-ease backwards;
+  }
+
+  @for $i from 2 through 12 {
+    > :nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 40}ms;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    > * {
+      animation: none;
+    }
+  }
+}
+
+.court-card {
+  @include cp-card-hover;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: $cp-card;
+  border-radius: $cp-radius-card;
+  box-shadow: $cp-shadow-card;
+  overflow: hidden;
+  color: $cp-ink;
+
+  // Image with glass badges
+  &-media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: $cp-ground;
+    overflow: hidden;
+  }
+
+  &-media-link {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .court-image {
-    width: 25rem;
-    height: 20rem;
-    border-radius: $border-radius;
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    transition: transform 400ms $cp-ease;
+  }
+
+  &:hover .court-image {
+    transform: scale(1.03);
+  }
+
+  &-rating {
+    position: absolute;
+    top: 12px;
+    inset-inline-start: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: $cp-radius-pill;
+    background: rgba(10, 21, 23, 0.72);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: $cp-fs-caption;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+
+  &-star {
+    color: $cp-star;
+    font-size: 13px;
+  }
+
+  &-features {
+    position: absolute;
+    inset-inline: 12px;
+    bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  &-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: $cp-radius-pill;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    color: $cp-ink;
+    font-size: $cp-fs-caption;
+    font-weight: 600;
+    white-space: nowrap;
+
+    svg {
+      font-size: 13px;
+    }
+  }
+
+  // Body
+  &-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 16px 16px;
   }
 
   .court-info {
-    .rating {
-      color: #666;
-      margin: 2rem 0;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      color: green;
-
-      .dot {
-        width: 0.8rem;
-        height: 0.8rem;
-        background: green;
-        border-radius: 50%;
-        margin-right: 0.5rem;
-      }
-    }
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
   }
 
-  .court-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 2rem;
-    row-gap: 4rem;
-    .stat {
-      span {
-        font-size: 1.4rem;
-        color: #777;
-      }
-
-      h3 {
-        font-weight: 500;
-      }
-    }
-  }
-
-  .reviews {
+  &-titles {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 4px;
+    min-width: 0;
+  }
 
-    span {
-      font-size: 1.4rem;
-      color: #777;
+  &-name {
+    margin: 0;
+    font-family: $cp-font-text;
+    font-size: $cp-fs-card-title;
+    font-weight: 600;
+    line-height: 1.35;
+    text-transform: none;
+    color: $cp-ink;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  &-label {
+    margin-top: -2px;
+    font-size: $cp-fs-caption;
+    font-weight: 500;
+    line-height: 1.35;
+    color: $cp-muted;
+  }
+
+  &-branch {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    font-size: $cp-fs-caption;
+    color: $cp-muted;
+
+    svg {
+      flex-shrink: 0;
+      font-size: 13px;
     }
   }
 
-  &-link {
-    position: absolute;
-    top: 10%;
-    right: 3%;
+  &-price {
+    @include cp-display(18px, 800, 0, false);
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: $cp-ink;
   }
 
+  &-price-unit {
+    margin-inline-start: 4px;
+    font-family: $cp-font-text;
+    font-size: $cp-fs-caption;
+    font-weight: 500;
+    color: $cp-muted;
+  }
+
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    .ant-tag {
+      margin: 0;
+    }
+  }
+
+  .status-info-icon {
+    @include cp-press;
+    @include cp-focus-ring;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: $cp-radius-pill;
+    background: transparent;
+    color: $cp-muted;
+    font-size: 15px;
+    cursor: pointer;
+
+    &:hover {
+      background: $cp-ground;
+      color: $cp-ink;
+    }
+  }
+
+  // Month figures on a quiet ground panel
+  .court-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: $cp-radius-input;
+    background: $cp-ground;
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    dt {
+      font-size: $cp-fs-caption;
+      line-height: 1.35;
+      color: $cp-muted;
+      @include cp-truncate;
+    }
+
+    dd {
+      @include cp-display(16px, 700, 0, false);
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+      color: $cp-ink;
+      overflow-wrap: anywhere;
+
+      span {
+        margin-inline-start: 4px;
+        font-family: $cp-font-text;
+        font-size: $cp-fs-caption;
+        font-weight: 500;
+        color: $cp-muted;
+      }
+    }
+  }
+
+  // Actions
   &-actions {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    position: absolute;
-    bottom: 10%;
-    right: 3%;
+    gap: 8px;
+    margin-top: auto;
   }
 
   &-btn {
-    border: 1px solid #12b76a;
-    color: #12b76a;
-    background-color: #ecfdf3;
-    border-radius: 2rem;
-    transition: all 0.3s;
-    font-weight: 700;
-    padding: 5px 2rem;
+    @include cp-press;
+    @include cp-focus-ring;
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-pill;
+    background: $cp-card;
+    color: $cp-ink;
+    font-size: $cp-fs-small;
+    font-weight: 600;
+    white-space: nowrap;
 
     &:hover {
-      background-color: #12b76a !important;
-      color: white !important;
+      border-color: $cp-ink;
+      color: $cp-ink;
+    }
+
+    &--primary {
+      @include cp-display(12px, 700, 0.04em);
+      border-color: $cp-lime;
+      background: $cp-lime;
+
+      &:hover {
+        border-color: $cp-lime-hover;
+        background: $cp-lime-hover;
+      }
+
+      &:active {
+        background: $cp-lime-active;
+      }
+    }
+
+    &--ink {
+      border-color: $cp-ink;
+      background: $cp-ink;
+      color: #ffffff;
+
+      &:hover {
+        border-color: $cp-deep;
+        background: $cp-deep;
+        color: #ffffff;
+      }
     }
   }
 
   &-delete {
-    border: 1px solid #d92d20;
-    color: #d92d20;
-    background-color: #fef3f2;
-    border-radius: 2rem;
-    transition: all 0.3s;
-    padding: 5px 1rem;
-    display: flex;
+    @include cp-press;
+    @include cp-focus-ring;
+    appearance: none;
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-pill;
+    background: $cp-card;
+    color: $cp-muted;
     cursor: pointer;
 
     &:hover {
-      background-color: #d92d20;
-      color: white;
+      border-color: transparent;
+      background: $cp-danger-bg;
+      color: $cp-danger;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .court-image {
+      transition: none;
+    }
+
+    &:hover .court-image {
+      transform: none;
     }
   }
 }

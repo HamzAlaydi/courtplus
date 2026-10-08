@@ -9,6 +9,8 @@ import { useTranslation } from "react-i18next";
 import { useThemeContext } from "contexts";
 import styles from "./CurrentBookings.styles";
 import { RefreshControl, View } from "react-native";
+import Animated from "react-native-reanimated";
+import { useListEntering } from "utils";
 
 const CurrentBookings = () => {
   const {
@@ -28,8 +30,9 @@ const CurrentBookings = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+  const entering = useListEntering();
 
-  const renderItem = ({ item }: ListRenderItemInfo<Booking>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<Booking>) => {
     const isMyCurrentBooking = !!isMyBooking(item);
     const currentParticipant = item.participants.find(
       (participant) => participant.userId === profileData?.id
@@ -37,18 +40,22 @@ const CurrentBookings = () => {
     const isParticipantReady =
       currentParticipant?.status === ParticipantStatus.READY;
 
-    return isMyCurrentBooking || isParticipantReady ? (
-      <BookingSummaryCard
-        profileId={profileData?.id ?? ""}
-        item={item}
-        onPress={() => onBookingPress(item)}
-      />
-    ) : (
-      <MatchInvitationCard
-        item={item}
-        onPress={() => onBookingPress(item)}
-        participant={currentParticipant!!}
-      />
+    return (
+      <Animated.View entering={entering(index)}>
+        {isMyCurrentBooking || isParticipantReady ? (
+          <BookingSummaryCard
+            profileId={profileData?.id ?? ""}
+            item={item}
+            onPress={() => onBookingPress(item)}
+          />
+        ) : (
+          <MatchInvitationCard
+            item={item}
+            onPress={() => onBookingPress(item)}
+            participant={currentParticipant!!}
+          />
+        )}
+      </Animated.View>
     );
   };
   return (
@@ -64,8 +71,8 @@ const CurrentBookings = () => {
         <RefreshControl
           refreshing={isRefetching}
           onRefresh={refetch}
-          tintColor={colors.GREEN}
-          colors={[colors.GREEN]}
+          tintColor={colors.INK}
+          colors={[colors.INK]}
         />
       }
       contentContainerStyle={themedStyles.contentContainer}

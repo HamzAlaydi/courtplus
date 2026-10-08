@@ -1,28 +1,39 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[6],
-    },
-    timestamp: {
-      color: colors.GRAYISH_BLUE,
-    },
-
-    court: {
-      color: colors.MED_GREEN,
+      alignItems: "flex-start",
+      gap: spacing[12],
     },
     imageContainer: {
-      width: spacing[32],
-      height: spacing[32],
-      borderRadius: spacing[50],
-      backgroundColor: colors.BLACK,
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      borderRadius: horizontalScale(20),
+      borderWidth: 2,
+      borderColor: colors.CARD,
+      backgroundColor: colors.INK,
+    },
+    details: {
+      flex: 1,
+      gap: verticalScale(4),
+      paddingHorizontal: spacing[14],
+      paddingVertical: verticalScale(12),
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.tile,
+      borderWidth: 1,
+      borderColor: colors.LINE,
     },
     description: {
-      width: horizontalScale(289),
+      flexShrink: 1,
+    },
+    court: {
+      color: colors.INK,
+    },
+    timestamp: {
+      color: colors.MUTED,
     },
   });

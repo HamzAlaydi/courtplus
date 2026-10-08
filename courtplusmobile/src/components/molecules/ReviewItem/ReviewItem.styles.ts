@@ -1,35 +1,54 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius, Shadows } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    container: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: verticalScale(4),
+    card: {
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.card,
+      paddingHorizontal: spacing[14],
+      paddingTop: verticalScale(14),
+      paddingBottom: verticalScale(16),
+      gap: verticalScale(10),
+      ...Shadows.card,
     },
-    centerContainer: {
-      alignItems: "center",
-    },
-    userContainer: {
+    header: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[8],
+      gap: spacing[10],
+    },
+    userInfo: {
+      flex: 1,
     },
     image: {
-      width: horizontalScale(38),
-      height: horizontalScale(38),
-      borderRadius: horizontalScale(50),
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DIVIDER,
     },
     username: {
-      color: colors.SLATE_GRAY,
-    },
-    comment: {
-      marginTop: verticalScale(5.25),
+      color: colors.MUTED,
     },
     date: {
-      color: colors.SLATE_GRAY,
-      marginTop: verticalScale(6),
+      color: colors.MUTED,
+      maxWidth: "35%",
+    },
+    starsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[2],
+    },
+    star: {
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.STAR,
+    },
+    emptyStar: {
+      tintColor: colors.HANDLE,
+    },
+    comment: {
+      color: colors.INK,
     },
   });

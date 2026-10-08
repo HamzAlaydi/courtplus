@@ -1,29 +1,45 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, isRTL, spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Radius, Typography } from "theme";
+import {
+  horizontalScale,
+  isAndroid,
+  isRTL,
+  spacing,
+  verticalScale,
+} from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     slotsContainer: {
       flexDirection: "row",
       justifyContent: "space-between",
-      marginTop: verticalScale(24),
+      marginTop: verticalScale(16),
     },
     searchInputContainer: {
-      backgroundColor: colors.LIGHT_GREY,
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[12],
-      padding: verticalScale(12),
-      borderRadius: spacing[12],
-      paddingHorizontal: horizontalScale(16),
-      paddingVertical: verticalScale(16),
-      marginTop: verticalScale(20),
+      gap: spacing[10],
+      minHeight: Layout.fieldHeight,
+      paddingHorizontal: spacing[14],
+      marginTop: verticalScale(18),
+      backgroundColor: colors.SUBTLE,
+      borderRadius: Radius.input,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+    },
+    searchIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
     input: {
+      ...Typography.headline3.medium,
       flex: 1,
-      color: colors.BLACK,
+      color: colors.INK,
       textAlign: isRTL ? "right" : "left",
+      paddingVertical: verticalScale(isAndroid ? 6 : 12),
+      lineHeight: undefined,
     },
     button: {
       flex: 1,

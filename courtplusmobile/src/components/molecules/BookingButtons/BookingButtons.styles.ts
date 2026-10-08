@@ -1,58 +1,50 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Shadows } from "theme";
+import { spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    amountContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-      backgroundColor: "white",
-      paddingStart: horizontalScale(27),
-      paddingEnd: horizontalScale(21),
-      width: "100%",
-      paddingTop: verticalScale(28),
-      paddingBottom: verticalScale(15),
-    },
     container: {
       position: "absolute",
       bottom: 0,
-      left: 0,
-      right: 0,
+      start: 0,
+      end: 0,
+      backgroundColor: colors.CARD,
+      paddingTop: verticalScale(14),
+      paddingHorizontal: Layout.gutter,
+      gap: verticalScale(12),
+      ...Shadows.bar,
+    },
+    summaryRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing[12],
+    },
+    summaryLabel: {
+      flex: 1,
+      color: colors.MUTED,
+    },
+    amountRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: spacing[4],
+    },
+    amount: {
+      color: colors.INK,
+    },
+    amountUnit: {
+      color: colors.MUTED,
     },
     buttonsContainer: {
-      backgroundColor: colors.WHITE,
-      paddingHorizontal: spacing[24],
-      paddingTop: verticalScale(13),
-      paddingBottom: verticalScale(39),
-      borderTopColor: colors.LIGHT_GREY,
-      borderTopWidth: 1,
       flexDirection: "row",
-      gap: spacing[16],
+      gap: spacing[10],
     },
     button: {
       flex: 1,
+      paddingHorizontal: spacing[12],
     },
-    cancelButton: {
-      borderColor: colors.MED_GREY_2,
-    },
-    cancelButtonText: {
-      color: colors.SLATE_GRAY,
-    },
-    amount: {
-      fontSize: moderateScale(24),
-    },
-    total: {
-      color: colors.SLATE_GRAY,
-      letterSpacing: 0.05,
+    nextButton: {
+      flex: 1.4,
     },
   });

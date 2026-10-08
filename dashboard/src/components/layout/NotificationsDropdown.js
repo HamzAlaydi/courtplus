@@ -399,7 +399,7 @@ export default function NotificationsDropdown() {
         footer={null}
       >
         <p>{modalData?.content}</p>
-        <div style={{ fontSize: 12, color: "#777" }}>
+        <div className="cp-caption">
           {modalData?.createdAt && new Date(modalData.createdAt).toLocaleString()}
         </div>
       </Modal>

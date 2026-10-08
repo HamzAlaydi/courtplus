@@ -1,65 +1,160 @@
+@use "../base/index" as *;
+
+// Team and Users pages: people tables with avatars, role/status pills.
 .staff-container {
-  padding: 24px;
+  .staff-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+  }
 
   .staff-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+    .cp-page-subtitle {
+      margin: 0;
+    }
   }
 
-  .staff-list {
-    margin-top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .staff-item {
-    max-width: 70rem;
-    display: flex;
-    justify-content: space-between;
-    border: 1px solid #f0f0f0;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: #fff;
-
-    .staff-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .avatar {
-        background-color: #1890ff;
-        color: white;
-      }
-
-      .staff-info {
-        display: flex;
-        flex-direction: column;
-      }
+  .staff-card {
+    .ant-card-head-title {
+      flex: none;
     }
 
-    .staff-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .ant-card-head-wrapper {
+      gap: 10px;
+    }
 
-      .owner-label {
-        font-weight: bold;
-        color: #999;
-      }
+    .ant-card-extra {
+      margin-inline-start: 0;
+    }
 
-      .btn-del {
-        padding: 0;
-      }
+    .ant-card-body {
+      padding-top: 10px;
+    }
+  }
+
+  // Person cell: avatar + name + secondary line
+  .staff-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .staff-avatar.ant-avatar {
+    flex-shrink: 0;
+    background: $cp-lime;
+    color: $cp-ink;
+    font-size: $cp-fs-small;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .staff-person-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .staff-person-name {
+    font-weight: 600;
+    color: $cp-ink;
+    white-space: nowrap;
+  }
+
+  .staff-person-meta {
+    font-size: $cp-fs-caption;
+    color: $cp-muted;
+    white-space: nowrap;
+  }
+
+  .staff-role-select.ant-select {
+    width: 140px;
+  }
+
+  // Branch assignments as removable chips
+  .staff-branch-chip.ant-tag {
+    margin-inline-end: 0;
+    padding-inline: 12px 8px;
+    background: $cp-card;
+    color: $cp-ink;
+    border: 1px solid $cp-line;
+    font-weight: 500;
+  }
+
+  .staff-branch-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-inline-start: 4px;
+    border-radius: $cp-radius-pill;
+    font-size: 10px;
+    color: $cp-muted;
+    cursor: pointer;
+    transition: background-color $cp-transition, color $cp-transition;
+
+    &:hover {
+      background: $cp-danger-bg;
+      color: $cp-danger-text;
     }
   }
 }
 
-@media (max-width: 800px) {
-  .staff-item {
-    flex-direction: column;
-    gap: 2rem;
+// Users: filters on top of the table inside one card
+.users-page {
+  .users-card {
+    padding-top: 18px;
+  }
+
+  .users-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .users-search.ant-input-affix-wrapper {
+    flex: 1 1 240px;
+    max-width: 320px;
+
+    .ant-input-prefix {
+      margin-inline-end: 8px;
+      color: $cp-muted;
+    }
+  }
+
+  .users-filter.ant-select {
+    width: 150px;
+  }
+
+  .users-sort.ant-select {
+    width: 180px;
+  }
+
+  .users-order.ant-select {
+    width: 110px;
+  }
+
+  .users-amount {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 576px) {
+    .users-search.ant-input-affix-wrapper {
+      max-width: none;
+    }
+
+    .users-filter.ant-select,
+    .users-sort.ant-select,
+    .users-order.ant-select {
+      flex: 1 1 120px;
+      width: auto;
+    }
   }
 }

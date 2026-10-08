@@ -80,7 +80,8 @@
     "notVerified": "لا",
     "tenantId": "معرف المستأجر",
     "editProfile": "تعديل الملف الشخصي",
-    "tenant": "النشاط التجاري"
+    "tenant": "النشاط التجاري",
+    "toggle_sidebar": "إظهار أو إخفاء القائمة الجانبية"
   },
   "home": {
     "greeting": "مرحبًا بعودتك، {{name}}",

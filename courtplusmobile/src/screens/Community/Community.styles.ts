@@ -1,39 +1,47 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Shadows } from "theme";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    headerContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[8],
-    },
     iconContainer: {
-      backgroundColor: colors.GHOST_WHITE,
-      width: spacing[40],
-      height: spacing[40],
+      backgroundColor: colors.CARD,
+      width: Layout.touch,
+      height: Layout.touch,
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: spacing[40],
+      borderRadius: Layout.touch / 2,
+      ...Shadows.subtle,
     },
-    headerMainContainer: {
-      justifyContent: "space-between",
+    bellIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    searchIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
     content: {
-      marginTop: verticalScale(20),
+      marginTop: verticalScale(14),
       flex: 1,
     },
+    list: {
+      marginHorizontal: -Layout.gutter,
+    },
+    loader: {
+      marginTop: verticalScale(16),
+    },
     separator: {
-      marginTop: verticalScale(10.75),
-      marginBottom: verticalScale(16),
+      height: verticalScale(10),
     },
     listContainer: {
-      paddingTop: verticalScale(14),
-      paddingBottom: verticalScale(20),
-    },
-    itemContainer: {
-      marginTop: 0,
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(16),
+      paddingBottom: verticalScale(24),
     },
     communityContent: {
       paddingBottom: 0,

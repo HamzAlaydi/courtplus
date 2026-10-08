@@ -1,74 +1,131 @@
 import { StyleSheet } from "react-native";
-import { ColorsType, getFontType } from "theme";
-import { horizontalScale, isRTL, spacing, verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingTop: verticalScale(7),
-      paddingBottom: verticalScale(14),
-      width: horizontalScale(210),
-    },
-    name: {
-      marginTop: verticalScale(13),
-      color: colors.BLACK,
-      marginHorizontal: spacing[2],
+      width: horizontalScale(252),
+      paddingHorizontal: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
+      borderRadius: Radius.card,
+      ...Shadows.card,
     },
     image: {
       width: "100%",
-      height: verticalScale(133),
-      borderRadius: spacing[8],
-      alignItems: "flex-end",
-      padding: spacing[8],
+      height: verticalScale(132),
+      borderTopLeftRadius: Radius.card,
+      borderTopRightRadius: Radius.card,
+      overflow: "hidden",
+      backgroundColor: colors.DIVIDER,
+    },
+    imageRadius: {
+      borderTopLeftRadius: Radius.card,
+      borderTopRightRadius: Radius.card,
+    },
+    overlayRow: {
+      position: "absolute",
+      top: spacing[10],
+      start: spacing[10],
+      end: spacing[10],
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    ratingBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[4],
+      backgroundColor: colors.GLASS_DARK,
+      borderRadius: Radius.pill,
+      paddingHorizontal: spacing[8],
+      paddingVertical: verticalScale(4),
+    },
+    ratingStar: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.LIME,
+    },
+    rating: {
+      color: colors.WHITE,
+    },
+    trailingBadges: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[6],
+    },
+    featureBadge: {
+      width: horizontalScale(26),
+      height: horizontalScale(26),
+      borderRadius: horizontalScale(13),
+      backgroundColor: colors.GLASS_LIGHT,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    featureIcon: {
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
     bookmarkContainer: {
-      backgroundColor: colors.MED_BLACK,
-      width: spacing[36],
-      height: spacing[36],
+      backgroundColor: colors.GLASS_LIGHT,
+      width: horizontalScale(32),
+      height: horizontalScale(32),
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: spacing[30],
+      borderRadius: horizontalScale(16),
     },
     bookmarkIcon: {
-      tintColor: colors.WHITE,
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
-    distanceContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[2],
-      paddingHorizontal: spacing[2],
-      marginTop: verticalScale(8),
+    body: {
+      paddingHorizontal: spacing[14],
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(14),
+      gap: verticalScale(6),
     },
-    distance: {
-      color: colors.GRAYISH_BLUE,
-      marginTop: isRTL ? verticalScale(4) : 0,
-    },
-    rowContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: verticalScale(4),
+    name: {
+      color: colors.INK,
     },
     innerRowContainer: {
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[4],
-      paddingHorizontal: spacing[2],
-      paddingTop: verticalScale(2),
+    },
+    locationIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
     branchName: {
-      maxWidth: horizontalScale(130),
-      color: colors.SLATE_GRAY,
-      marginTop: isRTL ? verticalScale(4) : 0,
+      color: colors.MUTED,
+      flexShrink: 1,
     },
-    rating: {
-      color: colors.SLATE_GRAY,
-      fontFamily: getFontType("semiBold"),
-      marginTop: isRTL ? verticalScale(4) : 0,
+    footerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing[8],
+      marginTop: verticalScale(4),
     },
-    featureIcon: {
-      width: spacing[14],
-      height: spacing[14],
-      tintColor: colors.SLATE_GRAY,
+    priceRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: spacing[4],
+      flexShrink: 1,
+    },
+    price: {
+      color: colors.INK,
+    },
+    priceUnit: {
+      color: colors.MUTED,
+      fontSize: moderateScale(11),
     },
   });

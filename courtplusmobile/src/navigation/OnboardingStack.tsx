@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusBar } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
   CompleteProfileScreen,
@@ -17,29 +18,35 @@ const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
 export const OnboardingStackNavigator = () => {
   const firstVisit = useAppStore((state) => state.firstVisit);
   return (
-    <OnboardingStack.Navigator
-      initialRouteName={firstVisit ? "Welcome" : "Login"}
-      screenOptions={{ headerShown: false }}
-    >
-      <OnboardingStack.Screen name="Welcome" component={WelcomeScreen} />
-      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} />
-      <OnboardingStack.Screen name="Login" component={LoginScreen} />
-      <OnboardingStack.Screen
-        name="OTPVerification"
-        component={OTPVerificationScreen}
-      />
-      <OnboardingStack.Screen name="Register" component={RegisterScreen} />
-      <OnboardingStack.Screen
-        name="RecoverAccount"
-        component={RecoverAccountScreen}
-      />
-      <OnboardingStack.Screen
-        name="CompleteProfile"
-        component={CompleteProfileScreen}
-        options={{
-          gestureEnabled: false,
-        }}
-      />
-    </OnboardingStack.Navigator>
+    <>
+      <StatusBar barStyle="light-content" />
+      <OnboardingStack.Navigator
+        initialRouteName={firstVisit ? "Welcome" : "Login"}
+        screenOptions={{ headerShown: false }}
+      >
+        <OnboardingStack.Screen name="Welcome" component={WelcomeScreen} />
+        <OnboardingStack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+        />
+        <OnboardingStack.Screen name="Login" component={LoginScreen} />
+        <OnboardingStack.Screen
+          name="OTPVerification"
+          component={OTPVerificationScreen}
+        />
+        <OnboardingStack.Screen name="Register" component={RegisterScreen} />
+        <OnboardingStack.Screen
+          name="RecoverAccount"
+          component={RecoverAccountScreen}
+        />
+        <OnboardingStack.Screen
+          name="CompleteProfile"
+          component={CompleteProfileScreen}
+          options={{
+            gestureEnabled: false,
+          }}
+        />
+      </OnboardingStack.Navigator>
+    </>
   );
 };

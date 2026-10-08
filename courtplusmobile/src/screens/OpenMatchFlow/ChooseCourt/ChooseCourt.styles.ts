@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout, Radius, Shadows } from "theme";
 import { spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
@@ -8,23 +8,36 @@ export default (colors: ColorsType) =>
       paddingHorizontal: 0,
     },
     header: {
-      paddingHorizontal: spacing[24],
+      paddingHorizontal: Layout.gutter,
     },
     locationHeader: {
-      paddingHorizontal: spacing[24],
-      paddingVertical: verticalScale(13),
-      marginTop: verticalScale(24),
-      backgroundColor: colors.LIGHT_GREY,
-    },
-    contentList: {
-      paddingHorizontal: spacing[24],
-      paddingTop: verticalScale(24),
+      marginHorizontal: Layout.gutter,
+      marginTop: verticalScale(16),
+      paddingHorizontal: spacing[14],
+      paddingVertical: verticalScale(12),
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.input,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+      ...Shadows.subtle,
     },
     resultsContainer: {
-      paddingHorizontal: spacing[24],
-      marginTop: verticalScale(24),
+      paddingHorizontal: Layout.gutter,
+      marginTop: verticalScale(18),
     },
     resultsText: {
-      color: colors.GRAYISH_BLUE,
+      color: colors.MUTED,
+    },
+    loader: {
+      paddingHorizontal: Layout.gutter,
+      marginTop: verticalScale(12),
+    },
+    contentList: {
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(24),
+    },
+    separator: {
+      height: verticalScale(16),
     },
   });

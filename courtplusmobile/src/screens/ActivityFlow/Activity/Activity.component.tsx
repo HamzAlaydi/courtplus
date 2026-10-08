@@ -1,11 +1,12 @@
-import { CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import { Header, Tabs } from "molecules/index";
 import { BookingHistory, CurrentBookings, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
+import { enterDrop } from "utils";
 import styles from "./Activity.styles";
 
 import { useActivity } from "./Activity.logic";
@@ -19,38 +20,26 @@ const ActivityScreen = () => {
   const { selectedTab, setSelectedTab, tabs } = useActivity();
 
   return (
-    <MainWrapper
-      whiteBackground
-      overrideContentStyle={themedStyles.scrollContent}
-    >
+    <MainWrapper overrideContentStyle={themedStyles.scrollContent}>
       <Header
         showBackButton={false}
-        leadingComponent={
-          <View style={themedStyles.leadingComponent}>
-            <View style={themedStyles.layersContainer}>
-              <Image source={Images.layers} style={themedStyles.layersIcon} />
-            </View>
-            <CustomText
-              text={t("tabs.activity")}
-              font="title"
-              weight="semiBold"
-            />
-          </View>
-        }
+        title={t("tabs.activity")}
         trailingComponent={
-          <View style={themedStyles.layersContainer}>
-            <Image source={Images.bell} />
+          <View style={themedStyles.bellContainer}>
+            <Image source={Images.bell} style={themedStyles.bellIcon} />
           </View>
         }
         overrideStyle={themedStyles.header}
       />
-      <Tabs
-        tabs={tabs}
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        overrideStyle={themedStyles.tabs}
-        tabStyle={themedStyles.tab}
-      />
+      <Animated.View entering={enterDrop(0)}>
+        <Tabs
+          tabs={tabs}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+          overrideStyle={themedStyles.tabs}
+          tabStyle={themedStyles.tab}
+        />
+      </Animated.View>
       <View style={themedStyles.tabsContent}>
         {selectedTab.key === "current" && <CurrentBookings />}
         {selectedTab.key === "history" && <BookingHistory />}

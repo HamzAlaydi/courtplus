@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import { PostViewProps } from "./PostView.types";
 import { Card, CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import styles from "./PostView.styles";
 import { Images } from "theme";
-import { formatDistanceToNow } from "date-fns";
-import { formatNumber, formatTime, isRTL } from "utils";
+import { formatNumber, formatTime, generateFullName } from "utils";
 import { CachedImage } from "molecules/index";
+import { Gender } from "models";
 
 const PostView = ({ post, overrideStyle }: PostViewProps) => {
   const {
@@ -16,46 +16,68 @@ const PostView = ({ post, overrideStyle }: PostViewProps) => {
   const themedStyles = useMemo(() => styles(colors), [colors]);
 
   const formattedDays = formatTime(post.createdAt);
+  const author = post.user;
+  const authorName = author
+    ? generateFullName(author) || author.username || ""
+    : "";
+  const avatar = author?.avatarUrl
+    ? { uri: author.avatarUrl }
+    : author?.gender === Gender.FEMALE
+    ? Images.femaleProfile
+    : Images.maleProfile;
 
   return (
-    <Card disabled overrideStyle={[themedStyles.container, overrideStyle]}>
+    <Card overrideStyle={[themedStyles.container, overrideStyle]}>
       <View style={themedStyles.headerContainer}>
+        {!!author && <Image source={avatar} style={themedStyles.avatar} />}
+        <View style={themedStyles.headerText}>
+          {!!authorName && (
+            <CustomText
+              font="cardTitle"
+              weight="semiBold"
+              numberOfLines={1}
+              text={authorName}
+              overrideStyle={themedStyles.name}
+            />
+          )}
+          <CustomText
+            font="caption"
+            weight="regular"
+            numberOfLines={1}
+            overrideStyle={themedStyles.days}
+            text={formattedDays}
+          />
+        </View>
+      </View>
+      {!!post.body && (
         <CustomText
-          numberOfLines={1}
+          font="headline3"
+          weight="regular"
+          numberOfLines={3}
           overrideStyle={themedStyles.body}
           text={post.body}
         />
+      )}
+      <CachedImage source={post.assetUrl} overrideStyle={themedStyles.image} />
+      <View style={themedStyles.actionRow}>
+        <View
+          style={[
+            themedStyles.likeButton,
+            post.isLiked && themedStyles.likeButtonActive,
+          ]}
+        >
+          <Image
+            source={post.isLiked ? Images.heartFilled : Images.heart}
+            style={themedStyles.likeIcon}
+          />
+        </View>
         <CustomText
-          font="chip"
-          weight="regular"
-          overrideStyle={themedStyles.days}
-          text={formattedDays}
+          text={formatNumber(post.likesCount)}
+          font="headline3"
+          weight="semiBold"
+          overrideStyle={themedStyles.counts}
         />
       </View>
-      <CachedImage
-        source={post.assetUrl}
-        overrideStyle={[themedStyles.imageBackground, themedStyles.image]}
-      >
-        <View style={themedStyles.imageOverlay}>
-          <View style={themedStyles.likesCount}>
-            <Image source={Images.likes} style={themedStyles.likeIcon} />
-            <CustomText
-              overrideStyle={themedStyles.counts}
-              text={formatNumber(post.likesCount)}
-              font="chip"
-              weight="semiBold"
-            />
-          </View>
-          <View style={themedStyles.likeButton}>
-            <TouchableOpacity>
-              <Image
-                source={post.isLiked ? Images.likes : Images.likeSettings}
-                style={!post.isLiked && themedStyles.rightIcon}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </CachedImage>
     </Card>
   );
 };

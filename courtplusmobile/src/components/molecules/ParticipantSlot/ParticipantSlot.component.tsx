@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import { ParticipantSlotProps } from "./ParticipantSlot.types";
 import { Images } from "theme";
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { useThemeContext } from "contexts";
 import styles from "./ParticipantSlot.styles";
 import { useTranslation } from "react-i18next";
@@ -28,50 +28,53 @@ const ParticipantSlot = ({
         <View style={themedStyles.container}>
           <Image source={Images.plus} style={themedStyles.icon} />
         </View>
-        <CustomText
-          text={t("general.available")}
-          font="chip"
-          weight="regular"
-          overrideStyle={themedStyles.availableText}
-        />
+        <View style={themedStyles.labels}>
+          <CustomText
+            text={t("general.available")}
+            font="caption"
+            weight="medium"
+            numberOfLines={1}
+            overrideStyle={themedStyles.availableText}
+          />
+          {showUsername && <View style={themedStyles.usernamePlaceholder} />}
+        </View>
       </View>
     );
   }
   return (
-    <View
-      style={[
-        themedStyles.availableContainer,
-        showUsername && themedStyles.extraMargin,
-      ]}
-    >
+    <View style={themedStyles.availableContainer}>
       <ItemIcon
         icon={image}
-        overrideStyle={themedStyles.image}
+        overrideStyle={themedStyles.ring}
         overrideImageStyle={themedStyles.image}
       />
-      <CustomText
-        text={name!!}
-        font="chip"
-        weight="regular"
-        numberOfLines={1}
-        overrideStyle={themedStyles.name}
-      />
-      {showUsername && (
+      <View style={themedStyles.labels}>
         <CustomText
-          text={`@${username}`}
-          font="text"
-          weight="regular"
-          overrideStyle={themedStyles.username}
+          text={name ?? ""}
+          font="caption"
+          weight="semiBold"
           numberOfLines={1}
+          overrideStyle={themedStyles.name}
         />
-      )}
+        {showUsername && (
+          <CustomText
+            text={`@${username}`}
+            font="caption"
+            weight="regular"
+            overrideStyle={themedStyles.username}
+            numberOfLines={1}
+          />
+        )}
+      </View>
       {showRemoveButton && (
-        <TouchableOpacity
+        <PressableScale
           style={themedStyles.closeButton}
           onPress={() => onRemovePress?.()}
+          hitSlop={10}
+          accessibilityRole="button"
         >
           <Image source={Images.close} style={themedStyles.closeIcon} />
-        </TouchableOpacity>
+        </PressableScale>
       )}
     </View>
   );

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Alert, Button, Card, Form, Input, Typography } from "antd";
+import { Alert, Button, Form, Input } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { apiErrorMessage } from "@/api/client";
-import { LIME } from "@/theme";
+import BrandMark from "@/components/BrandMark";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -32,45 +32,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#0a1517",
-        padding: 16,
-      }}
-    >
-      <Card style={{ width: 400, borderRadius: 12 }} styles={{ body: { padding: 32 } }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 10,
-              background: LIME,
-              color: "#0a1517",
-              fontWeight: 800,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 20,
-              marginBottom: 12,
-            }}
-          >
-            C+
-          </div>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Court+ Ops Console
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            Sign in with an operations admin account
-          </Typography.Text>
+    <div className="ops-auth">
+      <BrandMark size="lg" />
+      <main className="ops-auth__card">
+        <div className="ops-auth__intro">
+          <h1 className="ops-auth__title">Court+ Ops Console</h1>
+          <span className="ops-auth__subtitle">Sign in with an operations admin account</span>
         </div>
 
         {error && (
-          <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />
+          <Alert type="error" message={error} showIcon style={{ marginBottom: 20 }} />
         )}
 
         <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
@@ -91,11 +62,18 @@ export default function LoginPage() {
           >
             <Input.Password prefix={<LockOutlined />} placeholder="••••••••" size="large" />
           </Form.Item>
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            size="large"
+            loading={loading}
+            className="ops-auth__submit ops-cta"
+          >
             Sign in
           </Button>
         </Form>
-      </Card>
+      </main>
     </div>
   );
 }

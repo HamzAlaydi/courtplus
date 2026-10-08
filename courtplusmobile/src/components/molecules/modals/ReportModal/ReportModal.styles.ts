@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { verticalScale, width } from "utils";
+import { verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
@@ -9,7 +9,6 @@ export default (colors: ColorsType) =>
     },
     page: {
       flex: 1,
-      width,
     },
     contentContainer: {
       flex: 1,

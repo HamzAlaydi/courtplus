@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, Avatar, Spin, Empty, Pagination } from "antd";
+import { HeartFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { getPosts } from "../../actions/global.actions";
 
@@ -32,7 +33,11 @@ export default function PostsTab({ courtId }) {
   if (isError) return <div className="posts-error">{t("posts.error")}</div>;
 
   if (posts.length === 0)
-    return <Empty description={t("posts.noPosts")} style={{ marginTop: 20 }} />;
+    return (
+      <div className="posts-empty">
+        <Empty description={t("posts.noPosts")} />
+      </div>
+    );
 
   return (
     <div className={`posts-wrapper ${isRTL ? "rtl" : ""}`}>
@@ -48,13 +53,18 @@ export default function PostsTab({ courtId }) {
               className="post-card"
               cover={
                 post.assetUrl ? (
-                  <img src={post.assetUrl} alt="post" className="post-image" />
+                  <img
+                    src={post.assetUrl}
+                    alt="post"
+                    className="post-image"
+                    loading="lazy"
+                  />
                 ) : null
               }
             >
               {/* Header */}
               <div className="post-header">
-                <Avatar src={user.avatarUrl} size={48}>
+                <Avatar src={user.avatarUrl} size={40} className="post-avatar">
                   {user.firstName?.[0]}
                 </Avatar>
 
@@ -75,7 +85,9 @@ export default function PostsTab({ courtId }) {
 
               {/* Likes */}
               <div className="post-likes">
-                ❤️ {post.likesCount} {t("posts.likes")}
+                <HeartFilled className="post-likes-icon" />
+                <span className="cp-num">{post.likesCount}</span>{" "}
+                {t("posts.likes")}
               </div>
             </Card>
           );
@@ -89,7 +101,6 @@ export default function PostsTab({ courtId }) {
           pageSize={PAGE_SIZE}
           total={pagination.totalCount}
           onChange={(p) => setPage(p)}
-          style={{ marginTop: 20, textAlign: "center" }}
           showSizeChanger={false}
           className="posts-pagination"
         />

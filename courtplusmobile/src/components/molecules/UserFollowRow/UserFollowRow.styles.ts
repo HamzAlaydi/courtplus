@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
@@ -8,30 +8,38 @@ export default (colors: ColorsType) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      gap: spacing[12],
+      padding: spacing[10],
+      paddingEnd: spacing[12],
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.tile,
+      ...Shadows.card,
     },
     profileContainer: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[12],
     },
-    username: {
-      color: colors.GREY,
+    textContainer: {
+      flex: 1,
+      gap: verticalScale(2),
     },
-    icon: {
-      tintColor: colors.MED_GREEN,
+    username: {
+      color: colors.MUTED,
     },
     image: {
-      width: spacing[40],
-      height: spacing[40],
-      borderRadius: spacing[40],
+      width: horizontalScale(48),
+      height: horizontalScale(48),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DIVIDER,
     },
     button: {
-      borderRadius: spacing[20],
-      backgroundColor: colors.LIGHT_BLUE,
       minHeight: verticalScale(38),
-      paddingVertical: 0,
+      paddingHorizontal: spacing[16],
     },
     buttonText: {
-      color: colors.DARK_BLUE,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(18),
     },
   });

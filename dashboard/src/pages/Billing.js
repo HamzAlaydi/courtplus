@@ -35,6 +35,23 @@ const formatAmount = (cents, currency) =>
   `${((cents ?? 0) / 100).toLocaleString()} ${(currency || "")
     .toUpperCase()}`;
 
+// Same figure as formatAmount, laid out as a KPI value with a smaller unit.
+const AmountValue = ({ cents, currency }) => (
+  <span className="cp-kpi__value">
+    {((cents ?? 0) / 100).toLocaleString()}
+    {currency ? (
+      <span className="cp-kpi__unit">{currency.toUpperCase()}</span>
+    ) : null}
+  </span>
+);
+
+// Pill tone for the subscription status on the ink plan card.
+const statusTone = (status) => {
+  if (status === "active" || status === "trialing") return "is-live";
+  if (status === "past_due" || status === "unpaid") return "is-warning";
+  return "is-muted";
+};
+
 export default function Billing() {
   const { t, i18n } = useTranslation();
   const notify = useNotification();
@@ -163,15 +180,24 @@ export default function Billing() {
       title: t("billing.invoices.date"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (value) =>
-        value ? new Date(value).toLocaleDateString(i18n.language) : "—",
+      render: (value) => (
+        <span className="cp-muted cp-num">
+          {value ? new Date(value).toLocaleDateString(i18n.language) : "—"}
+        </span>
+      ),
     },
     {
       title: t("billing.invoices.amount"),
       dataIndex: "amountPaidCents",
       key: "amount",
-      render: (value, record) =>
-        formatAmount(record.amountPaidCents ?? record.amountDueCents, record.currency),
+      render: (value, record) => (
+        <span className="billing-amount">
+          {formatAmount(
+            record.amountPaidCents ?? record.amountDueCents,
+            record.currency
+          )}
+        </span>
+      ),
     },
     {
       title: t("billing.invoices.status"),
@@ -187,6 +213,7 @@ export default function Billing() {
       render: (_, record) =>
         record.pdfUrl || record.hostedInvoiceUrl ? (
           <a
+            className="billing-pdf-link"
             href={record.pdfUrl || record.hostedInvoiceUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -216,20 +243,11 @@ export default function Billing() {
       </div>
 
       {syncMutation.isPending && (
-        <Alert
-          type="info"
-          showIcon
-          message={t("billing.confirming")}
-          style={{ marginBottom: 24 }}
-        />
+        <Alert type="info" showIcon message={t("billing.confirming")} />
       )}
 
       {overviewError && (
-        <Alert
-          type="error"
-          message={t("billing.load_failed")}
-          style={{ marginBottom: 24 }}
-        />
+        <Alert type="error" message={t("billing.load_failed")} />
       )}
 
       {/* Cancellation scheduled from the Stripe portal: say when the plan
@@ -245,13 +263,13 @@ export default function Billing() {
             ).toLocaleDateString(),
           })}
           description={t("billing.ends_on_hint")}
-          style={{ marginBottom: 24 }}
         />
       )}
 
-      {/* 🔹 Subscribe CTA when there is no active subscription */}
+      {/* Subscribe CTA when there is no active subscription */}
       {overview && !hasSubscription && (
         <Alert
+          className="billing-subscribe"
           type="info"
           showIcon
           message={t("billing.subscribe_cta.title")}
@@ -261,71 +279,99 @@ export default function Billing() {
           action={
             <Button
               type="primary"
+              className="cp-btn-display"
               loading={checkoutMutation.isPending}
               onClick={() => checkoutMutation.mutate()}
             >
               {t("billing.subscribe_cta.button")}
             </Button>
           }
-          style={{ marginBottom: 24 }}
         />
       )}
 
-      {/* 🔹 Plan overview */}
-      <div className="billing-cards">
-        <Card className="billing-card">
-          <ShopOutlined className="billing-card-icon" />
-          <span>{t("billing.base_plan")}</span>
-          <h3>{formatAmount(pricing?.baseAmountCents, currency)}</h3>
-          <small>{t("billing.per_month")}</small>
-        </Card>
+      {/* Plan overview: the current plan leads as the ink card */}
+      <div className="billing-cards cp-stagger">
+        <div className="cp-kpi cp-kpi--ink billing-card billing-card-total">
+          <div className="billing-card-head">
+            <span className="billing-card-icon">
+              <CreditCardOutlined />
+            </span>
+            <span className="cp-kpi__label">{t("billing.next_invoice")}</span>
+          </div>
+          <AmountValue
+            cents={
+              overview?.nextInvoiceAmountCents ?? breakdown?.monthlyAmountCents
+            }
+            currency={currency}
+          />
+          {overview?.subscription?.status ? (
+            <span
+              className={`billing-status ${statusTone(
+                overview.subscription.status
+              )}`}
+            >
+              {t(
+                `billing.subscription_status.${overview.subscription.status}`,
+                overview.subscription.status
+              )}
+            </span>
+          ) : (
+            <small className="billing-card-caption">
+              {t("billing.no_subscription")}
+            </small>
+          )}
+        </div>
 
-        <Card className="billing-card">
-          <PlusOutlined className="billing-card-icon" />
-          <span>{t("billing.branch_addons")}</span>
-          <h3>{breakdown?.branchAddons ?? 0}</h3>
-          <small>
+        <div className="cp-kpi billing-card">
+          <div className="billing-card-head">
+            <span className="billing-card-icon">
+              <ShopOutlined />
+            </span>
+            <span className="cp-kpi__label">{t("billing.base_plan")}</span>
+          </div>
+          <AmountValue cents={pricing?.baseAmountCents} currency={currency} />
+          <small className="billing-card-caption">
+            {t("billing.per_month")}
+          </small>
+        </div>
+
+        <div className="cp-kpi billing-card">
+          <div className="billing-card-head">
+            <span className="billing-card-icon">
+              <PlusOutlined />
+            </span>
+            <span className="cp-kpi__label">{t("billing.branch_addons")}</span>
+          </div>
+          <span className="cp-kpi__value">{breakdown?.branchAddons ?? 0}</span>
+          <small className="billing-card-caption">
             {t("billing.branches_count", { count: breakdown?.branchCount ?? 0 })}
           </small>
-        </Card>
+        </div>
 
-        <Card className="billing-card">
-          <TrophyOutlined className="billing-card-icon" />
-          <span>{t("billing.court_addons")}</span>
-          <h3>{breakdown?.courtAddons ?? 0}</h3>
-          <small>
+        <div className="cp-kpi billing-card">
+          <div className="billing-card-head">
+            <span className="billing-card-icon">
+              <TrophyOutlined />
+            </span>
+            <span className="cp-kpi__label">{t("billing.court_addons")}</span>
+          </div>
+          <span className="cp-kpi__value">{breakdown?.courtAddons ?? 0}</span>
+          <small className="billing-card-caption">
             {t("billing.courts_count", { count: breakdown?.courtCount ?? 0 })}
           </small>
-        </Card>
-
-        <Card className="billing-card billing-card-total">
-          <CreditCardOutlined className="billing-card-icon" />
-          <span>{t("billing.next_invoice")}</span>
-          <h3>
-            {formatAmount(
-              overview?.nextInvoiceAmountCents ??
-                breakdown?.monthlyAmountCents,
-              currency
-            )}
-          </h3>
-          <small>
-            {overview?.subscription?.status
-              ? t(`billing.subscription_status.${overview.subscription.status}`, overview.subscription.status)
-              : t("billing.no_subscription")}
-          </small>
-        </Card>
+        </div>
       </div>
 
-      {/* 🔹 Pending charges */}
+      {/* Pending charges */}
       {pendingCharges?.count > 0 && (
         <Card
           title={t("billing.pending_charges.title")}
-          className="billing-section"
+          className="billing-section cp-enter"
         >
           <ul className="billing-pending-list">
             {pendingCharges.courts.map((court) => (
-              <li key={court.id}>
-                <span>{court.name}</span>
+              <li key={court.id} className="cp-list-row">
+                <span className="billing-pending-name">{court.name}</span>
                 <Tag color="orange">
                   {t("courtCard.status.pending_payment")}
                 </Tag>
@@ -357,8 +403,11 @@ export default function Billing() {
         </Card>
       )}
 
-      {/* 🔹 Invoices */}
-      <Card title={t("billing.invoices.title")} className="billing-section">
+      {/* Invoices */}
+      <Card
+        title={t("billing.invoices.title")}
+        className="billing-section cp-enter"
+      >
         <Table
           rowKey="id"
           columns={invoiceColumns}

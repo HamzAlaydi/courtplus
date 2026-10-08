@@ -15,7 +15,9 @@ import React, { useMemo } from "react";
 import styles from "./UpdateProfile.styles";
 import { FormProvider } from "react-hook-form";
 import { View } from "react-native";
-import { CustomButton, TextArea } from "atoms/index";
+import { CustomButton } from "atoms/index";
+import Animated from "react-native-reanimated";
+import { enterDrop, enterRise } from "utils";
 import { useUpdateProfile } from "./UpdateProfile.logic";
 import { useTranslation } from "react-i18next";
 
@@ -30,33 +32,31 @@ const UpdateProfileScreen = () => {
   const errors = methods.formState.errors;
 
   return (
-    <MainWrapper
-      scrollEnabled
-      whiteBackground
-      overrideContentStyle={themedStyles.content}
-    >
+    <MainWrapper scrollEnabled overrideContentStyle={themedStyles.content}>
       <Header
         whiteColor
         title={t("profile.updateProfile")}
-        overrideStyle={themedStyles.header}
         trailingComponent={
           <CustomButton
             title={t("general.save")}
             onPress={methods.handleSubmit(onSubmit)}
             disabled={!isValid}
+            size="small"
+            variant={isValid ? "primary" : "disabledDark"}
             overrideStyle={themedStyles.save}
-            overrideTextStyle={themedStyles.saveText}
           />
         }
       />
-      <ProfileImageHeader
-        user={user}
-        showFollowersAndFollowing={false}
-        overrideStyle={themedStyles.profileImageHeader}
-        showUpdateButton={false}
-        isUpdating
-      />
-      <View style={themedStyles.mainContent}>
+      <Animated.View entering={enterDrop(0)}>
+        <ProfileImageHeader
+          user={user}
+          showFollowersAndFollowing={false}
+          overrideStyle={themedStyles.profileImageHeader}
+          showUpdateButton={false}
+          isUpdating
+        />
+      </Animated.View>
+      <Animated.View entering={enterRise(1)} style={themedStyles.mainContent}>
         <FormProvider {...methods}>
           <InputController
             name="fullName"
@@ -95,7 +95,7 @@ const UpdateProfileScreen = () => {
         </FormProvider>
         <View style={themedStyles.divider} />
         <SportsLevelManager sports={user?.sports ?? []} />
-      </View>
+      </Animated.View>
     </MainWrapper>
   );
 };

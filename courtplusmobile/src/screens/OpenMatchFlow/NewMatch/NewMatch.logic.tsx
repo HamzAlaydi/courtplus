@@ -61,7 +61,7 @@ export const useNewMatch = () => {
     if (!selectedCourt) {
       return (
         <CustomText
-          font="chip"
+          font="caption"
           weight="medium"
           text={t("openMatch.selectLocation")}
           overrideStyle={themedStyles.description}
@@ -73,9 +73,10 @@ export const useNewMatch = () => {
         <Image source={Images.openMatch} style={themedStyles.courtImage} />
         <View style={themedStyles.courtInfoContainer}>
           <CustomText
-            font="bottomSheetTitle"
-            weight="bold"
+            font="cardTitle"
+            weight="semiBold"
             text={selectedCourt?.name}
+            numberOfLines={2}
             overrideStyle={themedStyles.courtName}
           />
           {!!selectedSlots?.length && (
@@ -83,13 +84,17 @@ export const useNewMatch = () => {
               <View style={themedStyles.timeIconContainer}>
                 <Image source={Images.clock} style={themedStyles.timeIcon} />
                 <CustomText
-                  font="chip"
+                  font="caption"
                   weight="medium"
-                  text={"Time"}
+                  text={t("general.time")}
                   overrideStyle={themedStyles.description}
                 />
               </View>
-              <CustomText font="chip" weight="semiBold" text={formattedTime} />
+              <CustomText
+                font="caption"
+                weight="semiBold"
+                text={formattedTime}
+              />
             </View>
           )}
         </View>
@@ -122,7 +127,7 @@ export const useNewMatch = () => {
       title: t("general.date"),
       subtitle: (
         <CustomText
-          font="chip"
+          font="caption"
           weight="medium"
           text={formattedDate}
           overrideStyle={themedStyles.description}
@@ -136,7 +141,7 @@ export const useNewMatch = () => {
       onPress: () => levelBottomSheetRef.current?.present(),
       subtitle: (
         <CustomText
-          font="chip"
+          font="caption"
           weight="medium"
           text={selectedLevel?.title ?? ""}
           overrideStyle={themedStyles.description}
@@ -148,7 +153,7 @@ export const useNewMatch = () => {
       title: t("general.gender"),
       subtitle: (
         <CustomText
-          font="chip"
+          font="caption"
           weight="medium"
           text={
             !selectedGender
@@ -222,13 +227,16 @@ export const useNewMatch = () => {
   // so the options follow the court's sport rather than being a fixed pair.
   const matchSizes = useMemo(
     () => getMatchSizesForSport(selectedCourt?.sport),
-    [selectedCourt?.sport],
+    [selectedCourt?.sport]
   );
 
   // A size carried over from a previous sport (2 v 2 on a football pitch)
   // would be submitted verbatim, so drop it when it is no longer offered.
   useEffect(() => {
-    if (playerAside && !matchSizes.some((item) => item.key === playerAside.key)) {
+    if (
+      playerAside &&
+      !matchSizes.some((item) => item.key === playerAside.key)
+    ) {
       setPlayerAside(null);
     }
   }, [matchSizes, playerAside]);

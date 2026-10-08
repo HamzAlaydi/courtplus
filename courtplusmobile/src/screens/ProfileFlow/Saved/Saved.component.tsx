@@ -7,9 +7,11 @@ import styles from "./Saved.styles";
 import { useTranslation } from "react-i18next";
 import { useSaved } from "./Saved.logic";
 import { Bookmark } from "models";
-import { View } from "react-native";
+import { ImageSourcePropType, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { AuthenticatedStackNavigationProp } from "navigation/types";
+import { getCourtImage, useListEntering } from "utils";
 
 const SavedScreen = () => {
   const {
@@ -18,6 +20,7 @@ const SavedScreen = () => {
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
+  const entering = useListEntering();
   const {
     savedData,
     fetchNextPage,
@@ -27,12 +30,17 @@ const SavedScreen = () => {
     onRemove,
   } = useSaved();
 
-  const renderItem = ({ item }: { item: Bookmark }) => {
-    const currentItem =
+  const renderItem = ({ item, index }: { item: Bookmark; index: number }) => {
+    const currentItem: {
+      name: string;
+      location: string;
+      image: ImageSourcePropType;
+    } =
       item.type === "court"
         ? {
             name: item.court?.name ?? "",
             location: item.court?.branch?.name ?? "",
+            image: item.court ? getCourtImage(item.court) : Images.openMatch,
           }
         : {
             name: item.branch?.name ?? "",
@@ -40,25 +48,30 @@ const SavedScreen = () => {
               item.branch?.location?.name ??
               item.branch?.location?.address ??
               "",
+            image: item.branch?.coverUrl
+              ? { uri: item.branch.coverUrl }
+              : Images.openMatch,
           };
     return (
-      <BookmarkItem
-        image={Images.openMatch}
-        title={currentItem.name}
-        locationName={currentItem.location}
-        onPress={() =>
-          navigate("CourtStack", {
-            screen: item.type === "court" ? "CourtDetails" : "BranchDetails",
-            params: { id: item.resourceId },
-          } as never)
-        }
-        onBookmarkPress={() => onRemove(item)}
-      />
+      <Animated.View entering={entering(index)}>
+        <BookmarkItem
+          image={currentItem.image}
+          title={currentItem.name}
+          locationName={currentItem.location}
+          onPress={() =>
+            navigate("CourtStack", {
+              screen: item.type === "court" ? "CourtDetails" : "BranchDetails",
+              params: { id: item.resourceId },
+            } as never)
+          }
+          onBookmarkPress={() => onRemove(item)}
+        />
+      </Animated.View>
     );
   };
 
   return (
-    <MainWrapper scrollEnabled overrideContainerStyle={themedStyles.container}>
+    <MainWrapper scrollEnabled={false}>
       <Header whiteColor title={t("settings.saved")} />
       <List
         data={savedData}
@@ -77,6 +90,7 @@ const SavedScreen = () => {
           overrideStyle: themedStyles.emptyContainer,
         }}
         ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
+        overrideContainerStyle={themedStyles.list}
         contentContainerStyle={themedStyles.listContainer}
       />
     </MainWrapper>

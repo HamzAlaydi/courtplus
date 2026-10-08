@@ -4,4 +4,7 @@ export default StyleSheet.create({
   text: {
     textAlign: "left",
   },
+  uppercase: {
+    textTransform: "uppercase",
+  },
 });

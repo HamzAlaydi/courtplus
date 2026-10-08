@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import React from "react";
-import { CustomButton, CustomText } from "atoms/index";
-import { Image, TouchableOpacity, View } from "react-native";
+import { CustomButton, CustomText, PressableScale } from "atoms/index";
+import { Image, View } from "react-native";
 import { UserFollowRowProps } from "./UserFollowRow.types";
 import { useThemeContext } from "contexts";
 import { useMemo } from "react";
@@ -43,31 +43,44 @@ const UserFollowRow = ({
       return {
         title: t("profile.unfollow"),
         onPress: onUnfollow,
+        variant: "outline" as const,
       };
     }
     if (isFollowed) {
       return {
         title: t("notifications.followBack"),
         onPress: onFollow,
+        variant: "secondary" as const,
       };
     }
     return {
       title: t("profile.follow"),
       onPress: onFollow,
+      variant: "secondary" as const,
     };
   }, [isFollowing, isFollowed, onFollow, onUnfollow, t]);
 
   return (
-    <TouchableOpacity onPress={onPress} style={themedStyles.container}>
+    <PressableScale
+      onPress={onPress}
+      scaleTo={0.98}
+      accessibilityRole="button"
+      style={themedStyles.container}
+    >
       <View style={themedStyles.profileContainer}>
         <Image source={renderIcon()} style={themedStyles.image} />
-        <View>
-          <CustomText text={name} font="headline3" weight="semiBold" />
+        <View style={themedStyles.textContainer}>
+          <CustomText
+            text={name}
+            font="cardTitle"
+            weight="semiBold"
+            numberOfLines={1}
+          />
           {username && (
             <CustomText
               text={`@${username}`}
-              font="headline3"
-              weight="medium"
+              font="caption"
+              weight="regular"
               overrideStyle={themedStyles.username}
               numberOfLines={1}
             />
@@ -78,12 +91,13 @@ const UserFollowRow = ({
         <CustomButton
           title={button.title}
           onPress={button.onPress}
-          variant="active"
+          variant={button.variant}
+          size="small"
           overrideStyle={themedStyles.button}
           overrideTextStyle={themedStyles.buttonText}
         />
       )}
-    </TouchableOpacity>
+    </PressableScale>
   );
 };
 

@@ -27,6 +27,7 @@ export default function CustomersSelect({ onChange }) {
 
   return (
     <Select
+      className="customers-select"
       mode="multiple"
       showSearch
       allowClear

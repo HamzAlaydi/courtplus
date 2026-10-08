@@ -23,15 +23,14 @@ const ButtonsRow = ({
       <CustomButton
         title={title}
         onPress={onPress}
-        overrideStyle={[themedStyles.button, themedStyles.primaryButton]}
-        variant="bordered"
-        overrideTextStyle={themedStyles.primaryButtonText}
+        overrideStyle={themedStyles.button}
+        variant={buttonDisabled ? "disabled" : "outline"}
         disabled={buttonDisabled}
       />
       <CustomButton
         title={secondaryTitle}
         onPress={onSecondaryPress}
-        variant={secondaryButtonDisabled ? "disabledDark" : "dark"}
+        variant={secondaryButtonDisabled ? "disabledDark" : "secondary"}
         overrideStyle={themedStyles.button}
         disabled={secondaryButtonDisabled}
       />

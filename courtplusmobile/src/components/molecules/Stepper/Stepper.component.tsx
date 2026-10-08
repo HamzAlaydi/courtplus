@@ -1,11 +1,22 @@
 import React, { Fragment, useMemo } from "react";
 import { Image, View } from "react-native";
+import Animated, {
+  Easing,
+  ReduceMotion,
+  ZoomIn,
+} from "react-native-reanimated";
 import { StepItem, StepperProps } from "./Stepper.types";
 import { CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import styles from "./Stepper.styles";
 import { Images } from "theme";
+import { MOTION } from "utils";
 import { StepperRegistry } from "./Stepper.registry";
+
+const activeEntering = ZoomIn.duration(MOTION.enter)
+  .easing(Easing.out(Easing.back(1.6)))
+  .withInitialValues({ transform: [{ scale: 0.7 }] })
+  .reduceMotion(ReduceMotion.System);
 
 const Stepper = ({ currentStep, flow, overrideStepStyle }: StepperProps) => {
   const {
@@ -18,9 +29,17 @@ const Stepper = ({ currentStep, flow, overrideStepStyle }: StepperProps) => {
   const renderCurrentStep = (step: StepItem) => {
     if (step.id === currentStep) {
       return (
-        <View style={themedStyles.activeStep}>
-          <CustomText text={step.name} font="fields" weight="medium" />
-        </View>
+        <Animated.View
+          entering={activeEntering}
+          style={themedStyles.activeStep}
+        >
+          <CustomText
+            text={step.name}
+            font="dayNumber"
+            weight="bold"
+            overrideStyle={themedStyles.activeStepText}
+          />
+        </Animated.View>
       );
     }
     if (step.id < currentStep) {
@@ -34,8 +53,8 @@ const Stepper = ({ currentStep, flow, overrideStepStyle }: StepperProps) => {
       <View style={themedStyles.inactiveStep}>
         <CustomText
           text={step.name}
-          font="fields"
-          weight="medium"
+          font="dayNumber"
+          weight="bold"
           overrideStyle={themedStyles.inactiveStepText}
         />
       </View>
@@ -47,7 +66,14 @@ const Stepper = ({ currentStep, flow, overrideStepStyle }: StepperProps) => {
       {steps.map((step, index) => (
         <Fragment key={step.id}>
           {renderCurrentStep(step)}
-          {index < steps.length - 1 && <View style={themedStyles.divider} />}
+          {index < steps.length - 1 && (
+            <View
+              style={[
+                themedStyles.divider,
+                step.id < currentStep && themedStyles.completedDivider,
+              ]}
+            />
+          )}
         </Fragment>
       ))}
     </View>

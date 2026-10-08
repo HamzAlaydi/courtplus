@@ -4,6 +4,7 @@ import { verticalScale } from "utils";
 export default StyleSheet.create({
   loader: {
     padding: 0,
-    paddingTop: verticalScale(20),
+    paddingTop: verticalScale(16),
+    backgroundColor: "transparent",
   },
 });

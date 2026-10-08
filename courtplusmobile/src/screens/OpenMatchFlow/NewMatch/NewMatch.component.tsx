@@ -12,9 +12,10 @@ import { AvatarSlots, MainWrapper } from "organisms/index";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
+import { enterRise } from "utils";
 import { useNewMatch } from "./NewMatch.logic";
-
 
 const NewMatchScreen = () => {
   const { t } = useTranslation();
@@ -45,17 +46,16 @@ const NewMatchScreen = () => {
   } = useNewMatch();
   return (
     <MainWrapper
-      whiteBackground
       scrollEnabled
       overrideContentStyle={themedStyles.scrollContent}
     >
       <Header whiteColor title={t("openMatch.newMatch")} />
       <View style={themedStyles.content}>
-        <View style={themedStyles.rowContainer}>
+        <Animated.View entering={enterRise(0)} style={themedStyles.section}>
           <CustomText
             text={t("openMatch.selectGame")}
-            font="chip"
-            weight="semiBold"
+            font="sectionTitle"
+            weight="small"
           />
           <SportChips
             overrideScrollStyle={themedStyles.sportsScroll}
@@ -64,11 +64,11 @@ const NewMatchScreen = () => {
             withViewWrapper={false}
             onSportPress={setSelectedSport}
           />
-        </View>
-        <View style={[themedStyles.rowContainer, themedStyles.margin]}>
+        </Animated.View>
+        <Animated.View entering={enterRise(1)} style={themedStyles.section}>
           <CustomText
-            font="chip"
-            weight="semiBold"
+            font="sectionTitle"
+            weight="small"
             text={t("openMatch.gameType")}
           />
           <View style={themedStyles.gameContainer}>
@@ -78,60 +78,72 @@ const NewMatchScreen = () => {
                 isSelected={item.key === playerAside?.key}
                 title={item.title}
                 onPress={() => setPlayerAside(item)}
-                overrideStyle={themedStyles.gameChip}
               />
             ))}
           </View>
-        </View>
-        <WidgetWrapper disabled overrideStyle={themedStyles.playersContainer}>
-          <CustomText
-            font="chip"
-            weight="medium"
-            text={t("openMatch.AddplayersMatch")}
-            overrideStyle={themedStyles.addPlayerTitle}
-          />
-          <View style={themedStyles.avatarSlots}>
-            <AvatarSlots
-              showRemoveButton={false}
-              slots={participants}
-              showUsername={false}
+        </Animated.View>
+        <Animated.View entering={enterRise(2)}>
+          <WidgetWrapper disabled overrideStyle={themedStyles.playersContainer}>
+            <CustomText
+              font="caption"
+              weight="medium"
+              text={t("openMatch.AddplayersMatch")}
+              overrideStyle={themedStyles.addPlayerTitle}
             />
-          </View>
-        </WidgetWrapper>
-        {showPlayersButton && (
-          <CustomText
-            text={t("openMatch.addPlayers")}
-            font="headline3"
-            weight="medium"
-            onPress={onOpenAddPlayersModal}
-            overrideStyle={themedStyles.addPlayersText}
+            <View style={themedStyles.avatarSlots}>
+              <AvatarSlots
+                showRemoveButton={false}
+                slots={participants}
+                showUsername={false}
+              />
+            </View>
+            {showPlayersButton && (
+              <CustomButton
+                title={t("openMatch.addPlayers")}
+                variant="outline"
+                size="small"
+                onPress={onOpenAddPlayersModal}
+                overrideStyle={themedStyles.addPlayersButton}
+                leftIcon={
+                  <Image
+                    source={Images.plus}
+                    style={themedStyles.addPlayersIcon}
+                  />
+                }
+              />
+            )}
+          </WidgetWrapper>
+        </Animated.View>
+        <Animated.View entering={enterRise(3)}>
+          <ListActionItem
+            showSeparator
+            list={list}
+            overrideImageStyle={themedStyles.listImage}
           />
-        )}
-        <ListActionItem
-          showSeparator
-          overrideContainerStyle={themedStyles.list}
-          list={list}
-          overrideImageStyle={themedStyles.listImage}
-        />
-        <View style={themedStyles.memberContainer}>
-          <Image source={Images.lock} />
+        </Animated.View>
+        <Animated.View
+          entering={enterRise(4)}
+          style={themedStyles.memberContainer}
+        >
+          <View style={themedStyles.memberIconTile}>
+            <Image source={Images.lock} style={themedStyles.memberIcon} />
+          </View>
           <CustomText
             font="headline3"
             weight="medium"
             text={t("openMatch.membersAccepted")}
             overrideStyle={themedStyles.memberText}
           />
+          <Image source={Images.info} style={themedStyles.info} />
           <CustomSwitch
             value={requiresApproval}
             onValueChange={setRequiresApproval}
-            overrideStyle={themedStyles.switch}
           />
-          <Image source={Images.info} style={themedStyles.info} />
-        </View>
+        </Animated.View>
         <View style={themedStyles.bottomContainer}>
           <CustomButton
             title={t("openMatch.Create Match")}
-            variant={isCreteMatchButtonDisabled ? "disabledDark" : "dark"}
+            variant={isCreteMatchButtonDisabled ? "disabledDark" : "primary"}
             onPress={onCreateMatchPress}
             disabled={isCreteMatchButtonDisabled}
           />

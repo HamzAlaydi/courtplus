@@ -9,6 +9,8 @@ import { Images } from "theme";
 import { useTranslation } from "react-i18next";
 import { useThemeContext } from "contexts";
 import styles from "./BookingHistory.styles";
+import Animated from "react-native-reanimated";
+import { useListEntering } from "utils";
 
 const BookingHistory = () => {
   const {
@@ -27,14 +29,17 @@ const BookingHistory = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+  const entering = useListEntering();
 
-  const renderItem = ({ item }: ListRenderItemInfo<Booking>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<Booking>) => {
     return (
-      <BookingSummaryCard
-        profileId={profileData?.id ?? ""}
-        item={item}
-        onPress={() => onBookingDetailsPress(item)}
-      />
+      <Animated.View entering={entering(index)}>
+        <BookingSummaryCard
+          profileId={profileData?.id ?? ""}
+          item={item}
+          onPress={() => onBookingDetailsPress(item)}
+        />
+      </Animated.View>
     );
   };
   return (
@@ -52,8 +57,8 @@ const BookingHistory = () => {
         <RefreshControl
           refreshing={isRefetching}
           onRefresh={refetch}
-          tintColor={colors.GREEN}
-          colors={[colors.GREEN]}
+          tintColor={colors.INK}
+          colors={[colors.INK]}
         />
       }
       emptyConfig={{

@@ -1,43 +1,49 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     content: {
-      marginTop: verticalScale(21),
+      marginTop: verticalScale(16),
+      gap: verticalScale(16),
     },
     title: {
-      color: colors.SLATE_GRAY,
-      marginTop: verticalScale(25),
-      textAlign: "center",
-      letterSpacing: 0.1,
-    },
-    input: {
-      marginTop: verticalScale(32),
-    },
-    description: {
-      marginTop: verticalScale(10),
-      color: colors.GREY,
-      marginStart: horizontalScale(20),
-    },
-    infoContainer: {
-      flexDirection: "row",
-      gap: spacing[10],
-    },
-
-    termsContainer: {
-      marginTop: verticalScale(24),
-    },
-    branchName: {
-      color: colors.SLATE_GRAY,
+      color: colors.INK,
     },
     paymentOptionsContainer: {
-      marginTop: verticalScale(21),
-      gap: verticalScale(16),
+      gap: verticalScale(10),
+    },
+    termsContainer: {
+      gap: verticalScale(6),
+      paddingVertical: verticalScale(14),
+      paddingHorizontal: spacing[14],
+      borderRadius: Radius.tile,
+      backgroundColor: colors.SUBTLE,
+      borderWidth: 1,
+      borderColor: colors.DIVIDER,
+    },
+    termsHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[6],
+      marginBottom: verticalScale(2),
+    },
+    termsIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    termsTitle: {
+      color: colors.INK,
+    },
+    termsText: {
+      color: colors.MUTED,
+      lineHeight: moderateScale(18),
     },
     scrollViewContent: {
       flexGrow: 1,
-      paddingBottom: verticalScale(180),
+      paddingBottom: verticalScale(200),
     },
   });

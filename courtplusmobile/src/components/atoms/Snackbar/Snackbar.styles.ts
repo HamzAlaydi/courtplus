@@ -1,5 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 // On Android `elevation` decides z-order, not tree order. With this
@@ -30,8 +30,8 @@ export default (colors: ColorsType, hasBottomBar: boolean) =>
       // Clears the floating action buttons that several screens pin to the
       // bottom edge.
       marginBottom: verticalScale(hasBottomBar ? 20 : 72),
-      backgroundColor: colors.BACKGROUND,
-      borderRadius: spacing[12],
+      backgroundColor: colors.INK,
+      borderRadius: Radius.tile,
       paddingHorizontal: horizontalScale(16),
       paddingVertical: verticalScale(14),
       ...shadowing,
@@ -49,9 +49,27 @@ export default (colors: ColorsType, hasBottomBar: boolean) =>
       marginEnd: horizontalScale(12),
     },
     action: {
-      color: colors.GREEN_YELLOWISH,
+      color: colors.INK,
+    },
+    actionButton: {
+      backgroundColor: colors.LIME,
+      borderRadius: Radius.pill,
+      paddingHorizontal: spacing[14],
+      minHeight: verticalScale(32),
+      justifyContent: "center",
+    },
+    closeButton: {
+      width: spacing[28],
+      height: spacing[28],
+      borderRadius: spacing[14],
+      backgroundColor: colors.ON_INK_SURFACE,
+      alignItems: "center",
+      justifyContent: "center",
     },
     icon: {
-      tintColor: colors.MED_RED,
+      width: spacing[10],
+      height: spacing[10],
+      resizeMode: "contain",
+      tintColor: colors.ON_INK_MUTED,
     },
   });

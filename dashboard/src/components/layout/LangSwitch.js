@@ -13,10 +13,11 @@ export default function LangSwitch() {
 
   return (
     <Select
-      style={{ width: 130 }}
       variant="borderless"
       value={activeLocale}
       className="lang-selector"
+      popupClassName="lang-selector-popup"
+      popupMatchSelectWidth={false}
       onChange={handleLanguageChange}
       options={[
         {

@@ -1,55 +1,493 @@
-.selectors {
-  display: flex;
-  gap: 4%;
-  margin-bottom: 16px;
-}
-.times {
-  display: flex;
-  flex-wrap: wrap;
-}
-.user-confirm {
-  display: flex;
-  align-items: center;
-}
+@use "../base/index" as *;
 
+// Month calendar (react-calendar). These base rules were already global and
+// are shared with the court booking tab; the booking modal refines them below.
 .react-calendar {
   width: 100% !important;
   border: none !important;
-  .react-calendar__month-view__days {
-    display: grid !important;
-    justify-items: center;
-    grid-template-columns: repeat(7, 1fr);
+  background: transparent;
+  font-family: $cp-font-text;
+  line-height: 1.3;
+  color: $cp-ink;
+
+  .react-calendar__navigation {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+    margin-bottom: 8px;
+
+    button {
+      @include cp-press;
+      min-width: 36px;
+      height: 36px;
+      border-radius: $cp-radius-pill;
+      background: transparent;
+      color: $cp-ink;
+      font-size: $cp-fs-small;
+
+      &:enabled:hover,
+      &:enabled:focus {
+        background: $cp-ground;
+      }
+
+      &:focus-visible {
+        box-shadow: $cp-focus-ring;
+      }
+
+      &:disabled {
+        background: transparent;
+        color: $cp-faint;
+      }
+    }
+
+    .react-calendar__navigation__label {
+      @include cp-display(14px, 700, 0.04em);
+      color: $cp-ink;
+
+      @include cp-rtl {
+        font-size: 15px;
+      }
+    }
+
+    .react-calendar__navigation__arrow {
+      font-size: 12px;
+
+      .anticon {
+        @include cp-rtl {
+          transform: scaleX(-1);
+        }
+      }
+    }
   }
 
-  .booking-modal .react-calendar__tile.available-day {
-    color: #00c46c !important;
+  .react-calendar__month-view__weekdays {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: $cp-muted;
+
+    abbr {
+      text-decoration: none;
+      cursor: default;
+    }
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    padding: 6px 0;
+    text-align: center;
+  }
+
+  .react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    justify-items: center;
+    row-gap: 4px;
   }
 
   .react-calendar__tile {
-    height: 3.5rem;
-    width: 3.5rem;
-    font-size: 1.4rem;
-    padding: 6px;
-    border-radius: 50%;
-    text-align: center;
-    transition: 0.2s ease;
+    border-radius: $cp-radius-chip;
+    color: $cp-ink;
+    font-size: $cp-fs-small;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    transition: background-color $cp-transition, color $cp-transition,
+      box-shadow $cp-transition, transform $cp-duration-press $cp-ease;
 
-    // &.available-day {
-    // }
-
-    &.unavailable-day {
-      background-color: #e0e0e0 !important;
-      color: #999 !important;
+    &:enabled:hover,
+    &:enabled:focus {
+      background: $cp-ground;
     }
 
-    &:hover {
-      background-color: #00c46c !important;
-      color: #333 !important;
+    &:enabled:active {
+      transform: scale(0.96);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: $cp-focus-ring;
+    }
+
+    &:disabled {
+      background: transparent;
+      color: $cp-faint;
+    }
+
+    &.unavailable-day {
+      background-color: $cp-ground !important;
+      color: $cp-faint !important;
+      text-decoration: line-through;
+    }
+  }
+
+  .react-calendar__month-view__days__day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
+  .react-calendar__month-view__days__day--weekend {
+    color: $cp-ink;
+  }
+
+  .react-calendar__month-view__days__day--neighboringMonth {
+    color: $cp-faint;
+  }
+
+  .react-calendar__tile--now {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px $cp-ink;
+    font-weight: 700;
+
+    &:enabled:hover,
+    &:enabled:focus {
+      background: $cp-ground;
+    }
+  }
+
+  .react-calendar__tile--hasActive {
+    background: $cp-lime-tint;
+    color: $cp-lime-tint-text;
+
+    &:enabled:hover,
+    &:enabled:focus {
+      background: $cp-lime-tint;
+    }
+  }
+
+  .react-calendar__tile--active,
+  .react-calendar__tile--active:enabled:hover,
+  .react-calendar__tile--active:enabled:focus {
+    background: $cp-ink;
+    color: #ffffff;
+    box-shadow: none;
+  }
+
+  .react-calendar__year-view .react-calendar__tile,
+  .react-calendar__decade-view .react-calendar__tile,
+  .react-calendar__century-view .react-calendar__tile {
+    padding: 14px 6px;
+  }
+
+  @media (max-width: 420px) {
+    .react-calendar__month-view__days__day {
+      width: 36px;
+      height: 36px;
     }
   }
 }
 
-.step-1 {
-  height: 50rem;
-  overflow-y: scroll;
+// Booking modal: steps, branch/court pickers, date, time slots, confirm
+.booking-modal {
+  .booking-modal-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $cp-radius-card;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(6px);
+  }
+
+  .booking-steps {
+    margin-bottom: 22px;
+
+    .ant-steps-item-title {
+      font-size: $cp-fs-small;
+      font-weight: 600;
+    }
+  }
+
+  .booking-step-body {
+    animation: cpFadeUp $cp-duration-slow $cp-ease both;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+
+  .selectors {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+
+    @media (max-width: 520px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .booking-select {
+    width: 100%;
+  }
+
+  .booking-calendar-panel {
+    padding: 12px 12px 14px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-panel;
+  }
+
+  // Availability colours for this calendar only (the court booking tab
+  // keeps its own)
+  .booking-calendar {
+    .react-calendar__tile.available-day {
+      border-radius: $cp-radius-chip;
+      background-color: $cp-lime-tint !important;
+      color: $cp-lime-tint-text !important;
+      font-weight: 600;
+
+      &:enabled:hover,
+      &:enabled:focus {
+        background-color: #e6f5c2 !important;
+      }
+    }
+
+    .react-calendar__tile.react-calendar__tile--active,
+    .react-calendar__tile.react-calendar__tile--active:enabled:hover,
+    .react-calendar__tile.react-calendar__tile--active:enabled:focus {
+      background-color: $cp-ink !important;
+      color: #ffffff !important;
+      box-shadow: none;
+    }
+  }
+
+  // Step 1: time slots
+  .step-heading {
+    margin-bottom: 16px;
+  }
+
+  .step-date {
+    @include cp-display(18px, 800);
+    margin: 0;
+    color: $cp-ink;
+    unicode-bidi: plaintext;
+  }
+
+  // Times and dates are Latin strings: keep "08:00 - 09:00" in order in RTL
+  .time-slot,
+  .confirm-slot,
+  .confirm-value {
+    unicode-bidi: plaintext;
+  }
+
+  .step-caption {
+    margin: 4px 0 0;
+    font-size: $cp-fs-small;
+    line-height: 1.5;
+    color: $cp-muted;
+  }
+
+  .step-1 {
+    max-height: min(52vh, 480px);
+    overflow-y: auto;
+    padding-inline-end: 4px;
+    scrollbar-width: thin;
+  }
+
+  .slots-empty {
+    margin: 24px 0 8px;
+  }
+
+  .slot-group + .slot-group {
+    margin-top: 18px;
+  }
+
+  .slot-group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: $cp-fs-small;
+    font-weight: 600;
+  }
+
+  .slot-group-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: $cp-radius-pill;
+    background: $cp-success;
+  }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: 8px;
+  }
+
+  .time-slot {
+    @include cp-press;
+    @include cp-focus-ring;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-chip;
+    background: $cp-card;
+    color: $cp-ink;
+    font-size: $cp-fs-small;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      border-color: $cp-ink;
+    }
+
+    &.is-selected {
+      border-color: $cp-lime;
+      background: $cp-lime;
+      color: $cp-ink;
+
+      &:hover:not(:disabled) {
+        border-color: $cp-lime-hover;
+        background: $cp-lime-hover;
+      }
+    }
+
+    &.is-taken,
+    &:disabled {
+      border-color: $cp-ground;
+      background: $cp-ground;
+      color: $cp-faint;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+  }
+
+  .slot-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 16px;
+    font-size: $cp-fs-caption;
+    color: $cp-muted;
+  }
+
+  .slot-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .slot-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+
+    &--taken {
+      background: $cp-ground;
+      box-shadow: inset 0 0 0 1px $cp-line;
+    }
+
+    &--free {
+      background: $cp-card;
+      box-shadow: inset 0 0 0 1px $cp-line-strong;
+    }
+  }
+
+  // Step 2: confirm
+  .confirm-list {
+    margin-bottom: 18px;
+    padding: 2px 16px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-panel;
+  }
+
+  .confirm-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 12px 0;
+
+    & + & {
+      border-top: 1px solid $cp-divider;
+    }
+  }
+
+  .confirm-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 96px;
+    color: $cp-muted;
+
+    strong {
+      font-weight: 500;
+    }
+  }
+
+  .confirm-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .confirm-slots {
+    display: flex;
+    flex: 1 1 200px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .confirm-slot {
+    @include cp-pill($cp-lime-tint, $cp-lime-tint-text);
+    height: 28px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .confirm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .confirm-field-label {
+    font-weight: 600;
+  }
+
+  .user-confirm {
+    display: flex;
+    align-items: center;
+  }
+
+  .customers-select {
+    width: 100%;
+  }
+
+  .booking-method {
+    display: inline-flex;
+
+    .ant-radio-button-wrapper {
+      height: 40px;
+      padding-inline: 18px;
+      line-height: 38px;
+      font-weight: 600 !important;
+    }
+
+    .ant-radio-button-wrapper:first-child {
+      border-start-start-radius: $cp-radius-pill;
+      border-end-start-radius: $cp-radius-pill;
+    }
+
+    .ant-radio-button-wrapper:last-child {
+      border-start-end-radius: $cp-radius-pill;
+      border-end-end-radius: $cp-radius-pill;
+    }
+  }
+
+  .footer-btns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid $cp-divider;
+  }
 }

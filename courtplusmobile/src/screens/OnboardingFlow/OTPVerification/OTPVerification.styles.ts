@@ -1,36 +1,43 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout } from "theme";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingHorizontal: spacing[24],
-      paddingBottom: verticalScale(26),
+      backgroundColor: colors.INK,
+      paddingHorizontal: Layout.gutter,
+      paddingBottom: verticalScale(12),
     },
     footerText: {
-      marginTop: verticalScale(62),
+      textAlign: "center",
+      marginTop: verticalScale(28),
+      marginBottom: verticalScale(20),
     },
     footerText1: {
-      color: colors.GREY,
+      color: colors.ON_INK_MUTED,
       textAlign: "center",
     },
     footerText2: {
-      color: colors.GREEN_YELLOWISH,
+      color: colors.WHITE,
+      textAlign: "center",
+      textDecorationLine: "underline",
+      textDecorationColor: colors.LIME,
     },
     otpView: {
-      marginTop: verticalScale(26),
+      marginTop: verticalScale(28),
     },
     bottomContainer: {
       flex: 1,
       justifyContent: "flex-end",
     },
     codeContainer: {
-      marginTop: verticalScale(16),
+      marginTop: verticalScale(12),
+      textAlign: "left",
     },
     codeText: {
-      color: colors.SLATE_GRAY,
+      color: colors.ON_INK_MUTED,
     },
     codeText1: {
       color: colors.WHITE,
@@ -42,7 +49,8 @@ export default (colors: ColorsType) =>
       color: colors.WHITE,
     },
     logo: {
-      width: horizontalScale(180),
-      height: verticalScale(52),
+      width: horizontalScale(132),
+      height: horizontalScale(38),
+      resizeMode: "contain",
     },
   });

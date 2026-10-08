@@ -41,18 +41,22 @@ const ChooseGameModal = forwardRef<BottomSheetModal, ChooseGameModalProps>(
         <View>
           <CustomText
             text={t("profile.chooseGameDescription")}
-            font="chip"
-            weight="medium"
+            font="headline3"
+            weight="regular"
             overrideStyle={themedStyles.description}
           />
           <View style={themedStyles.itemsContainer}>
-            {items.map((item) => (
+            {items.map((item, index) => (
               <RadioButton
                 isSelected={item.key === selectedGameItem?.key}
                 onPress={() => onGameItemSelect(item)}
                 key={item.key}
                 isDark
                 title={item.title}
+                overrideStyle={[
+                  themedStyles.item,
+                  index < items.length - 1 && themedStyles.itemDivider,
+                ]}
               />
             ))}
           </View>
@@ -60,7 +64,7 @@ const ChooseGameModal = forwardRef<BottomSheetModal, ChooseGameModalProps>(
             title={t("general.next")}
             onPress={onNextPress}
             disabled={isNextButtonDisabled}
-            variant={isNextButtonDisabled ? "disabledDark" : "dark"}
+            variant={isNextButtonDisabled ? "disabledDark" : "primary"}
             overrideStyle={themedStyles.button}
           />
         </View>

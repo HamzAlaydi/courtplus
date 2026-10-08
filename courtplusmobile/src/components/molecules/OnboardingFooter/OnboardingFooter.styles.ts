@@ -1,54 +1,60 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingTop: verticalScale(14),
+      paddingTop: verticalScale(20),
     },
     orContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[16],
+      gap: spacing[12],
     },
     divider: {
       height: 1,
-      width: spacing[40],
-      backgroundColor: colors.GREEN_YELLOWISH,
       flex: 1,
-    },
-    socialButton: {
-      height: verticalScale(27),
-      width: spacing[28],
-    },
-    socialButtonContainer: {
-      padding: spacing[10],
-      backgroundColor: colors.DARK_GREEN,
-      borderRadius: spacing[12],
-      justifyContent: "center",
-      alignItems: "center",
+      backgroundColor: colors.ON_INK_LINE,
     },
     or: {
-      color: colors.GREEN_YELLOWISH,
-      marginBottom: verticalScale(4),
+      color: colors.ON_INK_MUTED,
     },
     socialContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[26],
       justifyContent: "center",
-      paddingTop: verticalScale(17),
+      gap: spacing[12],
+      paddingTop: verticalScale(16),
+    },
+    socialButtonContainer: {
+      width: horizontalScale(52),
+      height: horizontalScale(52),
+      borderRadius: horizontalScale(26),
+      backgroundColor: colors.DEEP,
+      borderWidth: 1,
+      borderColor: colors.ON_INK_LINE,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    socialButton: {
+      width: horizontalScale(22),
+      height: horizontalScale(22),
+      resizeMode: "contain",
     },
     footerText: {
-      marginTop: verticalScale(30),
-      marginBottom: verticalScale(24),
+      textAlign: "center",
+      marginTop: verticalScale(24),
+      marginBottom: verticalScale(20),
     },
     footerText1: {
-      color: colors.GREY,
+      color: colors.ON_INK_MUTED,
       textAlign: "center",
     },
     footerText2: {
-      color: colors.GREEN_YELLOWISH,
+      color: colors.WHITE,
+      textAlign: "center",
+      textDecorationLine: "underline",
+      textDecorationColor: colors.LIME,
     },
   });

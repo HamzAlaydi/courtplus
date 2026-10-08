@@ -1,17 +1,21 @@
-import { Avatar, Dropdown, Layout, Menu, Space, Typography } from "antd";
+import { useState } from "react";
+import { Avatar, Drawer, Dropdown, Grid, Layout, Menu } from "antd";
 import {
   AuditOutlined,
   CheckSquareOutlined,
   DashboardOutlined,
+  DownOutlined,
   LogoutOutlined,
+  MenuOutlined,
   ShopOutlined,
   BankOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 import { useAuth } from "@/auth/AuthContext";
+import BrandMark from "@/components/BrandMark";
 import NotificationsBell from "@/components/NotificationsBell";
-import { LIME } from "@/theme";
 
 const { Sider, Header, Content } = Layout;
 
@@ -28,6 +32,9 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const screens = Grid.useBreakpoint();
+  const compact = screens.lg === false;
+  const [navOpen, setNavOpen] = useState(false);
 
   const selectedKey =
     MENU_ITEMS.map((i) => i.key)
@@ -37,86 +44,88 @@ export default function AppLayout() {
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Admin";
 
+  const navigation = (
+    <div className="ops-sider__inner">
+      <BrandMark />
+      <Menu
+        className="ops-nav"
+        theme="dark"
+        mode="inline"
+        inlineIndent={12}
+        selectedKeys={[selectedKey]}
+        items={MENU_ITEMS}
+        onClick={({ key }) => {
+          setNavOpen(false);
+          navigate(key);
+        }}
+      />
+    </div>
+  );
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider width={232} theme="dark">
-        <div
-          style={{
-            height: 64,
-            display: "flex",
-            alignItems: "center",
-            padding: "0 20px",
-            gap: 10,
-          }}
+      {compact ? (
+        <Drawer
+          open={navOpen}
+          onClose={() => setNavOpen(false)}
+          placement="left"
+          width={272}
+          closable={false}
+          rootClassName="ops-nav-drawer"
+          styles={{ body: { padding: 0 } }}
         >
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: LIME,
-              color: "#0a1517",
-              fontWeight: 800,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 15,
-            }}
-          >
-            C+
-          </div>
-          <div>
-            <Typography.Text strong style={{ color: "#fff", fontSize: 15, display: "block", lineHeight: 1.2 }}>
-              Court+
-            </Typography.Text>
-            <Typography.Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}>
-              Ops Console
-            </Typography.Text>
-          </div>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={MENU_ITEMS}
-          onClick={({ key }) => navigate(key)}
-        />
-      </Sider>
+          {navigation}
+        </Drawer>
+      ) : (
+        <Sider width={248} theme="dark" className="ops-sider">
+          {navigation}
+        </Sider>
+      )}
       <Layout>
-        <Header
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            padding: "0 24px",
-            gap: 16,
-            borderBottom: "1px solid #eef0ea",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-          }}
-        >
-          <NotificationsBell />
-          <Dropdown
-            menu={{
-              items: [{ key: "logout", icon: <LogoutOutlined />, label: "Log out" }],
-              onClick: ({ key }) => {
-                if (key === "logout") {
-                  logout();
-                  navigate("/login");
-                }
-              },
-            }}
-          >
-            <Space style={{ cursor: "pointer" }}>
-              <Avatar style={{ background: "#0a1517" }}>
-                {displayName.charAt(0).toUpperCase()}
-              </Avatar>
-              <Typography.Text>{displayName}</Typography.Text>
-            </Space>
-          </Dropdown>
+        <Header className="ops-topbar">
+          <div className="ops-topbar__start">
+            {compact ? (
+              <>
+                <button
+                  type="button"
+                  className="ops-icon-btn"
+                  aria-label="Open menu"
+                  aria-expanded={navOpen}
+                  onClick={() => setNavOpen(true)}
+                >
+                  <MenuOutlined />
+                </button>
+                <BrandMark tone="light" size="sm" />
+              </>
+            ) : (
+              <span className="ops-topbar__date">{dayjs().format("dddd, D MMMM YYYY")}</span>
+            )}
+          </div>
+          <div className="ops-topbar__actions">
+            <NotificationsBell />
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [{ key: "logout", icon: <LogoutOutlined />, label: "Log out" }],
+                onClick: ({ key }) => {
+                  if (key === "logout") {
+                    logout();
+                    navigate("/login");
+                  }
+                },
+              }}
+            >
+              <button type="button" className="ops-user">
+                <Avatar size={34} className="ops-user__avatar">
+                  {displayName.charAt(0).toUpperCase()}
+                </Avatar>
+                <span className="ops-user__name">{displayName}</span>
+                <DownOutlined className="ops-user__caret" />
+              </button>
+            </Dropdown>
+          </div>
         </Header>
-        <Content style={{ padding: 24 }}>
+        <Content className="ops-content">
           <Outlet />
         </Content>
       </Layout>

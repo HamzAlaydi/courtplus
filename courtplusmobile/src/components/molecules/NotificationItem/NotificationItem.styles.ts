@@ -1,36 +1,57 @@
 import { StyleSheet } from "react-native";
-import { ColorsType, Typography } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius, Typography } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     item: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      gap: spacing[12],
+      paddingVertical: verticalScale(12),
+      paddingHorizontal: spacing[12],
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.tile,
+      borderWidth: 1,
+      borderColor: colors.LINE,
     },
-    container: {
-      flexDirection: "row",
-      gap: spacing[6],
+    avatar: {
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DIVIDER,
+    },
+    iconTile: {
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.LIME_TINT,
       alignItems: "center",
+      justifyContent: "center",
     },
-    imageContainer: {
-      width: spacing[40],
-      height: spacing[40],
-      borderWidth: 2,
-      borderColor: colors.WHITE,
-      borderRadius: spacing[40],
+    icon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.LIME_TINT_TEXT,
+    },
+    body: {
+      flex: 1,
+      gap: verticalScale(2),
     },
     content: {
-      width: horizontalScale(150),
-      color: colors.SLATE_GRAY,
+      color: colors.INK,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(19),
+    },
+    time: {
+      color: colors.MUTED,
     },
     button: {
-      minHeight: verticalScale(22),
-      paddingVertical: verticalScale(5),
-      backgroundColor: colors.BUTTON_GREEN,
+      paddingVertical: verticalScale(4),
+      paddingHorizontal: spacing[14],
     },
     buttonText: {
-      ...Typography.text.semiBold,
+      ...Typography.caption.semiBold,
     },
   });

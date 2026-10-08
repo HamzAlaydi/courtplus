@@ -1,15 +1,78 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ScrollView,
-  Text,
-  TouchableOpacity,
+  StyleProp,
   useWindowDimensions,
   View,
+  ViewStyle,
 } from "react-native";
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { TabsProps } from "./Tabs.types";
 import styles from "./Tabs.styles";
 import { useThemeContext } from "contexts";
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
+import { ColorsType } from "theme";
+import { STATE_TIMING } from "utils";
+
+type TabItemProps = {
+  title: string;
+  isSelected: boolean;
+  onPress: () => void;
+  colors: ColorsType;
+  themedStyles: ReturnType<typeof styles>;
+  tabStyle?: StyleProp<ViewStyle>;
+};
+
+const TabItem = ({
+  title,
+  isSelected,
+  onPress,
+  colors,
+  themedStyles,
+  tabStyle,
+}: TabItemProps) => {
+  const progress = useSharedValue(isSelected ? 1 : 0);
+  const idleColor = colors.CARD;
+  const activeColor = colors.INK;
+
+  useEffect(() => {
+    progress.value = withTiming(isSelected ? 1 : 0, STATE_TIMING);
+  }, [isSelected, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [idleColor, activeColor]
+    ),
+  }));
+
+  return (
+    <PressableScale
+      onPress={onPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isSelected }}
+      style={[themedStyles.tab, tabStyle]}
+    >
+      <Animated.View style={[themedStyles.tabBackground, animatedStyle]} />
+      <CustomText
+        text={title}
+        font="headline3"
+        weight={isSelected ? "semiBold" : "medium"}
+        numberOfLines={1}
+        overrideStyle={[
+          themedStyles.title,
+          isSelected && themedStyles.selectedTitle,
+        ]}
+      />
+    </PressableScale>
+  );
+};
 
 const Tabs = ({
   tabs,
@@ -32,33 +95,25 @@ const Tabs = ({
   const isScrollable = contentWidth > width;
 
   return (
-    <View style={overrideStyle}>
+    <View style={[themedStyles.wrapper, overrideStyle]}>
       <ScrollView
         scrollEnabled={isScrollable}
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={themedStyles.scroll}
         contentContainerStyle={themedStyles.contentContainer}
         onContentSizeChange={onContentSizeChange}
       >
         {tabs.map((tab) => (
-          <TouchableOpacity
+          <TabItem
             key={tab.key}
+            title={tab.title}
+            isSelected={selectedTab.key === tab.key}
             onPress={() => setSelectedTab(tab)}
-            style={[
-              selectedTab.key === tab.key && themedStyles.activeBorder,
-              tabStyle,
-            ]}
-          >
-            <CustomText
-              text={tab.title}
-              font="chip"
-              weight={selectedTab.key === tab.key ? "semiBold" : "regular"}
-              overrideStyle={[
-                themedStyles.title,
-                selectedTab.key === tab.key && themedStyles.selectedTitle,
-              ]}
-            />
-          </TouchableOpacity>
+            colors={colors}
+            themedStyles={themedStyles}
+            tabStyle={tabStyle}
+          />
         ))}
       </ScrollView>
     </View>

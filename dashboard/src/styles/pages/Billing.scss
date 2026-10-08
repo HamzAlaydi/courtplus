@@ -1,65 +1,405 @@
 @use "../base/index" as *;
 
+// Billing: plan tiles (current plan as the ink card), pending charges,
+// invoices.
 .billing-page {
   .billing-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.6rem;
-    margin-bottom: 2.4rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+    gap: $cp-gap-grid;
   }
 
   .billing-card {
-    text-align: center;
+    gap: 12px;
 
-    .billing-card-icon {
-      font-size: 2.4rem;
-      color: $color-green-dark;
-      margin-bottom: 0.8rem;
+    &-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
     }
 
-    span {
-      display: block;
-      color: $color-text-light;
-      font-size: 1.3rem;
-      margin-bottom: 0.6rem;
+    &-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border-radius: $cp-radius-pill;
+      background: $cp-ground;
+      color: $cp-ink;
+      font-size: 16px;
     }
 
-    h3 {
-      margin: 0 0 0.4rem;
-      font-size: 2.2rem;
-      font-weight: $font-weight-bold;
-    }
-
-    small {
-      color: $color-text-light;
+    &-caption {
+      font-size: $cp-fs-caption;
+      line-height: 1.4;
+      color: $cp-muted;
     }
 
     &-total {
-      border-color: $primary-color;
+      .billing-card-icon {
+        background: $cp-lime;
+        color: $cp-ink;
+      }
+
+      .billing-card-caption {
+        color: $cp-on-ink-muted;
+      }
     }
   }
 
-  .billing-section {
-    margin-bottom: 2.4rem;
+  .billing-status {
+    @include cp-pill(rgba(255, 255, 255, 0.1), $cp-on-ink-muted);
+    align-self: flex-start;
+
+    &.is-live {
+      background: $cp-lime;
+      color: $cp-ink;
+    }
+
+    &.is-warning {
+      background: $cp-warning-bg;
+      color: $cp-warning;
+    }
+  }
+
+  .billing-subscribe {
+    align-items: center;
+
+    .ant-alert-action {
+      margin-inline-start: 16px;
+    }
+
+    @media (max-width: 576px) {
+      flex-wrap: wrap;
+
+      .ant-alert-action {
+        margin: 12px 0 0;
+        width: 100%;
+      }
+    }
   }
 
   .billing-pending-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
     margin: 0;
     padding: 0;
     list-style: none;
 
-    li {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
+    li:first-child {
+      padding-top: 0;
+    }
 
-      span:first-child {
-        flex: 1;
-        font-weight: $font-weight-meduim;
+    li:last-child {
+      padding-bottom: 0;
+    }
+
+    .ant-tag {
+      margin-inline-end: 0;
+    }
+  }
+
+  .billing-pending-name {
+    @include cp-truncate;
+    flex: 1;
+    font-weight: 600;
+  }
+
+  .billing-amount {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .billing-pdf-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $cp-fs-small;
+    font-weight: 600;
+    color: $cp-ink;
+    text-underline-offset: 3px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Settings: each section is its own white card (accordion), payouts inside.
+.settings-page {
+  width: 100%;
+  max-width: 880px;
+
+  .settings-collapse.ant-collapse {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: transparent;
+    border: 0;
+
+    > .ant-collapse-item {
+      @include cp-card(0);
+      overflow: hidden;
+      border: 0;
+      transition: box-shadow $cp-transition;
+
+      &:last-child,
+      &:last-child > .ant-collapse-header {
+        border-radius: $cp-radius-card;
+      }
+
+      &:hover {
+        box-shadow: $cp-shadow-card-hover;
+      }
+
+      > .ant-collapse-header {
+        align-items: center;
+        min-height: 68px;
+        padding: 14px $cp-card-padding;
+        border-radius: $cp-radius-card;
+      }
+
+      > .ant-collapse-content {
+        background: transparent;
+        border-top: 1px solid $cp-divider;
+
+        > .ant-collapse-content-box {
+          padding: 22px $cp-card-padding $cp-card-padding;
+        }
+      }
+
+      &.ant-collapse-item-active > .ant-collapse-header {
+        border-radius: $cp-radius-card $cp-radius-card 0 0;
       }
     }
+
+    .ant-collapse-expand-icon {
+      align-self: center;
+      height: auto;
+    }
+  }
+
+  .settings-panel-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    font-size: $cp-fs-card-title;
+    font-weight: 600;
+    color: $cp-ink;
+  }
+
+  .settings-panel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: $cp-radius-pill;
+    background: $cp-ground;
+    color: $cp-ink;
+    font-size: 16px;
+
+    &--danger {
+      background: $cp-danger-bg;
+      color: $cp-danger-text;
+    }
+  }
+
+  .settings-collapse.ant-collapse .ant-collapse-header .settings-expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $cp-radius-pill;
+    background: $cp-ground;
+    color: $cp-ink;
+    font-size: 12px;
+    transition: transform $cp-duration-slow $cp-ease,
+      background-color $cp-transition;
+
+    .anticon {
+      color: inherit;
+    }
+
+    // AntD flips the arrow for RTL; a down chevron needs no flip
+    svg {
+      transform: none;
+    }
+
+    &.is-open {
+      transform: rotate(180deg);
+      background: $cp-ink;
+      color: #ffffff;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  .settings-form {
+    max-width: 520px;
+  }
+
+  .settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // Phone field, matched to the AntD inputs
+  .PhoneInput {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: $cp-control-height;
+    padding: 0 14px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-input;
+    background: $cp-card;
+    transition: border-color $cp-transition, box-shadow $cp-transition;
+
+    &:hover {
+      border-color: $cp-line-strong;
+    }
+
+    &:focus-within {
+      border-color: $cp-ink;
+      box-shadow: $cp-focus-ring;
+    }
+  }
+
+  .PhoneInputInput {
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: $cp-ink;
+  }
+
+  .ant-form-item-has-error .PhoneInput {
+    border-color: $cp-danger;
+  }
+}
+
+.settings-page .settings-resend,
+.settings-delete-modal .settings-resend {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.settings-delete-modal .settings-delete-warning {
+  display: block;
+  margin-bottom: 16px;
+}
+
+// Payouts (inside Settings)
+.payouts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .payouts-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: 12px;
+  }
+
+  .ant-card {
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-panel;
+    box-shadow: none;
+
+    .ant-card-head {
+      min-height: 50px;
+      border-radius: $cp-radius-panel $cp-radius-panel 0 0;
+    }
+
+    .ant-card-head-title {
+      font-size: 13px;
+    }
+  }
+
+  .payouts-kpi {
+    .ant-statistic-title {
+      margin-bottom: 6px;
+      font-size: $cp-fs-small;
+      color: $cp-muted;
+    }
+
+    .ant-statistic-content {
+      font-size: 22px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ant-statistic-content-suffix {
+      margin-inline-start: 6px;
+      font-family: $cp-font-text;
+      font-size: $cp-fs-small;
+      font-weight: 500;
+      color: $cp-muted;
+    }
+
+    &--ink.ant-card {
+      @include cp-ink-surface;
+      border-color: $cp-ink;
+
+      .ant-statistic-title {
+        color: $cp-on-ink-muted;
+      }
+
+      .ant-statistic-content {
+        color: #ffffff;
+      }
+
+      .ant-statistic-content-suffix {
+        color: $cp-lime;
+      }
+
+      .ant-skeleton-title,
+      .ant-skeleton-paragraph > li {
+        background: rgba(255, 255, 255, 0.12);
+      }
+    }
+  }
+
+  .payouts-lead {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .payouts-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: $cp-fs-caption;
+  }
+
+  .payouts-request {
+    row-gap: 8px;
+
+    .ant-form-item {
+      width: auto;
+      margin-bottom: 0;
+    }
+  }
+
+  .payouts-amount {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .payouts-failure {
+    display: block;
+    margin-top: 4px;
+    font-size: $cp-fs-caption;
   }
 }

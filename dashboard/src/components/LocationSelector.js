@@ -119,36 +119,42 @@ export default function LocationSelector({
   };
 
   return (
-    <div>
-      <label>Place Name</label>
-      <AutoComplete
-        value={placeName}
-        options={searchOptions}
-        onChange={setPlaceName}
-        onSelect={onPlaceSelected}
-        placeholder="Search place"
-        style={{ width: "100%", marginBottom: 10 }}
-        filterOption={false}
-      />
+    <div className="location-selector">
+      <div className="location-selector__field">
+        <label className="location-selector__label">Place Name</label>
+        <AutoComplete
+          value={placeName}
+          options={searchOptions}
+          onChange={setPlaceName}
+          onSelect={onPlaceSelected}
+          placeholder="Search place"
+          style={{ width: "100%" }}
+          filterOption={false}
+        />
+      </div>
 
-      <Row gutter={12} style={{ marginBottom: 10 }}>
+      <Row gutter={12}>
         <Col span={12}>
-          <label>Latitude</label>
-          <InputNumber
-            style={{ width: "100%" }}
-            value={coordinates.lat}
-            onChange={updateLat}
-            step={0.000001}
-          />
+          <div className="location-selector__field">
+            <label className="location-selector__label">Latitude</label>
+            <InputNumber
+              style={{ width: "100%" }}
+              value={coordinates.lat}
+              onChange={updateLat}
+              step={0.000001}
+            />
+          </div>
         </Col>
         <Col span={12}>
-          <label>Longitude</label>
-          <InputNumber
-            style={{ width: "100%" }}
-            value={coordinates.lng}
-            onChange={updateLng}
-            step={0.000001}
-          />
+          <div className="location-selector__field">
+            <label className="location-selector__label">Longitude</label>
+            <InputNumber
+              style={{ width: "100%" }}
+              value={coordinates.lng}
+              onChange={updateLng}
+              step={0.000001}
+            />
+          </div>
         </Col>
       </Row>
 
@@ -159,15 +165,10 @@ export default function LocationSelector({
         onPick={handleMapPick}
       />
 
-      <div style={{ marginTop: 10 }}>
-        <label>Address</label>
+      <div className="location-selector__field">
+        <label className="location-selector__label">Address</label>
         <div
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 6,
-            background: "#fafafa",
-          }}
+          className={`location-selector__address${address ? "" : " is-empty"}`}
         >
           {address || "No address available"}
         </div>

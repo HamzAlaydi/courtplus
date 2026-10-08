@@ -1,9 +1,10 @@
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image } from "react-native";
 import styles from "./IconButton.styles";
 import { IconButtonProps } from "./IconButton.types";
 import CustomText from "atoms/CustomText/CustomText.component";
+import PressableScale from "atoms/PressableScale/PressableScale.component";
 
 const IconButton = ({
   icon,
@@ -18,13 +19,20 @@ const IconButton = ({
   const themedStyles = useMemo(() => styles(colors), [colors]);
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
+      accessibilityRole="button"
       style={[themedStyles.container, overrideStyle]}
     >
       <Image source={icon} style={[themedStyles.icon, overrideIconStyle]} />
-      <CustomText text={title} font="headline3" weight="semiBold" />
-    </TouchableOpacity>
+      <CustomText
+        text={title}
+        font="headline3"
+        weight="semiBold"
+        numberOfLines={1}
+        overrideStyle={themedStyles.title}
+      />
+    </PressableScale>
   );
 };
 

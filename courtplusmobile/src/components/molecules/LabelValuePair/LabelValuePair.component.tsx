@@ -13,8 +13,18 @@ const LabelValuePair = ({ label, value }: LabelValuePairProps) => {
 
   return (
     <View style={themedStyles.container}>
-      <CustomText text={label} font="bottomSheetTitle" weight="regular" />
-      <CustomText text={value} font="chip" weight="regular" />
+      <CustomText
+        text={label}
+        font="displayNumber"
+        weight="bold"
+        overrideStyle={themedStyles.label}
+      />
+      <CustomText
+        text={value}
+        font="caption"
+        weight="medium"
+        overrideStyle={themedStyles.value}
+      />
     </View>
   );
 };

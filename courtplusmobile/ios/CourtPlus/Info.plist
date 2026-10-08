@@ -76,6 +76,16 @@
 		<string>Cairo-Regular.ttf</string>
 		<string>Cairo-SemiBold.ttf</string>
 		<string>Cairo-Medium.ttf</string>
+		<string>ReadexPro-Regular.ttf</string>
+		<string>ReadexPro-Medium.ttf</string>
+		<string>ReadexPro-SemiBold.ttf</string>
+		<string>ReadexPro-Bold.ttf</string>
+		<string>Unbounded-SemiBold.ttf</string>
+		<string>Unbounded-Bold.ttf</string>
+		<string>Unbounded-ExtraBold.ttf</string>
+		<string>Alexandria-SemiBold.ttf</string>
+		<string>Alexandria-Bold.ttf</string>
+		<string>Alexandria-ExtraBold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

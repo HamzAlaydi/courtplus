@@ -4,10 +4,11 @@ import { PostsProps } from "./Posts.types";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 import { Post } from "models";
 import { PostView } from "molecules/index";
-import { View } from "react-native";
+import Animated from "react-native-reanimated";
 import styles from "./Posts.styles";
 import { Images } from "theme";
 import { useTranslation } from "react-i18next";
+import { useListEntering } from "utils";
 
 const Posts = ({
   postsData,
@@ -17,8 +18,13 @@ const Posts = ({
   fetchNextPage,
 }: PostsProps) => {
   const { t } = useTranslation();
-  const renderItem = ({ item }: ListRenderItemInfo<Post>) => {
-    return <PostView post={item} />;
+  const entering = useListEntering();
+  const renderItem = ({ item, index }: ListRenderItemInfo<Post>) => {
+    return (
+      <Animated.View entering={entering(index)}>
+        <PostView post={item} />
+      </Animated.View>
+    );
   };
 
   return (
@@ -31,7 +37,6 @@ const Posts = ({
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
       contentContainerStyle={styles.container}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
       emptyConfig={{
         image: Images.cloud,
         title: t("court.noMoments"),

@@ -6,46 +6,20 @@ import { Header } from "molecules/index";
 import { List, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, RefreshControl, StyleSheet, View } from "react-native";
-import { ColorsType, Images } from "theme";
-import { formatTime, spacing, verticalScale } from "utils";
+import { Image, RefreshControl, View } from "react-native";
+import Animated from "react-native-reanimated";
+import { Images } from "theme";
+import { formatTime, useListEntering } from "utils";
 import styles from "./ActivityLog.styles";
 import { getEventDescription, useActivityLog } from "./ActivityLog.logic";
-
-// Kept in this file rather than ActivityLog.styles.ts so the shared sheet
-// stays theme-free; the row needs the current palette for its muted text.
-const itemStyles = (colors: ColorsType) =>
-  StyleSheet.create({
-    item: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[6],
-    },
-    avatar: {
-      width: spacing[32],
-      height: spacing[32],
-      borderRadius: spacing[50],
-    },
-    details: {
-      flex: 1,
-    },
-    timestamp: {
-      color: colors.GRAYISH_BLUE,
-    },
-    separator: {
-      marginTop: verticalScale(22),
-    },
-    listContent: {
-      paddingBottom: verticalScale(20),
-    },
-  });
 
 const ActivityLogScreen = () => {
   const { t } = useTranslation();
   const {
     currentTheme: { colors },
   } = useThemeContext();
-  const themedStyles = useMemo(() => itemStyles(colors), [colors]);
+  const themedStyles = useMemo(() => styles(colors), [colors]);
+  const entering = useListEntering();
   const {
     eventsData,
     isLoading,
@@ -56,34 +30,40 @@ const ActivityLogScreen = () => {
     isFetchingNextPage,
   } = useActivityLog();
 
-  const renderItem = ({ item }: ListRenderItemInfo<MatchEvent>) => (
-    <View style={themedStyles.item}>
-      <Image
-        source={
-          item.user?.avatarUrl
-            ? { uri: item.user.avatarUrl }
-            : Images.maleProfile
-        }
-        style={themedStyles.avatar}
-      />
-      <View style={themedStyles.details}>
-        <CustomText
-          text={getEventDescription(item)}
-          font="chip"
-          weight="medium"
-        />
-        <CustomText
-          text={formatTime(item.createdAt)}
-          font="chip"
-          weight="regular"
-          overrideStyle={themedStyles.timestamp}
-        />
-      </View>
-    </View>
-  );
+  const renderItem = ({ item, index }: ListRenderItemInfo<MatchEvent>) => {
+    const isLast = index === (eventsData?.length ?? 0) - 1;
+    return (
+      <Animated.View entering={entering(index)} style={themedStyles.item}>
+        <View style={themedStyles.timeline}>
+          <Image
+            source={
+              item.user?.avatarUrl
+                ? { uri: item.user.avatarUrl }
+                : Images.maleProfile
+            }
+            style={themedStyles.avatar}
+          />
+          {!isLast && <View style={themedStyles.timelineLine} />}
+        </View>
+        <View style={themedStyles.details}>
+          <CustomText
+            text={getEventDescription(item)}
+            font="headline3"
+            weight="medium"
+          />
+          <CustomText
+            text={formatTime(item.createdAt)}
+            font="caption"
+            weight="regular"
+            overrideStyle={themedStyles.timestamp}
+          />
+        </View>
+      </Animated.View>
+    );
+  };
 
   return (
-    <MainWrapper whiteBackground scrollEnabled={false}>
+    <MainWrapper scrollEnabled={false}>
       <Header whiteColor title={t("activity.activityLog")} />
       <List
         data={eventsData}
@@ -102,13 +82,13 @@ const ActivityLogScreen = () => {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor={colors.GREEN}
-            colors={[colors.GREEN]}
+            tintColor={colors.INK}
+            colors={[colors.INK]}
           />
         }
-        overrideContainerStyle={styles.container}
+        overrideContainerStyle={themedStyles.container}
+        overrideLoaderContainerStyle={themedStyles.loader}
         contentContainerStyle={themedStyles.listContent}
-        ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
       />
     </MainWrapper>
   );

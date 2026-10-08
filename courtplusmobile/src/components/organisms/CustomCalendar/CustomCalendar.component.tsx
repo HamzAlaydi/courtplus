@@ -6,7 +6,7 @@ import { Calendar, DateData } from "react-native-calendars";
 import { fontSizes, getFontType, Typography } from "theme";
 import styles from "./CustomCalendar.styles";
 import { CalendarAvailabilityProps } from "./CustomCalendar.types";
-import { formatDate, isRTL } from "utils";
+import { formatDate, isRTL, moderateScale } from "utils";
 import { useTranslation } from "react-i18next";
 import { CustomText } from "atoms/index";
 import { MarkedDates } from "react-native-calendars/src/types";
@@ -26,7 +26,7 @@ const CalendarAvailability = ({
   const {
     currentTheme: { colors },
   } = useThemeContext();
-  const themedStyles = styles(colors);
+  const themedStyles = useMemo(() => styles(colors), [colors]);
 
   const isArrowLeftDisabled = useMemo(() => {
     const date = new Date();
@@ -64,7 +64,7 @@ const CalendarAvailability = ({
       }${currentDate.getMonth() + 1}-${day < 10 ? "0" : ""}${day}`]: {
         selected: true,
         selectedColor: "transparent",
-        selectedTextColor: colors.MED_GREY_3,
+        selectedTextColor: colors.FAINT,
         disabled: true,
       },
     };
@@ -75,7 +75,8 @@ const CalendarAvailability = ({
       ...bookedMarkedDates,
       [currentDate.toISOString().split("T")[0]]: {
         selected: true,
-        selectedColor: colors.GREEN_YELLOWISH,
+        selectedColor: colors.INK,
+        selectedTextColor: colors.WHITE,
       },
     };
   }, [currentDate, bookedMarkedDates, colors]);
@@ -86,7 +87,7 @@ const CalendarAvailability = ({
         disableAllTouchEventsForInactiveDays
         disableAllTouchEventsForDisabledDays
         initialDate={new Date().toDateString()}
-        style={overrideContainerStyle}
+        style={themedStyles.calendar}
         disableArrowLeft={isArrowLeftDisabled}
         minDate={new Date().toDateString()}
         markedDates={markedDates}
@@ -95,54 +96,61 @@ const CalendarAvailability = ({
         date={currentDate.toDateString()}
         renderHeader={(date) => {
           return (
-            <CustomText
-              font="bottomSheetTitle"
-              weight="bold"
-              overrideStyle={themedStyles.month}
-              text={formatDate(date?.toString() ?? "", "MMMM yyyy")}
-            />
+            <View style={themedStyles.header}>
+              <CustomText
+                font="sectionTitle"
+                weight="bold"
+                overrideStyle={themedStyles.month}
+                text={formatDate(date?.toString() ?? "", "MMMM yyyy")}
+              />
+            </View>
           );
         }}
         onPressArrowLeft={onPressArrowLeft}
         onPressArrowRight={onPressArrowRight}
         theme={{
-          calendarBackground: calendarBackgroundColor ?? colors.LIGHT_GREY,
-          dayTextColor: colors.SLATE_GRAY,
+          calendarBackground: calendarBackgroundColor ?? colors.CARD,
+          dayTextColor: colors.INK,
           textDayStyle: {
-            ...Typography.chip.medium,
+            ...Typography.headline3.medium,
+            lineHeight: moderateScale(20),
           },
-          arrowColor: colors.BLACK,
-          todayBackgroundColor: colors.GREEN_YELLOWISH,
-          todayTextColor: colors.SLATE_GRAY,
-          textDayFontWeight: "600",
-          textSectionTitleColor: colors.SLATE_GRAY,
-          textDayHeaderFontSize: isRTL ? fontSizes[10] : fontSizes[12],
-          selectedDayBackgroundColor: colors.BLACK,
-          selectedDayTextColor: colors.BLACK,
-          textDayHeaderFontFamily: getFontType("regular"),
+          textDisabledColor: colors.FAINT,
+          textInactiveColor: colors.FAINT,
+          arrowColor: colors.INK,
+          disabledArrowColor: colors.FAINT,
+          arrowStyle: themedStyles.arrow,
+          todayBackgroundColor: colors.LIME_TINT,
+          todayTextColor: colors.LIME_TINT_TEXT,
+          textSectionTitleColor: colors.MUTED,
+          textDayHeaderFontSize: isRTL ? fontSizes[10] : moderateScale(11),
+          textDayHeaderFontFamily: getFontType("semiBold"),
+          selectedDayBackgroundColor: colors.INK,
+          selectedDayTextColor: colors.WHITE,
           textMonthFontFamily: getFontType("bold"),
           textMonthFontSize: fontSizes[18],
-          textMonthFontWeight: "700",
         }}
       />
       {showInfo && (
         <View style={themedStyles.availabilityContainer}>
-          <CustomText
-            font="chip"
-            weight="medium"
-            text={t("general.fullyBooked")}
-            overrideStyle={themedStyles.infoText}
-          />
-          <View style={themedStyles.bookedRowContainer}>
+          <View style={themedStyles.legendItem}>
             <View style={themedStyles.bookedDot} />
-            <View style={themedStyles.availableDot} />
+            <CustomText
+              font="caption"
+              weight="medium"
+              text={t("general.fullyBooked")}
+              overrideStyle={themedStyles.infoText}
+            />
           </View>
-          <CustomText
-            font="chip"
-            weight="medium"
-            text={t("general.available")}
-            overrideStyle={themedStyles.infoText}
-          />
+          <View style={themedStyles.legendItem}>
+            <View style={themedStyles.availableDot} />
+            <CustomText
+              font="caption"
+              weight="medium"
+              text={t("general.available")}
+              overrideStyle={themedStyles.infoText}
+            />
+          </View>
         </View>
       )}
     </View>

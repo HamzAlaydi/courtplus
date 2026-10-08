@@ -21,7 +21,7 @@ const GlobalLoader = () => {
       <Progress.CircleSnail
         animated
         size={horizontalScale(177)}
-        color={[colors.GREEN_YELLOWISH, `${colors.GREEN_YELLOWISH}00`]}
+        color={[colors.LIME, `${colors.LIME}00`]}
         style={themedStyles.progress}
       />
       <Image source={Images.logoGraph} style={themedStyles.logo} />

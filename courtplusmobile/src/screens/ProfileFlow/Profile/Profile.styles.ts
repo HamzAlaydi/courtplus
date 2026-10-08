@@ -1,64 +1,69 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout, Shadows } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    leadingComponent: {
-      flexDirection: "row",
+    wrapperContent: {
+      paddingHorizontal: 0,
+      paddingBottom: 0,
+    },
+    header: {
+      paddingHorizontal: Layout.gutter,
+    },
+    moreButton: {
+      width: Layout.touch,
+      height: Layout.touch,
+      borderRadius: Layout.touch / 2,
+      backgroundColor: colors.CARD,
+      justifyContent: "center",
       alignItems: "center",
-      gap: spacing[8],
+      ...Shadows.subtle,
     },
-    content: {
-      paddingTop: verticalScale(22),
-      paddingHorizontal: spacing[24],
+    moreIcon: {
+      width: horizontalScale(18),
+      height: horizontalScale(18),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
-    name: {
-      marginTop: verticalScale(18),
+    settingsIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(32),
+    },
+    profileImageHeader: {
+      paddingTop: verticalScale(4),
+    },
+    identity: {
+      marginTop: verticalScale(6),
+      gap: verticalScale(4),
+    },
+    username: {
+      color: colors.MUTED,
     },
     description: {
-      marginTop: verticalScale(18),
+      marginTop: verticalScale(6),
+      color: colors.INK,
+      lineHeight: verticalScale(21),
     },
     sports: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[6],
+      gap: spacing[8],
       flexWrap: "wrap",
-      marginTop: verticalScale(20),
+      marginTop: verticalScale(14),
     },
-    tabs: {
-      marginTop: verticalScale(17),
+    momentsHeader: {
+      marginTop: Layout.sectionGap,
     },
-    tabsContainer: {
-      backgroundColor: colors.LIGHT_GREY,
-    },
-    header: {
-      paddingHorizontal: spacing[24],
-      gap: 0,
-      justifyContent: "space-between",
-    },
-    username: {
-      color: colors.SLATE_GRAY,
-    },
-    profileImageHeader: {
-      paddingHorizontal: horizontalScale(8.5),
-      paddingTop: verticalScale(8),
-    },
-    scrollContent: {
-      paddingHorizontal: 0,
-      paddingBottom: 0,
-    },
-    sportContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: verticalScale(8),
-      paddingVertical: verticalScale(2),
-      backgroundColor: colors.LIGHT_BLUE,
-    },
-    subtitle: {
-      color: colors.SLATE_GRAY,
-    },
-    sessions: {
-      marginTop: verticalScale(18),
+    postsContainer: {
+      backgroundColor: colors.GROUND,
     },
   });

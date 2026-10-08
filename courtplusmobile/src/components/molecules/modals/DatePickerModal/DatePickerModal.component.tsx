@@ -3,6 +3,7 @@ import DatePicker from "react-native-date-picker";
 import { DatePickerModalProps } from "./DatePickerModal.types";
 import { isRTL } from "utils";
 import { useTranslation } from "react-i18next";
+import { useThemeContext } from "contexts";
 
 // Reasonable lower bound for a date of birth.
 const MINIMUM_DATE_OF_BIRTH = new Date(1920, 0, 1);
@@ -21,6 +22,9 @@ const DatePickerModal = ({
   onCancel,
 }: DatePickerModalProps) => {
   const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
   return (
     <DatePicker
       title={null}
@@ -35,6 +39,9 @@ const DatePickerModal = ({
       confirmText={t("general.confirm")}
       cancelText={t("general.cancel")}
       locale={isRTL ? "ar" : "en"}
+      theme="light"
+      buttonColor={colors.INK}
+      dividerColor={colors.LINE}
     />
   );
 };

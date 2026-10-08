@@ -16,9 +16,9 @@ import { verticalScale } from "utils";
 import { BottomSheetOverlayProps } from "./BottomSheetOverlay.types";
 import { useThemeContext } from "contexts";
 import styles from "./BottomSheetOverlay.styles";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import { Images } from "theme";
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 
 const BottomSheetOverlay = forwardRef<
@@ -56,9 +56,11 @@ const BottomSheetOverlay = forwardRef<
           disappearsOnIndex={-1}
           appearsOnIndex={0}
           enableTouchThrough={false}
+          opacity={0.55}
+          style={[props.style, themedStyles.backdrop]}
         />
       ),
-      []
+      [themedStyles]
     );
 
     const handleClose = useCallback(() => {
@@ -108,7 +110,8 @@ const BottomSheetOverlay = forwardRef<
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
         keyboardBlurBehavior={keyboardBlurBehavior}
-        handleStyle={themedStyles.modal}
+        handleStyle={themedStyles.handle}
+        handleIndicatorStyle={themedStyles.handleIndicator}
         backgroundStyle={themedStyles.modal}
       >
         <Wrapper
@@ -120,17 +123,20 @@ const BottomSheetOverlay = forwardRef<
             <View style={themedStyles.closeButtonContainer}>
               <CustomText
                 text={title}
-                font="fields"
-                weight="semiBold"
+                font="screenTitle"
+                weight="extraBold"
+                accessibilityRole="header"
                 overrideStyle={themedStyles.title}
               />
 
-              <TouchableOpacity
+              <PressableScale
                 style={themedStyles.closeButton}
                 onPress={handleClose}
+                hitSlop={6}
+                accessibilityRole="button"
               >
-                <Image source={Images.close} />
-              </TouchableOpacity>
+                <Image source={Images.close} style={themedStyles.closeIcon} />
+              </PressableScale>
             </View>
           )}
           {children}

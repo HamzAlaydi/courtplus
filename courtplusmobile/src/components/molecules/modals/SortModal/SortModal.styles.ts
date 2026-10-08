@@ -1,15 +1,24 @@
 import { StyleSheet } from "react-native";
-import { verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { spacing, verticalScale } from "utils";
 
-export default StyleSheet.create({
-  content: {
-    paddingTop: verticalScale(40),
-    paddingEnd: verticalScale(8),
-  },
-  radioButton: {
-    marginBottom: verticalScale(20),
-  },
-  buttons: {
-    paddingVertical: verticalScale(24),
-  },
-});
+export default (colors: ColorsType) =>
+  StyleSheet.create({
+    content: {
+      marginTop: verticalScale(8),
+      paddingHorizontal: spacing[14],
+      backgroundColor: colors.SUBTLE,
+      borderRadius: Radius.tile,
+    },
+    radioButton: {
+      minHeight: verticalScale(54),
+    },
+    radioDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.DIVIDER,
+    },
+    buttons: {
+      paddingTop: verticalScale(22),
+      paddingBottom: verticalScale(8),
+    },
+  });

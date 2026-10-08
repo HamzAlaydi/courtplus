@@ -1,19 +1,14 @@
 import { useState } from "react";
-import { App, Button, Popconfirm, Select, Space, Table, Tag, Typography } from "antd";
+import { App, Button, Empty, Popconfirm, Segmented, Space, Table, Typography } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { approvePayout, listPayouts, markPayoutSent, rejectPayout } from "@/api/ops";
 import { apiErrorMessage } from "@/api/client";
+import PageHeader from "@/components/PageHeader";
 import ReasonModal from "@/components/ReasonModal";
+import StatusTag from "@/components/StatusTag";
+import TableSkeleton from "@/components/TableSkeleton";
 import type { Payout, PayoutStatus } from "@/api/types";
-
-const STATUS_COLORS: Record<PayoutStatus, string> = {
-  pending: "gold",
-  processing: "blue",
-  completed: "green",
-  failed: "red",
-  cancelled: "default",
-};
 
 const STATUS_OPTIONS: { value: PayoutStatus | "all"; label: string }[] = [
   { value: "pending", label: "Pending review" },
@@ -44,8 +39,7 @@ export default function PayoutsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["ops", "payouts", { status, page, pageSize }],
-    queryFn: () =>
-      listPayouts({ page, pageSize, status: status === "all" ? undefined : status }),
+    queryFn: () => listPayouts({ page, pageSize, status: status === "all" ? undefined : status }),
   });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["ops", "payouts"] });
@@ -78,28 +72,41 @@ export default function PayoutsPage() {
     onError: (e) => message.error(apiErrorMessage(e, "Failed to reject payout")),
   });
 
+  const total = data?.pagination.totalCount;
+
   return (
-    <>
-      <Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Payouts
-        </Typography.Title>
-        <Select
-          value={status}
-          options={STATUS_OPTIONS}
-          style={{ width: 180 }}
-          onChange={(v) => {
-            setStatus(v);
-            setPage(1);
-          }}
-        />
-      </Space>
+    <div className="ops-page">
+      <PageHeader
+        title="Payouts"
+        subtitle={
+          total === undefined
+            ? undefined
+            : `${total} payout ${total === 1 ? "request" : "requests"}`
+        }
+        extra={
+          <Segmented<PayoutStatus | "all">
+            aria-label="Status"
+            value={status}
+            options={STATUS_OPTIONS}
+            onChange={(v) => {
+              setStatus(v);
+              setPage(1);
+            }}
+          />
+        }
+      />
 
       <Table<Payout>
         rowKey="id"
-        loading={isLoading}
         dataSource={data?.items ?? []}
         scroll={{ x: true }}
+        locale={{
+          emptyText: isLoading ? (
+            <TableSkeleton lead="none" meta />
+          ) : (
+            <Empty className="ops-empty" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          ),
+        }}
         pagination={{
           current: page,
           pageSize,
@@ -114,50 +121,87 @@ export default function PayoutsPage() {
           {
             title: "Requested",
             dataIndex: "createdAt",
-            render: (v: string) => dayjs(v).format("YYYY-MM-DD HH:mm"),
+            render: (v: string) => (
+              <span
+                className="ops-muted"
+                style={{ whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}
+              >
+                {dayjs(v).format("YYYY-MM-DD HH:mm")}
+              </span>
+            ),
           },
           {
             title: "Vendor",
-            render: (_, row) => (
-              <>
-                <div>{row.tenant?.name ?? row.tenantId}</div>
-                {row.requestedBy ? (
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    {row.requestedBy.firstName} {row.requestedBy.lastName} · {row.requestedBy.email}
-                  </Typography.Text>
-                ) : null}
-              </>
-            ),
+            render: (_, row) => {
+              const name = row.tenant?.name ?? row.tenantId;
+              return (
+                <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 220 }}>
+                  <span className="ops-list__avatar" aria-hidden="true">
+                    {name.charAt(0).toUpperCase()}
+                  </span>
+                  <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                    <span style={{ fontWeight: 600 }}>{name}</span>
+                    {row.requestedBy ? (
+                      <span className="ops-muted" style={{ fontSize: 12 }}>
+                        {row.requestedBy.firstName} {row.requestedBy.lastName} ·{" "}
+                        {row.requestedBy.email}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              );
+            },
           },
           {
             title: "Amount",
             dataIndex: "amount",
-            render: (v: number, row) => <strong>{money(v, row.currency)}</strong>,
+            render: (v: number, row) => (
+              <span
+                style={{
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {money(v, row.currency)}
+              </span>
+            ),
           },
           {
             title: "Status",
             dataIndex: "status",
             render: (s: PayoutStatus, row) => (
-              <>
-                <Tag color={STATUS_COLORS[s]}>{s === "cancelled" ? "rejected" : s}</Tag>
+              <span
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 4,
+                }}
+              >
+                <StatusTag
+                  status={s}
+                  label={s === "cancelled" ? "Rejected" : undefined}
+                  tone={s === "cancelled" ? "danger" : undefined}
+                />
                 {row.failureReason ? (
-                  <Typography.Text type="secondary" style={{ display: "block", fontSize: 12 }}>
+                  <span className="ops-muted" style={{ fontSize: 12, maxWidth: 260 }}>
                     {row.failureReason}
-                  </Typography.Text>
+                  </span>
                 ) : null}
                 {row.sentAt ? (
-                  <Typography.Text type="secondary" style={{ display: "block", fontSize: 12 }}>
+                  <span className="ops-muted" style={{ fontSize: 12 }}>
                     sent {dayjs(row.sentAt).format("YYYY-MM-DD HH:mm")}
-                  </Typography.Text>
+                  </span>
                 ) : null}
-              </>
+              </span>
             ),
           },
           {
             title: "Actions",
             render: (_, row) =>
               row.status === "pending" ? (
-                <Space>
+                <Space size={8}>
                   <Popconfirm
                     title={`Send ${money(row.amount, row.currency)} to this vendor?`}
                     description="Stripe payouts are sent immediately; bank-transfer vendors move to 'processing' for you to send and confirm."
@@ -201,13 +245,17 @@ export default function PayoutsPage() {
 
       <ReasonModal
         open={!!rejecting}
-        title={rejecting ? `Reject payout of ${money(rejecting.amount, rejecting.currency)}` : "Reject payout"}
+        title={
+          rejecting
+            ? `Reject payout of ${money(rejecting.amount, rejecting.currency)}`
+            : "Reject payout"
+        }
         confirmText="Reject"
         danger
         loading={rejectMutation.isPending}
         onConfirm={(reason) => rejecting && rejectMutation.mutate({ id: rejecting.id, reason })}
         onCancel={() => setRejecting(null)}
       />
-    </>
+    </div>
   );
 }

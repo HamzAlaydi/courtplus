@@ -17,15 +17,18 @@ const ReportSubmittedModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
   return (
     <BottomSheetOverlay isWhite ref={ref}>
       <View style={themedStyles.container}>
-        <Image source={Images.success} style={themedStyles.icon} />
+        <View style={themedStyles.iconBadge}>
+          <Image source={Images.success} style={themedStyles.icon} />
+        </View>
         <CustomText
-          font="headline1"
+          font="bottomSheetTitle"
           weight="bold"
+          accessibilityRole="header"
           text={t("reportSubmitted.title")}
           overrideStyle={themedStyles.title}
         />
         <CustomText
-          font="chip"
+          font="headline3"
           weight="regular"
           text={t("reportSubmitted.description")}
           overrideStyle={themedStyles.description}

@@ -1,14 +1,14 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { spacing } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.GHOST_WHITE,
-      padding: spacing[12],
-      borderRadius: spacing[12],
+      backgroundColor: colors.CARD,
+      padding: spacing[14],
+      borderRadius: Radius.tile,
       borderWidth: 1,
-      borderColor: colors.LIGHT_GREY,
+      borderColor: colors.LINE,
     },
   });

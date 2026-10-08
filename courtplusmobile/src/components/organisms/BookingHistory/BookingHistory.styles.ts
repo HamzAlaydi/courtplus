@@ -8,13 +8,14 @@ export default (colors: ColorsType) =>
       flex: 1,
     },
     loader: {
-      backgroundColor: colors.LIGHT_GREY,
+      backgroundColor: colors.GROUND,
     },
     contentContainer: {
       paddingHorizontal: spacing[2],
+      paddingTop: verticalScale(2),
       paddingBottom: verticalScale(40),
     },
     separator: {
-      marginTop: verticalScale(10),
+      height: verticalScale(14),
     },
   });

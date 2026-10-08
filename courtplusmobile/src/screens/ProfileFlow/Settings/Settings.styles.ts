@@ -1,29 +1,60 @@
 import { StyleSheet } from "react-native";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout } from "theme";
+import { horizontalScale, isRTL, spacing, verticalScale } from "utils";
+
+export const themedStyles = (colors: ColorsType) =>
+  StyleSheet.create({
+    scrollContent: {
+      paddingBottom: verticalScale(32),
+    },
+    content: {
+      paddingTop: verticalScale(8),
+    },
+    section: {
+      marginTop: verticalScale(14),
+    },
+    title: {
+      color: colors.MUTED,
+      marginTop: verticalScale(8),
+      marginBottom: verticalScale(8),
+      paddingHorizontal: spacing[4],
+    },
+    bottomContainer: {
+      gap: verticalScale(10),
+      marginTop: Layout.sectionGap,
+    },
+    icon: {
+      tintColor: colors.INK,
+    },
+    dangerIcon: {
+      tintColor: colors.DANGER,
+    },
+    dangerText: {
+      color: colors.DANGER,
+    },
+    rightContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[8],
+    },
+    chevron: {
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.FAINT,
+      transform: [{ scaleX: isRTL ? 1 : -1 }],
+    },
+  });
 
 export default StyleSheet.create({
-  title: {
-    marginBottom: verticalScale(4),
-    marginTop: verticalScale(21),
-  },
-  scrollContent: {
-    paddingBottom: verticalScale(21),
-  },
-  bottomContainer: {
-    gap: verticalScale(8),
-    marginTop: verticalScale(21),
-  },
-  content: {
-    paddingTop: verticalScale(50),
-  },
   languageContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing[4],
-    marginEnd: spacing[20],
+    gap: spacing[6],
   },
   languageImage: {
-    width: horizontalScale(16.71),
-    height: verticalScale(11.14),
+    width: horizontalScale(18),
+    height: horizontalScale(12),
+    borderRadius: 2,
   },
 });

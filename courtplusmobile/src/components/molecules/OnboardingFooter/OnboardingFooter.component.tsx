@@ -1,12 +1,11 @@
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image } from "react-native";
 import styles from "./OnboardingFooter.styles";
 import { OnboardingFooterProps } from "./OnboardingFooter.types";
 import { useTranslation } from "react-i18next";
 import { Images } from "theme";
-import { isAndroid } from "utils";
 import { useOnBoardingFooter } from "./OnBoardingFooter.logic";
 
 const OnboardingFooter = ({
@@ -26,18 +25,21 @@ const OnboardingFooter = ({
         <View style={themedStyles.divider} />
         <CustomText
           text={t("general.or")}
-          font="headline3"
+          font="caption"
+          weight="medium"
           overrideStyle={themedStyles.or}
         />
         <View style={themedStyles.divider} />
       </View>
       <View style={themedStyles.socialContainer}>
-        <TouchableOpacity
+        <PressableScale
           onPress={onGoogleLogin}
+          accessibilityRole="button"
+          accessibilityLabel="Google"
           style={themedStyles.socialButtonContainer}
         >
           <Image source={Images.google} style={themedStyles.socialButton} />
-        </TouchableOpacity>
+        </PressableScale>
         {/* Sign in with Apple is not implemented yet (no onPress); a dead
             button is worse than none. App Store rule 4.8 requires it before
             an iOS release with Google sign-in — tracked in the readiness doc. */}
@@ -45,12 +47,16 @@ const OnboardingFooter = ({
       <Text style={themedStyles.footerText}>
         <CustomText
           text={description}
+          font="headline3"
+          weight="regular"
           overrideStyle={themedStyles.footerText1}
         />
         <CustomText
           text={buttonText}
-          font="chip"
+          font="headline3"
           weight="semiBold"
+          accessibilityRole="link"
+          suppressHighlighting
           overrideStyle={themedStyles.footerText2}
           onPress={onPress}
         />

@@ -1,6 +1,12 @@
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import dayjs from "dayjs";
+import {
+  DoubleLeftOutlined,
+  DoubleRightOutlined,
+  LeftOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 
 const BookingCalendar = ({ value, onChange, availability, onMonthChange }) => {
   return (
@@ -8,6 +14,10 @@ const BookingCalendar = ({ value, onChange, availability, onMonthChange }) => {
       className="booking-calendar"
       value={value}
       onChange={onChange}
+      prevLabel={<LeftOutlined />}
+      nextLabel={<RightOutlined />}
+      prev2Label={<DoubleLeftOutlined />}
+      next2Label={<DoubleRightOutlined />}
       onActiveStartDateChange={({ activeStartDate }) => {
         const month = dayjs(activeStartDate).format("YYYY-MM");
         onMonthChange?.(month);

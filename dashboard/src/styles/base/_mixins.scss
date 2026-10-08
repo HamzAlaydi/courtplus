@@ -1,0 +1,123 @@
+@use "variables" as *;
+
+// Right-to-left context: the app root carries dir="rtl", AntD portals carry
+// their own *-rtl class.
+@mixin cp-rtl {
+  [dir="rtl"] &,
+  .ant-modal-wrap-rtl &,
+  .ant-dropdown-rtl &,
+  .ant-popover-rtl & {
+    @content;
+  }
+}
+
+// Display face: Unbounded for Latin, Alexandria picks up Arabic glyphs.
+// Uppercase and tracking apply to Latin only; Arabic is never letter-spaced.
+@mixin cp-display($size: null, $weight: 800, $tracking: 0.01em, $upper: true) {
+  font-family: $cp-font-display;
+  font-weight: $weight;
+  line-height: 1.15;
+  letter-spacing: $tracking;
+  @if $size {
+    font-size: $size;
+  }
+  @if $upper {
+    text-transform: uppercase;
+  }
+
+  @include cp-rtl {
+    font-family: $cp-font-display-ar;
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+}
+
+@mixin cp-page-title {
+  @include cp-display($cp-fs-page-title, 800);
+  margin: 0;
+  color: $cp-ink;
+}
+
+@mixin cp-section-title {
+  @include cp-display($cp-fs-section, 700, 0.04em);
+  margin: 0;
+  color: $cp-ink;
+
+  @include cp-rtl {
+    font-size: $cp-fs-section-ar;
+  }
+}
+
+@mixin cp-card($padding: $cp-card-padding) {
+  background: $cp-card;
+  border-radius: $cp-radius-card;
+  box-shadow: $cp-shadow-card;
+  padding: $padding;
+}
+
+@mixin cp-card-hover {
+  transition: transform $cp-transition, box-shadow $cp-transition;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $cp-shadow-card-hover;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+@mixin cp-ink-surface {
+  background: $cp-ink;
+  color: #ffffff;
+}
+
+@mixin cp-pill($bg: $cp-divider, $fg: $cp-ink) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: $cp-radius-pill;
+  background: $bg;
+  color: $fg;
+  font-size: $cp-fs-caption;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@mixin cp-press {
+  transition: transform $cp-duration-press $cp-ease,
+    background-color $cp-transition, border-color $cp-transition,
+    color $cp-transition, box-shadow $cp-transition;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active:not(:disabled) {
+      transform: none;
+    }
+  }
+}
+
+@mixin cp-focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: $cp-focus-ring;
+  }
+}
+
+@mixin cp-truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

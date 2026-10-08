@@ -1,11 +1,18 @@
 import React, { useMemo } from "react";
-import { Image, View } from "react-native";
+import { Image, ImageSourcePropType, View } from "react-native";
 import styles from "./CourtSpecs.styles";
 import { CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import { Images } from "theme";
 import { CourtSpecsProps } from "./CourtSpecs.types";
 import { useTranslation } from "react-i18next";
+
+type SpecItem = {
+  image: ImageSourcePropType;
+  title: string;
+  description: string;
+  highlight?: boolean;
+};
 
 const CourtSpecs = ({
   surface,
@@ -20,11 +27,17 @@ const CourtSpecs = ({
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
 
-  const list = [
+  const list: SpecItem[] = [
     {
       image: Images.court,
       title: t("court.type"),
-      description: surface,
+      description: surface
+        ? t(`court.surfaces.${surface}`, {
+            defaultValue: `${surface.charAt(0).toUpperCase()}${surface.slice(
+              1
+            )}`,
+          })
+        : "",
     },
     {
       image: Images.width,
@@ -42,6 +55,7 @@ const CourtSpecs = ({
       description: isAirConditioned
         ? t("court.airConditioned")
         : t("court.notAirConditioned"),
+      highlight: !!isAirConditioned,
     },
     {
       image: Images.womenOnly,
@@ -49,39 +63,53 @@ const CourtSpecs = ({
       description: isWomenOnly
         ? t("court.womenOnlyYes")
         : t("court.womenOnlyNo"),
+      highlight: !!isWomenOnly,
     },
   ];
 
   return (
     <View style={themedStyles.container}>
-      <View style={themedStyles.whiteContainer}>
-        <Image source={Images.tennisCourt} style={themedStyles.image} />
-        <View style={themedStyles.whiteContainerContent}>
-          {list.map((item) => (
-            <View
-              key={`specs-${item.title}`}
-              style={themedStyles.whiteContainerContentItem}
-            >
-              <View style={themedStyles.specsItemContainer}>
-                <Image source={item.image} style={themedStyles.specsImage} />
+      <Image source={Images.tennisCourt} style={themedStyles.image} />
+      <View style={themedStyles.list}>
+        {list.map((item, index) => (
+          <View
+            key={`specs-${item.title}`}
+            style={[
+              themedStyles.row,
+              index < list.length - 1 && themedStyles.rowDivider,
+            ]}
+          >
+            <View style={themedStyles.iconTile}>
+              <Image source={item.image} style={themedStyles.specsImage} />
+            </View>
+            <CustomText
+              text={item.title}
+              font="headline3"
+              weight="medium"
+              numberOfLines={2}
+              overrideStyle={themedStyles.title}
+            />
+            {item.highlight ? (
+              <View style={themedStyles.pill}>
                 <CustomText
-                  text={item.title}
-                  overrideStyle={{
-                    color: "#9399A3",
-                  }}
-                  font="body"
-                  weight="medium"
+                  text={item.description}
+                  font="caption"
+                  weight="semiBold"
+                  numberOfLines={1}
+                  overrideStyle={themedStyles.pillText}
                 />
               </View>
-
+            ) : (
               <CustomText
                 text={item.description}
-                font="headline2"
+                font="headline3"
                 weight="semiBold"
+                numberOfLines={2}
+                overrideStyle={themedStyles.value}
               />
-            </View>
-          ))}
-        </View>
+            )}
+          </View>
+        ))}
       </View>
     </View>
   );

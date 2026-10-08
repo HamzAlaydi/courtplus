@@ -1,35 +1,49 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.GHOST_WHITE,
-      paddingVertical: verticalScale(16),
-      borderRadius: spacing[12],
-      paddingStart: spacing[34],
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.card,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+      paddingHorizontal: spacing[14],
+      paddingVertical: verticalScale(4),
     },
     itemContainer: {
       flexDirection: "row",
       alignItems: "center",
+      gap: spacing[12],
+      minHeight: verticalScale(56),
+      paddingVertical: verticalScale(8),
     },
-    itemContainerPadding: {
-      paddingBottom: verticalScale(20),
-      height: verticalScale(56),
+    itemDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.DIVIDER,
     },
-
+    iconTile: {
+      width: horizontalScale(36),
+      height: horizontalScale(36),
+      borderRadius: Radius.medium,
+      backgroundColor: colors.GROUND,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     image: {
-      width: horizontalScale(24),
-      height: horizontalScale(24),
-      marginEnd: spacing[24],
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
     },
     titleContainer: {
       flex: 1,
     },
+    title: {
+      color: colors.INK,
+    },
     separator: {
-      borderBottomColor: colors.LIGHT_GREY,
+      borderBottomColor: colors.DIVIDER,
       borderBottomWidth: 1,
-      marginVertical: verticalScale(8.77),
     },
   });

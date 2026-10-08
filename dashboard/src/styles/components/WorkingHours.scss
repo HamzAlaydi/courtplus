@@ -1,88 +1,146 @@
 @use "../base/index" as *;
 
 .working-hours {
-  padding: 1rem;
-  border: $border;
-  border-radius: $border-radius;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 
-  &-inputs {
-    padding: 2rem;
-    border: 1px solid #ddd;
-    border-radius: $border-radius;
+  &-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &-title {
+    @include cp-section-title;
   }
 
   .description {
-    color: #888;
-    margin-bottom: 15px;
-  }
-
-  .days-grid {
-    display: grid;
-    // Last column is the per-day 24h toggle.
-    grid-template-columns: 5rem 1fr 12rem 3rem 12rem 7rem;
-    gap: 1.2rem;
-    align-items: center;
-  }
-
-  .day-row {
-    display: contents; // Keeps grid structure without affecting row styling
-  }
-
-  // In 24-hour mode the two pickers and the "to" label are replaced by a
-  // single tag, so it has to span the three cells they occupied or every row
-  // below it would shift out of alignment.
-  .full-day-tag {
-    grid-column: span 3;
-    justify-self: start;
     margin: 0;
-    padding: 0.4rem 1.2rem;
-    border-radius: 999px;
-    font-size: 1.3rem;
+    font-size: $cp-fs-small;
+    font-weight: 400;
+    line-height: 1.5;
+    text-transform: none;
+    color: $cp-muted;
   }
 
-  .full-day-btn {
-    justify-self: start;
-    border-radius: 999px;
-    font-size: 1.2rem;
+  &-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    > .ant-form-item {
+      margin-bottom: 4px;
+    }
   }
 
   .working-hours-quick {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 1.2rem;
 
     .open-247-btn {
-      border-radius: 999px;
-      font-size: 1.2rem;
+      padding-inline: 14px;
     }
   }
 
-  // Dropdown rows for the time-zone picker: city first, then country, with the
-  // live local time and offset trailing so the choice can be sanity-checked.
-  .tz-option {
+  // One row per weekday: switch, day, hours, 24h toggle
+  .days-grid {
     display: flex;
-    align-items: baseline;
-    gap: 0.8rem;
+    flex-direction: column;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-panel;
+    overflow: hidden;
+  }
 
-    &__city {
-      font-weight: 600;
+  .day-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    min-height: 56px;
+    padding: 8px 14px;
+    border-bottom: 1px solid $cp-divider;
+    background: $cp-card;
+    transition: background-color $cp-transition;
+
+    &:last-child {
+      border-bottom: 0;
     }
 
-    &__country {
-      color: $color-text-light;
-      font-size: 1.2rem;
+    &.is-off {
+      background: $cp-row-hover;
+
+      .day-label {
+        color: $cp-muted;
+        font-weight: 500;
+      }
     }
 
-    &__meta {
-      margin-inline-start: auto;
-      color: $color-text-light;
-      font-size: 1.2rem;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
+    .ant-switch {
+      flex-shrink: 0;
     }
+
+    .ant-picker {
+      flex: 0 1 104px;
+      width: 104px;
+      min-width: 92px;
+    }
+  }
+
+  .day-label {
+    flex: 1 1 84px;
+    min-width: 72px;
+    font-size: $cp-fs-body;
+    font-weight: 600;
+    color: $cp-ink;
+    transition: color $cp-transition;
+  }
+
+  .to-text {
+    font-size: $cp-fs-caption;
+    color: $cp-muted;
+  }
+
+  // In 24-hour mode the two pickers and the "to" label are replaced by a
+  // single tag.
+  .full-day-tag {
+    margin: 0;
+    min-height: 32px;
+    padding: 0 14px;
+  }
+
+  .full-day-btn {
+    flex-shrink: 0;
+    min-width: 52px;
+    padding-inline: 12px;
   }
 }
 
-.ant-picker-footer button {
-  padding: 1.4rem;
+// Time-zone dropdown rows: city first, then country, with the live local time
+// and offset trailing. The dropdown renders in a portal, so this is not
+// nested under .working-hours.
+.tz-option {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+
+  &__city {
+    font-weight: 600;
+  }
+
+  &__country {
+    color: $cp-muted;
+    font-size: $cp-fs-caption;
+    @include cp-truncate;
+  }
+
+  &__meta {
+    margin-inline-start: auto;
+    color: $cp-muted;
+    font-size: $cp-fs-caption;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
 }

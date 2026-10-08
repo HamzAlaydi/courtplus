@@ -1,8 +1,8 @@
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { Image, View } from "react-native";
 import styles from "./DayPeriodOption.styles";
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { DayPeriodOptionProps } from "./DayPeriodOption.types";
 
 const DayPeriodOption = ({
@@ -18,31 +18,48 @@ const DayPeriodOption = ({
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isSelected }}
       style={[
         themedStyles.container,
         isSelected && themedStyles.selectedContainer,
         overrideStyle,
       ]}
     >
-      <Image source={image} style={themedStyles.image} />
+      <View
+        style={[
+          themedStyles.iconContainer,
+          isSelected && themedStyles.selectedIconContainer,
+        ]}
+      >
+        <Image
+          source={image}
+          style={[themedStyles.image, isSelected && themedStyles.selectedImage]}
+        />
+      </View>
       <CustomText
         text={name}
-        font="headline2"
+        font="cardTitle"
         weight="semiBold"
-        overrideStyle={themedStyles.title}
+        numberOfLines={1}
+        overrideStyle={[
+          themedStyles.title,
+          isSelected && themedStyles.selectedTitle,
+        ]}
       />
       <CustomText
         text={time}
-        font="text"
+        font="caption"
         weight="medium"
+        numberOfLines={1}
         overrideStyle={[
           themedStyles.itemDescription,
           isSelected && themedStyles.selectedItemDescription,
         ]}
       />
-    </TouchableOpacity>
+    </PressableScale>
   );
 };
 

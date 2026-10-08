@@ -1,9 +1,11 @@
 import { BackButton, CustomText } from "atoms/index";
-import React from "react";
+import React, { useMemo } from "react";
 import { View } from "react-native";
 import styles from "./Header.styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderProps } from "./Header.types";
+import { useThemeContext } from "contexts";
+import { verticalScale } from "utils";
 
 const Header = ({
   leadingComponent,
@@ -19,8 +21,19 @@ const Header = ({
   overrideStyle,
 }: HeaderProps) => {
   const { top } = useSafeAreaInsets();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
+
   return (
-    <View style={[styles.container, { paddingTop: top }, overrideStyle]}>
+    <View
+      style={[
+        themedStyles.container,
+        { paddingTop: top + verticalScale(8) },
+        overrideStyle,
+      ]}
+    >
       {showBackButton && (
         <BackButton
           whiteColor={whiteColor}
@@ -30,16 +43,23 @@ const Header = ({
       {leadingComponent && (
         <View style={leadingComponentStyle}>{leadingComponent}</View>
       )}
-      {title && (
-        <View style={[styles.titleContainer, overrideTitleContainerStyle]}>
+      {title ? (
+        <View
+          style={[themedStyles.titleContainer, overrideTitleContainerStyle]}
+        >
           <CustomText
             numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+            accessibilityRole="header"
             text={title}
-            font="title"
-            weight="semiBold"
-            overrideStyle={[overrideTitleStyle]}
+            font="screenTitle"
+            weight="extraBold"
+            overrideStyle={[themedStyles.title, overrideTitleStyle]}
           />
         </View>
+      ) : (
+        !!trailingComponent && <View style={themedStyles.titleContainer} />
       )}
 
       {trailingComponent && (

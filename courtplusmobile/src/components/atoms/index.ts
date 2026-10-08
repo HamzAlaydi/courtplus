@@ -18,3 +18,5 @@ export { default as Snackbar } from "./Snackbar/Snackbar.component";
 export { default as ActionIcon } from "./ActionIcon/ActionIcon.component";
 export { default as DayCell } from "./DayCell/DayCell.component";
 export { default as TextArea } from "./TextArea/TextArea.component";
+export { default as PressableScale } from "./PressableScale/PressableScale.component";
+export { default as FocusAwareStatusBar } from "./FocusAwareStatusBar/FocusAwareStatusBar.component";

@@ -8,7 +8,9 @@ import {
 } from "@tanstack/react-query";
 import {
   Alert,
+  Avatar,
   Button,
+  Card,
   Form,
   Input,
   Modal,
@@ -52,6 +54,15 @@ const ROLE_LABEL_KEYS = {
   User: "staff.role_user",
   SuperAdmin: "staff.role_superadmin",
 };
+
+const getInitials = (name = "") =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 
 const PAGE_SIZE = 10;
 // Branch rosters are read one branch at a time (see branchesByStaffId below);
@@ -169,15 +180,17 @@ export default function Team() {
 
   if (loadingMe) {
     return (
-      <div className="staff-container">
-        <Spin size="large" />
+      <div className="content staff-container">
+        <div className="staff-loading">
+          <Spin size="large" />
+        </div>
       </div>
     );
   }
 
   if (meError) {
     return (
-      <div className="staff-container">
+      <div className="content staff-container">
         <Alert type="error" showIcon message={t("staff.load_failed")} />
       </div>
     );
@@ -185,7 +198,7 @@ export default function Team() {
 
   if (!isOwner) {
     return (
-      <div className="staff-container">
+      <div className="content staff-container">
         <Alert type="warning" showIcon message={t("staff.owner_only")} />
       </div>
     );
@@ -200,9 +213,16 @@ export default function Team() {
           .filter(Boolean)
           .join(" ");
         return (
-          <div>
-            <div>{fullName || record.email}</div>
-            <Typography.Text type="secondary">{record.email}</Typography.Text>
+          <div className="staff-person">
+            <Avatar size={36} className="staff-avatar">
+              {getInitials(fullName || record.email)}
+            </Avatar>
+            <div className="staff-person-text">
+              <span className="staff-person-name">
+                {fullName || record.email}
+              </span>
+              <span className="staff-person-meta">{record.email}</span>
+            </div>
           </div>
         );
       },
@@ -216,12 +236,16 @@ export default function Team() {
         // Owner means to do — show a plain tag rather than a control whose
         // only outcome is an error.
         if (record.role === OWNER_ROLE || record.id === me?.id) {
-          return <Tag color="gold">{roleLabel(record.role)}</Tag>;
+          return (
+            <span className="cp-pill cp-pill--ink">
+              {roleLabel(record.role)}
+            </span>
+          );
         }
         return (
           <Select
+            className="staff-role-select"
             value={record.role}
-            style={{ width: 140 }}
             loading={
               roleMutation.isPending && roleMutation.variables?.id === record.id
             }
@@ -247,9 +271,9 @@ export default function Team() {
           );
         }
         return (
-          <Space wrap size={[8, 8]}>
+          <Space wrap size={[6, 6]}>
             {assigned.map((branch) => (
-              <Tag key={branch.id} style={{ marginInlineEnd: 0 }}>
+              <Tag key={branch.id} className="staff-branch-chip">
                 {branch.name}
                 <Popconfirm
                   title={t("staff.confirm_remove_from_branch", {
@@ -264,9 +288,7 @@ export default function Team() {
                     })
                   }
                 >
-                  <CloseOutlined
-                    style={{ marginInlineStart: 6, cursor: "pointer" }}
-                  />
+                  <CloseOutlined className="staff-branch-remove" />
                 </Popconfirm>
               </Tag>
             ))}
@@ -281,6 +303,7 @@ export default function Team() {
       title: t("staff.email"),
       dataIndex: "email",
       key: "email",
+      render: (email) => <span className="staff-person-name">{email}</span>,
     },
     {
       title: t("staff.role"),
@@ -306,12 +329,16 @@ export default function Team() {
       title: t("staff.expires"),
       dataIndex: "expires",
       key: "expires",
-      render: (value) =>
-        value ? new Date(value).toLocaleDateString(i18n.language) : "-",
+      render: (value) => (
+        <span className="cp-muted cp-num">
+          {value ? new Date(value).toLocaleDateString(i18n.language) : "-"}
+        </span>
+      ),
     },
     {
       title: t("staff.actions"),
       key: "actions",
+      align: "end",
       render: (_, record) => (
         <Popconfirm
           title={t("staff.confirm_revoke")}
@@ -335,17 +362,13 @@ export default function Team() {
     },
   ];
 
+  const memberCount = staffData?.pagination?.totalCount;
+  const invitationCount = (invitationsData?.items || []).length;
+
   return (
-    <div className="staff-container">
-      <div className="staff-header">
-        <div>
-          <Typography.Title level={4} style={{ marginBottom: 0 }}>
-            {t("staff.title")}
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            {t("staff.subtitle")}
-          </Typography.Text>
-        </div>
+    <div className="content staff-container">
+      <div className="cp-page-head staff-header">
+        <p className="cp-page-subtitle">{t("staff.subtitle")}</p>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -355,32 +378,53 @@ export default function Team() {
         </Button>
       </div>
 
-      <Table
-        rowKey="id"
-        loading={loadingStaff}
-        columns={staffColumns}
-        dataSource={staffData?.items || []}
-        locale={{ emptyText: t("staff.no_members") }}
-        pagination={{
-          current: staffData?.pagination?.currentPage || page,
-          total: staffData?.pagination?.totalCount || 0,
-          pageSize: PAGE_SIZE,
-          hideOnSinglePage: true,
-          onChange: (nextPage) => setPage(nextPage),
-        }}
-      />
+      <Card
+        className="staff-card cp-enter"
+        title={t("staff.title")}
+        extra={
+          memberCount > 0 ? (
+            <span className="cp-pill cp-pill--neutral cp-num">
+              {memberCount}
+            </span>
+          ) : null
+        }
+      >
+        <Table
+          rowKey="id"
+          loading={loadingStaff}
+          columns={staffColumns}
+          dataSource={staffData?.items || []}
+          locale={{ emptyText: t("staff.no_members") }}
+          pagination={{
+            current: staffData?.pagination?.currentPage || page,
+            total: staffData?.pagination?.totalCount || 0,
+            pageSize: PAGE_SIZE,
+            hideOnSinglePage: true,
+            onChange: (nextPage) => setPage(nextPage),
+          }}
+        />
+      </Card>
 
-      <Typography.Title level={5} style={{ marginTop: 32 }}>
-        {t("staff.pending_invitations")}
-      </Typography.Title>
-      <Table
-        rowKey="id"
-        loading={loadingInvitations}
-        columns={invitationColumns}
-        dataSource={invitationsData?.items || []}
-        locale={{ emptyText: t("staff.no_invitations") }}
-        pagination={false}
-      />
+      <Card
+        className="staff-card cp-enter"
+        title={t("staff.pending_invitations")}
+        extra={
+          invitationCount > 0 ? (
+            <span className="cp-pill cp-pill--warning cp-num">
+              {invitationCount}
+            </span>
+          ) : null
+        }
+      >
+        <Table
+          rowKey="id"
+          loading={loadingInvitations}
+          columns={invitationColumns}
+          dataSource={invitationsData?.items || []}
+          locale={{ emptyText: t("staff.no_invitations") }}
+          pagination={false}
+        />
+      </Card>
 
       <Modal
         open={inviteOpen}

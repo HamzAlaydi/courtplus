@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import MyCalendar from "../components/Schedule/MyCalendar";
-import { Select, Spin } from "antd";
+import { Button, Segmented, Select, Spin } from "antd";
 import {
   AppstoreOutlined,
   UnorderedListOutlined,
@@ -39,55 +39,52 @@ export default function Schedule() {
   }));
 
   return (
-    <div className="schedule">
-      <div className="schedule-header">
-        <button
-          onClick={() => setOpenModal(true)}
-          className="toggle-btn active"
-        >
-          {t("schedule.new_booking")}
-        </button>
+    <div className="content schedule">
+      <div className="schedule-toolbar">
+        <Segmented
+          className="schedule-view-toggle"
+          value={viewType}
+          onChange={setViewType}
+          options={[
+            {
+              value: "list",
+              icon: <UnorderedListOutlined />,
+              label: t("schedule.list"),
+            },
+            {
+              value: "grid",
+              icon: <AppstoreOutlined />,
+              label: t("schedule.grid"),
+            },
+          ]}
+        />
 
-        {/* Custom Toggle Buttons */}
-        <div className="schedule-header-filters">
-          <div className="toggle-buttons">
-            <button
-              className={
-                viewType === "list" ? "toggle-btn active" : "toggle-btn"
-              }
-              onClick={() => setViewType("list")}
-            >
-              <UnorderedListOutlined />
-              <span>{t("schedule.list")}</span>
-            </button>
-            <button
-              className={
-                viewType === "grid" ? "toggle-btn active" : "toggle-btn"
-              }
-              onClick={() => setViewType("grid")}
-            >
-              <AppstoreOutlined />
-              <span>{t("schedule.grid")}</span>
-            </button>
-          </div>
-
+        <div className="schedule-toolbar-actions">
           {/* Branch Selector */}
           <Select
+            className="schedule-branch-select"
             showSearch
             allowClear
             placeholder={t("schedule.select_branch")}
             suffixIcon={<EnvironmentOutlined />}
-            size="large"
             value={selectedBranch}
             onChange={setSelectedBranch}
             onSearch={(value) => setSearch(value)}
             notFoundContent={isLoading ? <Spin size="small" /> : null}
             filterOption={false} // important to use API filtering
             options={options}
-            style={{ width: 250 }}
           />
+
+          <Button
+            type="primary"
+            className="schedule-new-booking"
+            onClick={() => setOpenModal(true)}
+          >
+            {t("schedule.new_booking")}
+          </Button>
         </div>
       </div>
+
       {viewType === "grid" && <MyCalendar branchId={selectedBranch} />}
       {viewType === "list" && <BookingTable branchId={selectedBranch} />}
       <BookingModal

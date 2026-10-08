@@ -201,10 +201,12 @@ export default function WorkingHours({ title, initialSchedule, onChange }) {
 
   return (
     <div className="working-hours">
-      <h5>{title}</h5>
-      <h6 className="description">{t("working_hours.select_days_hours")}</h6>
+      <div className="working-hours-head">
+        <h5 className="working-hours-title">{title}</h5>
+        <h6 className="description">{t("working_hours.select_days_hours")}</h6>
+      </div>
 
-      <div className="branch-working-hours-inputs">
+      <div className="branch-working-hours-inputs working-hours-body">
         {/* Time Zone Selector */}
         <Form.Item
           rules={[
@@ -242,7 +244,12 @@ export default function WorkingHours({ title, initialSchedule, onChange }) {
         {/* Grid Container for Working Days */}
         <div className="days-grid">
           {daysOfWeek.map((day) => (
-            <div key={day} className="day-row">
+            <div
+              key={day}
+              className={`day-row${
+                workingDays[day].enabled ? " is-on" : " is-off"
+              }`}
+            >
               <Switch
                 size="small"
                 checked={workingDays[day].enabled}

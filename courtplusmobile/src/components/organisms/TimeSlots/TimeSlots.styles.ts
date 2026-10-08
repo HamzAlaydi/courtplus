@@ -1,85 +1,84 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      marginTop: verticalScale(20),
-    },
-    timeSlotSelector: {
-      width: "100%",
+      gap: verticalScale(22),
     },
     timeSection: {
+      gap: verticalScale(10),
+    },
+    sectionHeader: {
       flexDirection: "row",
-      gap: horizontalScale(11.06),
-    },
-    sectionIndicator: {
       alignItems: "center",
+      gap: spacing[8],
     },
-    indicatorDot: {
-      width: spacing[8],
-      height: spacing[8],
-      backgroundColor: colors.GREEN_YELLOWISH,
-      borderRadius: spacing[50],
+    sectionIconContainer: {
+      width: horizontalScale(28),
+      height: horizontalScale(28),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.LIME_TINT,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    indicatorLine: {
-      borderWidth: spacing[2],
-      flex: 1,
-      borderColor: colors.LIGHT_BLUE,
-    },
-    sectionContent: {
-      flex: 1,
-      marginTop: -verticalScale(8),
+    sectionIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.LIME_TINT_TEXT,
     },
     sectionTitle: {
-      marginBottom: verticalScale(13),
+      color: colors.INK,
     },
     slotsContainer: {
+      gap: spacing[8],
+    },
+    slotsRow: {
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: horizontalScale(4.4),
-      marginBottom: verticalScale(16),
+      gap: spacing[8],
+    },
+    slotPlaceholder: {
+      flex: 1,
     },
     timeSlotContainer: {
-      paddingHorizontal: horizontalScale(15),
-      paddingVertical: verticalScale(9),
-      borderWidth: 1,
-      borderColor: colors.LIGHT_BLUE,
-      borderRadius: spacing[12],
+      flex: 1,
+      minHeight: verticalScale(44),
+      borderRadius: Radius.medium,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    selectedSlot: {
-      borderColor: "#C0FF42",
-      backgroundColor: "#C0FF4233",
+    slotFill: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: Radius.medium,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+      backgroundColor: colors.CARD,
     },
     disabledSlot: {
-      backgroundColor: colors.MED_GREY_2,
-      borderColor: colors.LIGHT_GREY,
-    },
-    lastLine: {
-      flex: 0.85,
-    },
-    emptyStateContainer: {
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: verticalScale(68),
-      gap: verticalScale(31),
-    },
-    emptyIcon: {
-      width: horizontalScale(96),
-      height: horizontalScale(96),
-    },
-    emptyText: {
-      width: horizontalScale(158),
-      textAlign: "center",
-    },
-    selectedSlotText: {
-      color: colors.BUTTON_GREEN,
-    },
-    disabledSlotText: {
-      color: colors.MED_GREY,
+      backgroundColor: colors.GROUND,
+      borderColor: colors.GROUND,
     },
     slotText: {
-      color: colors.BLACK,
+      color: colors.INK,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(18),
+      textAlign: "center",
+    },
+    disabledSlotText: {
+      color: colors.FAINT,
+      textDecorationLine: "line-through",
+      textDecorationColor: colors.FAINT,
+    },
+    emptyState: {
+      flex: 0,
+      paddingVertical: verticalScale(40),
+    },
+    emptyIcon: {
+      width: horizontalScale(72),
+      height: horizontalScale(72),
+      resizeMode: "contain",
+      tintColor: colors.FAINT,
     },
   });

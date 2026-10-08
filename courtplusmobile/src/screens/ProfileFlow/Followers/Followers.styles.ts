@@ -1,13 +1,17 @@
 import { StyleSheet } from "react-native";
+import { Layout } from "theme";
 import { verticalScale } from "utils";
 
 export default StyleSheet.create({
+  list: {
+    marginHorizontal: -Layout.gutter,
+  },
   listContainer: {
-    paddingTop: verticalScale(24),
-    paddingBottom: verticalScale(20),
+    paddingHorizontal: Layout.gutter,
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(24),
   },
   separator: {
-    marginTop: verticalScale(10.75),
-    marginBottom: verticalScale(16),
+    height: verticalScale(10),
   },
 });

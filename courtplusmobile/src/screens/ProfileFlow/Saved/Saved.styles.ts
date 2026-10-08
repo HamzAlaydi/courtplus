@@ -1,20 +1,21 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { ColorsType, Layout } from "theme";
+import { verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    container: {
-      backgroundColor: colors.WHITE,
-    },
     emptyContainer: {
-      paddingTop: verticalScale(83.5),
+      paddingTop: verticalScale(72),
+    },
+    list: {
+      marginHorizontal: -Layout.gutter,
     },
     listContainer: {
-      paddingTop: verticalScale(20),
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(16),
       paddingBottom: verticalScale(40),
     },
     separator: {
-      marginTop: verticalScale(10),
+      height: verticalScale(14),
     },
   });

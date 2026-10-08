@@ -1,7 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiExternalLink } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
+import {
+  IoLocationOutline,
+  IoSnowOutline,
+  IoStar,
+  IoWomanOutline,
+} from "react-icons/io5";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Popconfirm, Popover, Tag } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +14,8 @@ import { useTranslation } from "react-i18next";
 import { deleteCourt } from "../actions/court_actions";
 import { useNotification } from "../modules/NotificationProvider";
 import { notifyError } from "../utils/errorMessages";
+
+const FALLBACK_IMAGE = "/assets/images/placeholder.png";
 
 const STATUS_COLORS = {
   available: "green",
@@ -39,96 +46,173 @@ const CourtCard = ({ name, id, image, status, court }) => {
     (status === "changes_requested" || status === "suspended") &&
     court?.rejectionReason;
 
-  return (
-    <div className="court-card">
-      {/* Court Image */}
+  const hasFeatures = court?.isAirConditioned || court?.isWomenOnly;
+  const branchName = court?.branch?.name;
+  const hourlyRate = court?.hourlyRate;
 
-      <img className="court-image" src={image} alt=" Court" />
+  const stats = [
+    {
+      id: "income",
+      label: t("courtCard.income_month"),
+      value: court?.totalRevenue?.toLocaleString() ?? 0,
+      unit: t("home.currency"),
+    },
+    {
+      id: "minutes",
+      label: t("courtCard.occupation_month"),
+      value: court?.minutesBooked?.toLocaleString() ?? 0,
+    },
+    {
+      id: "reviews",
+      label: t("courtCard.recent_reviews"),
+      value: court?.reviewsCount ?? 0,
+    },
+    {
+      id: "upcoming",
+      label: t("courtCard.upcoming_matches"),
+      value: court?.upcomingBookings ?? 0,
+    },
+  ];
+
+  return (
+    <article className="court-card">
+      {/* Court Image */}
+      <div className="court-card-media">
+        <Link
+          to={`/courts/${id}`}
+          className="court-card-media-link"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <img
+            className="court-image"
+            src={image || FALLBACK_IMAGE}
+            alt=""
+            loading="lazy"
+          />
+        </Link>
+
+        <span className="court-card-rating">
+          <IoStar className="court-card-star" />
+          {court?.avgRating?.toFixed?.(1) ?? "0.0"}
+        </span>
+
+        {hasFeatures && (
+          <div className="court-card-features">
+            {court?.isAirConditioned && (
+              <span className="court-card-feature">
+                <IoSnowOutline />
+                {t("courtCard.air_conditioned")}
+              </span>
+            )}
+            {court?.isWomenOnly && (
+              <span className="court-card-feature">
+                <IoWomanOutline />
+                {t("courtCard.women_only")}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Court Info */}
-      <div className="court-info">
-        <h4>
-          {name} <br /> {t("courtCard.label")}
-        </h4>
-        <div className="rating">
-          ⭐ {court?.avgRating?.toFixed?.(1) ?? "0.0"}
+      <div className="court-card-body">
+        <div className="court-info">
+          <div className="court-card-titles">
+            <h4 className="court-card-name">{name}</h4>
+            <span className="court-card-label">{t("courtCard.label")}</span>
+            {branchName && (
+              <span className="court-card-branch">
+                <IoLocationOutline />
+                <span className="cp-truncate">{branchName}</span>
+              </span>
+            )}
+          </div>
+          {hourlyRate != null && (
+            <span className="court-card-price" title={t("court.hourly_rate")}>
+              {Number(hourlyRate).toLocaleString()}
+              <span className="court-card-price-unit">
+                {t("home.currency")}
+              </span>
+            </span>
+          )}
         </div>
+
         <div className="status">
           <Tag color={STATUS_COLORS[status] || "default"}>
             {t(`courtCard.status.${status}`, status)}
           </Tag>
-          {court?.isAirConditioned && (
-            <Tag color="cyan">{t("courtCard.air_conditioned")}</Tag>
-          )}
-          {court?.isWomenOnly && (
-            <Tag color="magenta">{t("courtCard.women_only")}</Tag>
+          {court?.sport && (
+            <Tag className="court-card-sport">
+              {t(`courtForm.${court.sport}`, court.sport)}
+            </Tag>
           )}
           {showReason && (
             <Popover
               content={court.rejectionReason}
               title={t("courtCard.rejection_reason")}
             >
-              <InfoCircleOutlined className="status-info-icon" />
+              <button
+                type="button"
+                className="status-info-icon"
+                aria-label={t("courtCard.rejection_reason")}
+              >
+                <InfoCircleOutlined />
+              </button>
             </Popover>
           )}
         </div>
-      </div>
 
-      {/* Court Stats */}
-      <div className="court-stats">
-        <div className="stat">
-          <span>{t("courtCard.income_month")}</span>
-          <h3>
-            {court?.totalRevenue?.toLocaleString() ?? 0} <span>{t("home.currency")}</span>
-          </h3>
-        </div>
+        {/* Court Stats */}
+        <dl className="court-stats">
+          {stats.map((stat) => (
+            <div className="stat" key={stat.id}>
+              <dt>{stat.label}</dt>
+              <dd>
+                {stat.value}
+                {stat.unit && <span>{stat.unit}</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
 
-        <div className="stat">
-          <span>{t("courtCard.occupation_month")}</span>
-          <h3>{court?.minutesBooked?.toLocaleString() ?? 0}</h3>
-        </div>
-
-        {/* Reviews */}
-        <div className="reviews">
-          <span>{t("courtCard.recent_reviews")}</span>
-          <h3>{court?.reviewsCount ?? 0}</h3>
-        </div>
-
-        <div className="stat">
-          <span>{t("courtCard.upcoming_matches")}</span>
-          <h3>{court?.upcomingBookings ?? 0}</h3>
-        </div>
-      </div>
-
-      <Link className="court-card-link">
-        <FiExternalLink color="#777" size={24} />
-      </Link>
-
-      <div className="court-card-actions">
-        <Link to={`${id}`} className="court-card-btn" type="text">
-          {t("courtCard.open")}
-        </Link>
-        {status === "changes_requested" ? (
-          <Link to={`${id}/edit`} className="court-card-btn">
-            {t("courtCard.resubmit")}
+        <div className="court-card-actions">
+          <Link
+            to={`/courts/${id}`}
+            className="court-card-btn court-card-btn--primary"
+          >
+            {t("courtCard.open")}
           </Link>
-        ) : (
-          <Link to={`${id}/edit`} className="court-card-btn" type="text">
-            {t("courtCard.edit")}
-          </Link>
-        )}
-        <Popconfirm
-          title={t("courtCard.delete_confirm")}
-          okText={t("common.delete")}
-          cancelText={t("common.cancel")}
-          onConfirm={() => deleteCourtMutate()}
-        >
-          <button type="button" className="court-card-delete">
-            <MdDeleteOutline size={20} />
-          </button>
-        </Popconfirm>
+          {status === "changes_requested" ? (
+            <Link
+              to={`/courts/${id}/edit`}
+              className="court-card-btn court-card-btn--ink"
+            >
+              {t("courtCard.resubmit")}
+            </Link>
+          ) : (
+            <Link to={`/courts/${id}/edit`} className="court-card-btn">
+              {t("courtCard.edit")}
+            </Link>
+          )}
+          <Popconfirm
+            title={t("courtCard.delete_confirm")}
+            okText={t("common.delete")}
+            cancelText={t("common.cancel")}
+            okButtonProps={{ danger: true }}
+            onConfirm={() => deleteCourtMutate()}
+          >
+            <button
+              type="button"
+              className="court-card-delete"
+              aria-label={t("common.delete")}
+            >
+              <MdDeleteOutline size={20} />
+            </button>
+          </Popconfirm>
+        </div>
       </div>
-    </div>
+    </article>
   );
 };
 

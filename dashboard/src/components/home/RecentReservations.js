@@ -1,6 +1,7 @@
 import React from "react";
 import { Empty, Table, Tag } from "antd";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getBookings } from "../../actions/booking_action";
 
@@ -37,40 +38,62 @@ export default function RecentReservations() {
 
   const columns = [
     {
-      title: t("home.reservations.court"),
-      key: "court",
-      render: (_, record) => record.court?.name || "—",
-    },
-    {
       title: t("home.reservations.customer"),
       key: "customer",
-      render: (_, record) => getCustomerName(record),
+      render: (_, record) => {
+        const name = getCustomerName(record);
+        return (
+          <span
+            className={`home-res-customer${name === "—" ? " is-empty" : ""}`}
+          >
+            {name}
+          </span>
+        );
+      },
+    },
+    {
+      title: t("home.reservations.court"),
+      key: "court",
+      render: (_, record) => (
+        <span className="home-res-court" title={record.court?.name}>
+          {record.court?.name || "—"}
+        </span>
+      ),
     },
     {
       title: t("home.reservations.date"),
       key: "date",
-      render: (_, record) =>
-        new Date(record.startDate).toLocaleDateString(i18n.language),
-    },
-    {
-      title: t("home.reservations.time"),
-      key: "time",
-      render: (_, record) =>
-        `${formatTime(record.startDate)} – ${formatTime(record.endDate)}`,
-    },
-    {
-      title: t("home.reservations.duration"),
-      key: "duration",
-      render: (_, record) =>
-        t("home.reservations.minutes", { count: record.duration }),
+      render: (_, record) => (
+        <span className="home-res-stack">
+          <span>
+            {new Date(record.startDate).toLocaleDateString(i18n.language, {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+          <span className="cp-caption cp-num">
+            {`${formatTime(record.startDate)} – ${formatTime(record.endDate)}`}
+          </span>
+        </span>
+      ),
     },
     {
       title: t("home.reservations.amount"),
       key: "amount",
-      render: (_, record) =>
-        `${getAmount(record).toLocaleString()} ${(
-          record.currency || ""
-        ).toUpperCase()}`,
+      align: "end",
+      render: (_, record) => (
+        <span className="home-res-stack home-res-amount">
+          <strong className="cp-num">
+            {`${getAmount(record).toLocaleString()} ${(
+              record.currency || ""
+            ).toUpperCase()}`}
+          </strong>
+          <span className="cp-caption">
+            {t("home.reservations.minutes", { count: record.duration })}
+          </span>
+        </span>
+      ),
     },
     {
       title: t("home.reservations.status"),
@@ -84,18 +107,24 @@ export default function RecentReservations() {
   ];
 
   return (
-    <div className="home-card home-reservations">
-      <h4 className="home-card-title">{t("home.reservations.title")}</h4>
+    <section className="cp-card home-card home-reservations">
+      <div className="cp-section-head">
+        <h3 className="cp-section-title">{t("home.reservations.title")}</h3>
+        <Link to="/schedule" className="cp-link">
+          {t("home.branches.viewAll")}
+        </Link>
+      </div>
       <Table
         rowKey="id"
         columns={columns}
         dataSource={bookings}
         loading={isLoading}
         pagination={false}
+        scroll={{ x: 520 }}
         locale={{
           emptyText: <Empty description={t("home.reservations.empty")} />,
         }}
       />
-    </div>
+    </section>
   );
 }

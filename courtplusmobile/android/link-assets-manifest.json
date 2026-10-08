@@ -2,6 +2,22 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "assets/fonts/alexandria/Alexandria-Bold.ttf",
+      "sha1": "3c36ddf48ff8a240183f55af86d819d83fa23f96"
+    },
+    {
+      "path": "assets/fonts/alexandria/Alexandria-ExtraBold.ttf",
+      "sha1": "78d3ff329aaa64fd68cd3551fb2530eaf7526cbd"
+    },
+    {
+      "path": "assets/fonts/alexandria/Alexandria-SemiBold.ttf",
+      "sha1": "3a4bfa8059af83330541098ad4f9f04e5358c306"
+    },
+    {
+      "path": "assets/fonts/alexandria/OFL.txt",
+      "sha1": "35360ac9aad3091def7e9e1907ec74586ac99e74"
+    },
+    {
       "path": "assets/fonts/cairo/Cairo-Bold.ttf",
       "sha1": "23b2b8137a3a75bd05056b67ac28153c9fbef8ad"
     },
@@ -40,6 +56,42 @@
     {
       "path": "assets/fonts/inter/Inter-Thin.ttf",
       "sha1": "50d48fc8e929b3a706e5d4ec58a75e89827ec7f4"
+    },
+    {
+      "path": "assets/fonts/readexpro/OFL.txt",
+      "sha1": "30bfa4403a68a19911900588e99c0318d0029370"
+    },
+    {
+      "path": "assets/fonts/readexpro/ReadexPro-Bold.ttf",
+      "sha1": "7146bfd193fa0bd8bb1884741bd1f09aa26c0455"
+    },
+    {
+      "path": "assets/fonts/readexpro/ReadexPro-Medium.ttf",
+      "sha1": "1ce37ac4122b7be97e442b38db6e89ac50cdb9d6"
+    },
+    {
+      "path": "assets/fonts/readexpro/ReadexPro-Regular.ttf",
+      "sha1": "a66526ef76f3e44b9a0ca84a8d4ceb43e2ca88d9"
+    },
+    {
+      "path": "assets/fonts/readexpro/ReadexPro-SemiBold.ttf",
+      "sha1": "262aecfa35d40c2504efa2878294dfedf9f90a3a"
+    },
+    {
+      "path": "assets/fonts/unbounded/OFL.txt",
+      "sha1": "f5eff0d3d8573f770ac443933b840196b2739d40"
+    },
+    {
+      "path": "assets/fonts/unbounded/Unbounded-Bold.ttf",
+      "sha1": "f3b44f1f7b66693bf583fcec8a7b4310a994000f"
+    },
+    {
+      "path": "assets/fonts/unbounded/Unbounded-ExtraBold.ttf",
+      "sha1": "09ffeed65a31ad1ad7b7b9230d1bce2360f53912"
+    },
+    {
+      "path": "assets/fonts/unbounded/Unbounded-SemiBold.ttf",
+      "sha1": "a6df290eea03a75b5f937b2e1f690d9a4a5dd5eb"
     }
   ]
 }

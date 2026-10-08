@@ -2,7 +2,7 @@ import { BottomSheetModal, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import BottomSheetOverlay from "molecules/BottomSheetOverlay/BottomSheetOverlay.component";
 import { AvatarSlots, List } from "organisms/index";
 import React, { forwardRef, useMemo, useRef } from "react";
-import { Image, TextInput, View } from "react-native";
+import { Image, View } from "react-native";
 import { Images } from "theme";
 import { useAddPlayersModal } from "./AddPlayersModal.logic";
 import styles from "./AddPlayersModal.styles";
@@ -67,11 +67,14 @@ const AddPlayersModal = forwardRef<BottomSheetModal, AddPlayersModalProps>(
           />
         </View>
         <View style={themedStyles.searchInputContainer}>
-          <Image source={Images.search} />
+          <Image source={Images.search} style={themedStyles.searchIcon} />
           <BottomSheetTextInput
             placeholder={t("openMatch.playersNameEmailPhone")}
+            placeholderTextColor={colors.MUTED}
+            selectionColor={colors.INK}
             value={searchInput}
             onChangeText={setSearchInput}
+            returnKeyType="search"
             style={themedStyles.input}
           />
         </View>
@@ -88,7 +91,7 @@ const AddPlayersModal = forwardRef<BottomSheetModal, AddPlayersModalProps>(
           <CustomButton
             title={t("general.continue")}
             onPress={onContinuePress}
-            variant="dark"
+            variant="primary"
           />
         </View>
       </BottomSheetOverlay>

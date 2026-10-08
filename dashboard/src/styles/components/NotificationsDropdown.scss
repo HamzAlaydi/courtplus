@@ -1,52 +1,54 @@
+@use "../base/index" as *;
+
 // Notifications bell + panel (header).
 //
-// The panel used to be a 40rem-tall box with a full-width type select, every
-// unread row painted solid lime and raw `toLocaleString()` timestamps. It now
-// reads like a feed: icon per kind, title + relative time on one line, the
-// message underneath, a soft tint plus a dot for unread, and hover actions.
-// Everything positional uses logical properties so the Arabic (RTL) layout
-// mirrors correctly.
+// The panel reads like a feed: icon per kind, title + relative time on one
+// line, the message underneath, a soft tint plus a dot for unread, and hover
+// actions. Everything positional uses logical properties so the Arabic (RTL)
+// layout mirrors correctly.
 
-$nd-lime: #c0ff42;
-$nd-navy: #0f1c3f;
-$nd-text: #1b1f2a;
-$nd-muted: #6b7280;
-$nd-border: #eef0f3;
+$nd-lime: $cp-lime;
+$nd-navy: $cp-ink;
+$nd-text: $cp-ink;
+$nd-muted: $cp-muted;
+$nd-border: $cp-divider;
 
 .notif-trigger {
+  @include cp-press;
+  @include cp-focus-ring;
   appearance: none;
   border: 0;
-  background: transparent;
-  width: 40px;
-  height: 40px;
+  background: $cp-card;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: $nd-text;
-  transition: background 0.15s ease;
+  box-shadow: $cp-shadow-soft;
 
-  &:hover,
-  &:focus-visible {
-    background: rgba(15, 28, 63, 0.06);
-    outline: none;
+  &:hover {
+    box-shadow: $cp-shadow-card;
   }
 
   .notif-icon {
     font-size: 20px;
+    color: $nd-text;
   }
 
   .ant-badge .ant-scroll-number {
-    box-shadow: 0 0 0 2px #fff;
+    box-shadow: 0 0 0 2px $cp-card;
   }
 }
 
 .notifications-popover {
   .ant-popover-inner {
     padding: 0;
-    border-radius: 16px;
-    box-shadow: 0 16px 40px rgba(15, 28, 63, 0.14), 0 2px 8px rgba(15, 28, 63, 0.06);
+    border-radius: 20px;
+    box-shadow: $cp-shadow-popup;
     overflow: hidden;
   }
 }
@@ -64,23 +66,22 @@ $nd-border: #eef0f3;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 14px 16px 10px;
+    padding: 16px 16px 12px;
 
     h4 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
+      @include cp-section-title;
+      font-size: 15px;
     }
 
     .nd-mark-all {
-      padding: 0 4px;
-      height: 24px;
+      padding: 0 6px;
+      height: 28px;
       font-size: 12px;
+      font-weight: 600;
       color: $nd-navy;
 
       &:disabled {
-        color: #b7bcc7;
+        color: $cp-faint;
       }
     }
   }
@@ -94,7 +95,7 @@ $nd-border: #eef0f3;
     border-bottom: 1px solid $nd-border;
 
     .ant-segmented {
-      background: #f1f3f6;
+      background: $cp-divider;
       border-radius: 999px;
       padding: 2px;
 
@@ -162,13 +163,13 @@ $nd-border: #eef0f3;
 
     &:hover,
     &:focus-visible {
-      background: #f5f7fa;
+      background: $cp-row-hover;
       outline: none;
     }
 
     // Unread: soft brand tint and a dot at the leading edge.
     &.is-unread {
-      background: rgba(192, 255, 66, 0.16);
+      background: $cp-lime-wash;
 
       &::before {
         content: "";
@@ -179,11 +180,11 @@ $nd-border: #eef0f3;
         height: 6px;
         margin-top: -3px;
         border-radius: 50%;
-        background: #7ccb00;
+        background: $nd-navy;
       }
 
       &:hover {
-        background: rgba(192, 255, 66, 0.28);
+        background: $cp-lime-tint;
       }
 
       .nd-title {
@@ -202,23 +203,23 @@ $nd-border: #eef0f3;
       flex-shrink: 0;
 
       &.tone-success {
-        background: #e7f8e9;
-        color: #1f8f3a;
+        background: $cp-success-bg;
+        color: $cp-success;
       }
       &.tone-danger {
-        background: #fdecec;
-        color: #c62828;
+        background: $cp-danger-bg;
+        color: $cp-danger-text;
       }
       &.tone-warning {
-        background: #fff4dc;
-        color: #b26a00;
+        background: $cp-warning-bg;
+        color: $cp-warning;
       }
       &.tone-info {
-        background: #e9eefb;
-        color: #2f4bb3;
+        background: $cp-info-bg;
+        color: $cp-info;
       }
       &.tone-neutral {
-        background: #f1f3f6;
+        background: $cp-divider;
         color: $nd-muted;
       }
     }
@@ -254,7 +255,7 @@ $nd-border: #eef0f3;
       margin: 3px 0 0;
       font-size: 12.5px;
       line-height: 1.45;
-      color: #4b5563;
+      color: $nd-muted;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -279,7 +280,7 @@ $nd-border: #eef0f3;
       transition: opacity 0.15s ease, background 0.15s ease;
 
       &:hover {
-        background: rgba(15, 28, 63, 0.08);
+        background: rgba(10, 21, 23, 0.08);
         color: $nd-navy;
       }
     }
@@ -294,6 +295,7 @@ $nd-border: #eef0f3;
     margin-top: 6px;
     color: $nd-navy;
     font-size: 12px;
+    font-weight: 600;
   }
 }
 

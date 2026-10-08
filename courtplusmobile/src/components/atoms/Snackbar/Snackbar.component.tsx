@@ -32,16 +32,23 @@ const Snackbar = ({
           />
 
           {!actionLabel && (
-            <TouchableOpacity onPress={onDismiss}>
+            <TouchableOpacity
+              onPress={onDismiss}
+              hitSlop={8}
+              style={themedStyles.closeButton}
+            >
               <Image source={Images.close} style={themedStyles.icon} />
             </TouchableOpacity>
           )}
 
           {actionLabel && (
-            <TouchableOpacity onPress={onActionPress}>
+            <TouchableOpacity
+              onPress={onActionPress}
+              style={themedStyles.actionButton}
+            >
               <CustomText
                 font="headline3"
-                weight="medium"
+                weight="semiBold"
                 text={actionLabel}
                 overrideStyle={themedStyles.action}
               />

@@ -20,7 +20,7 @@ const CourtInfo = ({
       image: Images.clock,
     },
     {
-      title: `${minTime} mins`,
+      title: `${minTime} ${t("general.mins")}`,
       subtitle: t("court.mins"),
       image: Images.clock,
     },
@@ -42,7 +42,7 @@ const CourtInfo = ({
         }))}
       />
       <View style={styles.sessionOverviewContainer}>
-        <SessionOverview sessions={info} isDividerBlack />
+        <SessionOverview sessions={info} />
       </View>
     </View>
   );

@@ -1,8 +1,8 @@
 import { useThemeContext } from "contexts";
 import { Tabs } from "molecules/index";
 import React, { useMemo, useState } from "react";
-import { View } from "react-native";
-import { courtDetailsTabsList } from "utils";
+import Animated from "react-native-reanimated";
+import { courtDetailsTabsList, enterFade } from "utils";
 import styles from "./CourtTabs.styles";
 import {
   CourtAvailability,
@@ -28,7 +28,11 @@ const CourtTabs = ({ court }: CourtTabsProps) => {
         setSelectedTab={setSelectedTab}
         overrideStyle={themedStyles.tabs}
       />
-      <View style={themedStyles.content}>
+      <Animated.View
+        key={selectedTab.key}
+        entering={enterFade()}
+        style={themedStyles.content}
+      >
         {selectedTab.key === "details" && (
           <CourtInfo
             hourlyRate={court.hourlyRate}
@@ -50,7 +54,7 @@ const CourtTabs = ({ court }: CourtTabsProps) => {
         {selectedTab.key === "availability" && (
           <CourtAvailability courtId={court.id} />
         )}
-      </View>
+      </Animated.View>
     </>
   );
 };

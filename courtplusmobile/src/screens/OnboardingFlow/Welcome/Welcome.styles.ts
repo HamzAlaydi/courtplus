@@ -5,29 +5,30 @@ import { horizontalScale, spacing, verticalScale } from "utils";
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.BACKGROUND,
+      backgroundColor: colors.INK,
     },
-    content: {
+    logoContainer: {
+      flex: 1,
       alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: verticalScale(24),
     },
     logo: {
-      width: horizontalScale(138),
-      height: horizontalScale(175),
-      marginTop: verticalScale(161),
+      width: horizontalScale(118),
+      height: horizontalScale(150),
+      resizeMode: "contain",
     },
     languageContainer: {
-      marginTop: verticalScale(101),
       width: "100%",
+      gap: spacing[12],
     },
     title: {
       color: colors.WHITE,
       textAlign: "center",
-      marginBottom: verticalScale(19),
+      marginBottom: verticalScale(8),
     },
     button: {
-      marginTop: verticalScale(101),
-    },
-    arabicButton: {
-      marginBottom: verticalScale(14),
+      marginTop: verticalScale(32),
+      marginBottom: verticalScale(16),
     },
   });

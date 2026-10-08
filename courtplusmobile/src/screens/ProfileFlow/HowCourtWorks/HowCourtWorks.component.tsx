@@ -1,23 +1,20 @@
-import { Header, WidgetWrapper } from "molecules/index";
+import { Header } from "molecules/index";
 import { MainWrapper } from "organisms/index";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Text } from "react-native";
+import DocumentContent from "../Terms/components/DocumentContent/DocumentContent.component";
+import styles from "./HowCourtWorks.styles";
 
 const HowCourtWorksScreen = () => {
   const { t } = useTranslation();
 
   return (
-    <MainWrapper scrollEnabled whiteBackground>
+    <MainWrapper scrollEnabled overrideContentStyle={styles.content}>
       <Header whiteColor title={t("settings.howCourtWorks")} />
-      <WidgetWrapper
-        overrideStyle={{
-          marginTop: 46,
-        }}
-      >
-        <Text>{t("settings.howCourtWorksHeadline")}</Text>
-        <Text>{t("settings.howCourtWorksContent")}</Text>
-      </WidgetWrapper>
+      <DocumentContent
+        headline={t("settings.howCourtWorksHeadline")}
+        content={t("settings.howCourtWorksContent")}
+      />
     </MainWrapper>
   );
 };

@@ -60,7 +60,8 @@
     "notVerified": "No",
     "tenantId": "Tenant ID",
     "editProfile": "Edit Profile",
-    "tenant": "Tenant"
+    "tenant": "Tenant",
+    "toggle_sidebar": "Toggle sidebar"
   },
   "home": {
     "greeting": "Welcome back, {{name}}",

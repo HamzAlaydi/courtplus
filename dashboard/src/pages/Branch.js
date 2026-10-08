@@ -1,10 +1,14 @@
 import {
   CalendarOutlined,
   EditOutlined,
+  EnvironmentOutlined,
   FilterOutlined,
   InfoCircleOutlined,
+  PlusOutlined,
+  StarFilled,
+  UserAddOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Card, message, Modal, Select, Spin } from "antd";
+import { Alert, Button, message, Modal, Select, Spin } from "antd";
 import { Link, useParams } from "react-router-dom";
 import CourtCard from "../components/CourtCard";
 import { useQuery } from "@tanstack/react-query";
@@ -52,7 +56,7 @@ export default function Branch() {
 
   if (isLoading) {
     return (
-      <div className="content">
+      <div className="content branch-page branch-page--state">
         <Spin size="large" />
       </div>
     );
@@ -102,27 +106,22 @@ export default function Branch() {
     }
   };
 
-  const getImage = (assets) => {
-    const imageAssets = assets?.filter((asset) => asset.type === "image");
-    if (imageAssets?.length > 0) {
-      const randomIndex = Math.floor(Math.random() * imageAssets.length);
-      return imageAssets[randomIndex].url;
-    }
-    return null;
-  };
+  // Court photos are stored as "court_image"; the first one is the cover (as
+  // on the Courts page).
+  const getImage = (assets) =>
+    assets?.find((asset) => asset.type === "court_image")?.url || null;
 
   return (
-    <div className="content">
+    <div className="content branch-page">
       {branch?.suspendedAt && (
         <Alert
           type="warning"
           showIcon
-          style={{ marginBottom: 16 }}
           message={t("branch.suspended_title", "This branch is suspended")}
           description={branch.suspendedReason}
         />
       )}
-      <div className="branch-header">
+      <section className="branch-header">
         <div className="cover-image">
           <img
             src={branch?.coverUrl || "/assets/images/placeholder.png"}
@@ -130,57 +129,74 @@ export default function Branch() {
           />
         </div>
 
-        <div className="branch-info">
-          <img
-            className="img-circle img-profile"
-            src={branch?.logoUrl || "/assets/images/placeholder.png"}
-            alt=""
-          />
-          <div className="text-info">
-            <h4>{branch?.name}</h4>
-            <p>📍 {branch?.location?.address}</p>
-            <p>
-              <strong>
-                ⭐ {branch?.avgRating?.toFixed?.(1) ?? "0.0"}
-              </strong>{" "}
-              ·{" "}
-              <strong>
-                {branch?.reviewsCount ?? 0} {t("branch.reviews")}
-              </strong>
-            </p>
+        <div className="branch-header-body">
+          <div className="branch-info">
+            <img
+              className="img-circle img-profile"
+              src={branch?.logoUrl || "/assets/images/placeholder.png"}
+              alt=""
+            />
+            <div className="text-info">
+              <h4>{branch?.name}</h4>
+              {branch?.location?.address && (
+                <p className="branch-address">
+                  <EnvironmentOutlined />
+                  <span>{branch.location.address}</span>
+                </p>
+              )}
+              <p className="branch-rating">
+                <StarFilled className="branch-rating-star" />
+                <strong className="cp-num">
+                  {branch?.avgRating?.toFixed?.(1) ?? "0.0"}
+                </strong>
+                <span aria-hidden="true">·</span>
+                <span>
+                  {branch?.reviewsCount ?? 0} {t("branch.reviews")}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="branch-actions">
+            <Button
+              className="staff-button"
+              icon={<UserAddOutlined />}
+              onClick={() => setStaffModalOpen(true)}
+            >
+              Add Staff
+            </Button>
+            <Link to="edit" tabIndex={-1}>
+              <Button
+                type="primary"
+                className="edit-button"
+                icon={<EditOutlined />}
+              >
+                {t("branch.edit_branch")}
+              </Button>
+            </Link>
           </div>
         </div>
-
-        <div className="branch-actions">
-          <Button
-            className="staff-button"
-            onClick={() => setStaffModalOpen(true)}
-          >
-            + Add Staff
-          </Button>
-          <Link to="edit">
-            <Button
-              type="primary"
-              className="edit-button"
-              icon={<EditOutlined />}
-            >
-              {t("branch.edit_branch")}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      </section>
 
       <div className="dashboard-overview">
         <div className="filter-buttons">
           {filterOptions.map((filter) => (
-            <Button key={filter}>{filter}</Button>
+            <Button key={filter} size="small">
+              {filter}
+            </Button>
           ))}
-          <Button type="default">+</Button>
-          <Button icon={<CalendarOutlined />}>Select date</Button>
-          <Button icon={<FilterOutlined />}>Filter</Button>
+          <Button size="small" type="default">
+            +
+          </Button>
+          <Button size="small" icon={<CalendarOutlined />}>
+            Select date
+          </Button>
+          <Button size="small" icon={<FilterOutlined />}>
+            Filter
+          </Button>
         </div>
 
-        <div className="stats-cards">
+        <div className="cp-kpi-grid cp-stagger stats-cards">
           {/* These three cards used to read branch.totalRevenue /
               totalBookings / upcomingBookings — denormalised counters that
               drift away from the real bookings and can even go negative, so
@@ -188,59 +204,78 @@ export default function Branch() {
               attaches a live-computed `monthStats` for staff, so read that
               and say in the label that the figures cover the current month.
               `minutesBooked` below has no live equivalent yet. */}
-          <Card className="stat-card revenue">
+          <div className="cp-kpi cp-kpi--ink stat-card revenue">
             <div className="card-header">
-              <span>{t("branch.revenue_this_month")}</span>{" "}
+              <span className="cp-kpi__label">
+                {t("branch.revenue_this_month")}
+              </span>
               <InfoCircleOutlined />
             </div>
-            <h2>
-              {branch?.monthStats?.totalRevenue?.toLocaleString() ?? 0}{" "}
-              <span>{t("home.currency")}</span>
-            </h2>
-          </Card>
+            <span className="cp-kpi__value">
+              {branch?.monthStats?.totalRevenue?.toLocaleString() ?? 0}
+              <span className="cp-kpi__unit">{t("home.currency")}</span>
+            </span>
+          </div>
 
-          <Card className="stat-card">
+          <div className="cp-kpi stat-card">
             <div className="card-header">
-              <span>{t("branch.bookings_this_month")}</span>{" "}
+              <span className="cp-kpi__label">
+                {t("branch.bookings_this_month")}
+              </span>
               <InfoCircleOutlined />
             </div>
-            <h2>{branch?.monthStats?.totalBookings?.toLocaleString() ?? 0}</h2>
-          </Card>
+            <span className="cp-kpi__value">
+              {branch?.monthStats?.totalBookings?.toLocaleString() ?? 0}
+            </span>
+          </div>
 
-          <Card className="stat-card small">
+          <div className="cp-kpi stat-card small">
             <div className="card-header">
-              <span>{t("branch.upcoming_this_month")}</span>{" "}
+              <span className="cp-kpi__label">
+                {t("branch.upcoming_this_month")}
+              </span>
               <InfoCircleOutlined />
             </div>
-            <h2>{branch?.monthStats?.upcomingBookings ?? 0}</h2>
-          </Card>
+            <span className="cp-kpi__value">
+              {branch?.monthStats?.upcomingBookings ?? 0}
+            </span>
+          </div>
 
-          <Card className="stat-card small">
+          <div className="cp-kpi stat-card small">
             <div className="card-header">
-              <span>{t("branch.minutes_booked")}</span> <InfoCircleOutlined />
+              <span className="cp-kpi__label">{t("branch.minutes_booked")}</span>
+              <InfoCircleOutlined />
             </div>
-            <h2>{branch?.minutesBooked?.toLocaleString() ?? 0}</h2>
-          </Card>
+            <span className="cp-kpi__value">
+              {branch?.minutesBooked?.toLocaleString() ?? 0}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="content-header">
         <h4>{t("branch.courts")}</h4>
-        <Link to="/courts/add">
-          <Button type="primary">+ {t("branch.add_court")}</Button>
+        <Link to="/courts/add" tabIndex={-1}>
+          <Button type="primary" icon={<PlusOutlined />}>
+            {t("branch.add_court")}
+          </Button>
         </Link>
       </div>
 
-      {courts?.items?.map((court) => (
-        <CourtCard
-          key={court.id}
-          id={court.id}
-          name={court.name}
-          status={court.status}
-          image={getImage(court.assets)}
-          court={court}
-        />
-      ))}
+      {courts?.items?.length > 0 && (
+        <div className="courts-grid">
+          {courts.items.map((court) => (
+            <CourtCard
+              key={court.id}
+              id={court.id}
+              name={court.name}
+              status={court.status}
+              image={getImage(court.assets)}
+              court={court}
+            />
+          ))}
+        </div>
+      )}
 
       <Modal
         title="Assign Staff to Branch"

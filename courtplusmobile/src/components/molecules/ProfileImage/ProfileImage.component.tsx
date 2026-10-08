@@ -1,9 +1,10 @@
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
-import { View, Image, TouchableOpacity } from "react-native";
+import { View, Image } from "react-native";
 import styles from "./ProfileImage.styles";
 import { Images } from "theme";
 import { ProfileImageProps } from "./ProfileImage.types";
+import { PressableScale } from "atoms/index";
 
 const ProfileImage = ({
   onPress,
@@ -20,12 +21,14 @@ const ProfileImage = ({
     <View style={[themedStyles.container, overrideStyle]}>
       <Image source={finalImage} style={themedStyles.image} />
       {showCamera && (
-        <TouchableOpacity
+        <PressableScale
           style={themedStyles.cameraContainer}
           onPress={onPress}
+          hitSlop={6}
+          accessibilityRole="button"
         >
           <Image source={Images.photo} style={themedStyles.cameraIcon} />
-        </TouchableOpacity>
+        </PressableScale>
       )}
     </View>
   );

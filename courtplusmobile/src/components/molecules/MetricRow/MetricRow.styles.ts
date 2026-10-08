@@ -1,21 +1,23 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { horizontalScale } from "utils";
+import { horizontalScale, moderateScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
-      gap: horizontalScale(9),
+      gap: horizontalScale(10),
     },
     dot: {
       width: horizontalScale(4),
       height: horizontalScale(4),
-      borderRadius: horizontalScale(50),
-      backgroundColor: colors.MED_GREY,
+      borderRadius: horizontalScale(2),
+      backgroundColor: colors.HANDLE,
     },
     text: {
-      color: colors.BLACK,
+      color: colors.INK,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(18),
     },
   });

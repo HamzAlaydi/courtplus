@@ -5,24 +5,26 @@ import { horizontalScale, spacing } from "utils";
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      gap: spacing[6],
+      gap: spacing[8],
     },
     iconContainer: {
-      backgroundColor: colors.WHITE,
-      padding: spacing[6],
-      height: spacing[36],
-      width: spacing[36],
+      backgroundColor: colors.GROUND,
+      height: horizontalScale(30),
+      width: horizontalScale(30),
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: spacing[32],
+      borderRadius: horizontalScale(15),
     },
     selectedIconContainer: {
-      backgroundColor: colors.BLACK,
+      backgroundColor: colors.LIME,
     },
     icon: {
-      tintColor: colors.BLACK,
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
     selectedIcon: {
-      tintColor: colors.GREEN_YELLOWISH,
+      tintColor: colors.INK,
     },
   });

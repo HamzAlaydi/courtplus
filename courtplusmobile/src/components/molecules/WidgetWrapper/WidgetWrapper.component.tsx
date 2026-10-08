@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
 import { WidgetWrapperProps } from "./WidgetWrapper.types";
 import { useThemeContext } from "contexts";
 import styles from "./WidgetWrapper.styles";
+import { PressableScale } from "atoms/index";
 
 const WidgetWrapper = ({
   children,
@@ -14,14 +15,20 @@ const WidgetWrapper = ({
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+
+  if (!onPress || disabled) {
+    return (
+      <View style={[themedStyles.container, overrideStyle]}>{children}</View>
+    );
+  }
+
   return (
-    <TouchableOpacity
-      disabled={disabled}
+    <PressableScale
       onPress={onPress}
       style={[themedStyles.container, overrideStyle]}
     >
       {children}
-    </TouchableOpacity>
+    </PressableScale>
   );
 };
 

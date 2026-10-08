@@ -12,23 +12,27 @@ export default function QuickActions() {
   const { t } = useTranslation();
 
   return (
-    <div className="home-card home-quick-actions">
-      <h4 className="home-card-title">{t("home.quickActions.title")}</h4>
-      <Link to="/branches/add">
-        <Button type="primary" icon={<PlusOutlined />} block>
-          {t("home.quickActions.addBranch")}
-        </Button>
-      </Link>
-      <Link to="/courts/add">
-        <Button icon={<ShopOutlined />} block>
-          {t("home.quickActions.addCourt")}
-        </Button>
-      </Link>
-      <Link to="/schedule">
-        <Button icon={<CalendarOutlined />} block>
-          {t("home.quickActions.viewSchedule")}
-        </Button>
-      </Link>
-    </div>
+    <section className="cp-card home-card home-quick-actions">
+      <div className="cp-section-head">
+        <h3 className="cp-section-title">{t("home.quickActions.title")}</h3>
+      </div>
+      <div className="home-quick-actions-list">
+        <Link to="/branches/add" tabIndex={-1}>
+          <Button type="primary" size="large" icon={<PlusOutlined />} block>
+            {t("home.quickActions.addBranch")}
+          </Button>
+        </Link>
+        <Link to="/courts/add" tabIndex={-1}>
+          <Button size="large" icon={<ShopOutlined />} block>
+            {t("home.quickActions.addCourt")}
+          </Button>
+        </Link>
+        <Link to="/schedule" tabIndex={-1}>
+          <Button size="large" icon={<CalendarOutlined />} block>
+            {t("home.quickActions.viewSchedule")}
+          </Button>
+        </Link>
+      </div>
+    </section>
   );
 }

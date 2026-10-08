@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { Image, Pressable, View } from "react-native";
+import { Image, View } from "react-native";
 import { NotificationItemProps } from "./NotificationItem.types";
 import { Images } from "theme";
 import { formatTime } from "utils";
 import { useThemeContext } from "contexts";
 import styles from "./NotificationItem.styles";
-import { CustomButton, CustomText } from "atoms/index";
+import { CustomButton, CustomText, PressableScale } from "atoms/index";
 import { useNotificationItem } from "./NotificationItem.logic";
 
 // Types whose fallback image is a user avatar; everything else gets a
@@ -13,11 +13,7 @@ import { useNotificationItem } from "./NotificationItem.logic";
 const socialTypes = ["follow", "post_like"];
 
 const NotificationItem = ({ item, overrideStyle }: NotificationItemProps) => {
-  const image = item.image
-    ? { uri: item.image }
-    : socialTypes.includes(item.type)
-      ? Images.maleProfile
-      : Images.notificationBell;
+  const isSocial = socialTypes.includes(item.type);
   const formattedTime = formatTime(item.createdAt);
   const {
     currentTheme: { colors },
@@ -28,28 +24,46 @@ const NotificationItem = ({ item, overrideStyle }: NotificationItemProps) => {
   });
 
   return (
-    <Pressable
+    <PressableScale
       style={[themedStyles.item, overrideStyle]}
       onPress={onNotificationPress}
+      scaleTo={0.98}
+      accessibilityRole="button"
     >
-      <View style={[themedStyles.container]}>
-        <Image source={image} style={themedStyles.imageContainer} />
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={themedStyles.avatar} />
+      ) : isSocial ? (
+        <Image source={Images.maleProfile} style={themedStyles.avatar} />
+      ) : (
+        <View style={themedStyles.iconTile}>
+          <Image source={Images.bell} style={themedStyles.icon} />
+        </View>
+      )}
+      <View style={themedStyles.body}>
         <CustomText
           overrideStyle={themedStyles.content}
-          text={`${item.content}. ${formattedTime}`}
+          text={item.content}
           font="headline3"
           weight="medium"
+          numberOfLines={3}
+        />
+        <CustomText
+          overrideStyle={themedStyles.time}
+          text={formattedTime}
+          font="caption"
+          weight="regular"
         />
       </View>
       {notificationButton && (
         <CustomButton
           {...notificationButton}
-          variant="dark"
+          variant="secondary"
+          size="small"
           overrideStyle={themedStyles.button}
           overrideTextStyle={themedStyles.buttonText}
         />
       )}
-    </Pressable>
+    </PressableScale>
   );
 };
 

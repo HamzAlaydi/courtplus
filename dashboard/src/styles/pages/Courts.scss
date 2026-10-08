@@ -1,42 +1,84 @@
 @use "../base/index" as *;
 
+.courts-page {
+  .ant-alert {
+    margin: 0;
+  }
+}
+
+// Filters on the start side, "Add court" on the end side
+.courts-toolbar {
+  align-items: flex-start;
+
+  .courts-toolbar-cta {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+  }
+
+  @media (max-width: 576px) {
+    .courts-toolbar-cta,
+    .courts-toolbar-cta .ant-btn {
+      width: 100%;
+    }
+  }
+}
+
 .courts-filters {
+  flex: 1 1 520px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1.2rem;
-  margin-bottom: 2.4rem;
+  gap: 10px;
+  min-width: 0;
 
   .courts-filter-search {
     flex: 1 1 260px;
-    max-width: 380px;
+    max-width: 420px;
+    box-shadow: $cp-shadow-soft;
+  }
+
+  .courts-filter-search-icon {
+    color: $cp-muted;
+    margin-inline-end: 4px;
   }
 
   .ant-select {
-    flex: 0 1 auto;
-    min-width: 180px;
+    flex: 0 1 200px;
+    min-width: 170px;
+  }
+
+  @media (max-width: 576px) {
+    .courts-filter-search,
+    .ant-select {
+      flex: 1 1 100%;
+      max-width: none;
+    }
   }
 }
 
 .courts-branch-group {
-  margin-bottom: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  .courts-branch-head {
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+  }
 
   .courts-branch-title {
-    margin: 0 0 1.2rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 2px solid #f5f5f5;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: $color-text;
+    @include cp-truncate;
   }
+}
 
-  .court-card {
-    margin-bottom: 1.6rem;
-  }
+.courts-empty {
+  display: flex;
+  justify-content: center;
+  padding-block: 40px;
 }
 
 .courts-pagination {
   display: flex;
   justify-content: center;
-  margin-top: 2.4rem;
 }

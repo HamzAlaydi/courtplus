@@ -89,100 +89,118 @@ export default function ResetPass() {
   return (
     <div className="auth-layout">
       <div className="auth-form-container">
-        <div className="auth-form-header">
-          <img src="/assets/images/logo-horizontal.png" alt="" />
-          <img src="/assets/images/icons/auth-key.png" alt="" />
-        </div>
-        <h2>{t("auth.reset_title")}</h2>
+        <div className="auth-card">
+          <div className="auth-form-header">
+            <img
+              className="auth-logo"
+              src="/assets/images/logo-horizontal.png"
+              alt="Court+"
+            />
+            <span className="auth-key">
+              <img src="/assets/images/icons/auth-key.png" alt="" />
+            </span>
+          </div>
+          <div className="auth-form">
+            <h2 className="auth-title">{t("auth.reset_title")}</h2>
+            <p className="auth-lead">
+              A verification code has been sent to <strong>{email}</strong>.
+              Please enter it along with your new password.
+            </p>
 
-        <div className="auth-form">
-          <p style={{ marginBottom: "2rem" }}>
-            A verification code has been sent to <strong>{email}</strong>.
-            Please enter it along with your new password.
-          </p>
-
-          <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              name="code"
-              label={t("auth.code")}
-              rules={[{ required: true, message: t("auth.code_required") }]}
-            >
-              <Input placeholder={t("auth.code_placeholder")} />
-            </Form.Item>
-
-            <Form.Item
-              label={t("auth.new_password")}
-              name="password"
-              rules={[
-                { required: true, message: t("auth.password_required") },
-                { min: 8, message: t("auth.password_min") },
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder={t("auth.new_password_placeholder")} />
-            </Form.Item>
-
-            <Form.Item
-              label={t("auth.confirm_new_password")}
-              name="confirmPassword"
-              dependencies={["password"]}
-              rules={[
-                { required: true, message: t("auth.confirm_password_required") },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject("Passwords do not match!");
-                  },
-                }),
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder={t("auth.confirm_new_password_placeholder")} />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
-                style={{ color: "#000" }}
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                name="code"
+                label={t("auth.code")}
+                rules={[{ required: true, message: t("auth.code_required") }]}
               >
-                Reset Password
-              </Button>
-            </Form.Item>
-            <div style={{ textAlign: "center", marginTop: 12 }}>
-              {canResend ? (
-                <Button type="link" onClick={handleResendOtp}>
-                  {t("settings.resendCode")}
-                </Button>
-              ) : (
-                <Text type="secondary">
-                  {t("settings.resendIn")} {timer}s
-                </Text>
-              )}
-            </div>
-          </Form>
-        </div>
+                <Input placeholder={t("auth.code_placeholder")} />
+              </Form.Item>
 
-        <h5>
-          Back to{" "}
-          <Link className="active" to="/auth/signin">
-            Sign In
-          </Link>
-        </h5>
+              <Form.Item
+                label={t("auth.new_password")}
+                name="password"
+                rules={[
+                  { required: true, message: t("auth.password_required") },
+                  { min: 8, message: t("auth.password_min") },
+                ]}
+                hasFeedback
+              >
+                <Input.Password placeholder={t("auth.new_password_placeholder")} />
+              </Form.Item>
+
+              <Form.Item
+                label={t("auth.confirm_new_password")}
+                name="confirmPassword"
+                dependencies={["password"]}
+                rules={[
+                  { required: true, message: t("auth.confirm_password_required") },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("password") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject("Passwords do not match!");
+                    },
+                  }),
+                ]}
+                hasFeedback
+              >
+                <Input.Password placeholder={t("auth.confirm_new_password_placeholder")} />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  className="cp-btn-display"
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  Reset Password
+                </Button>
+              </Form.Item>
+              <div className="auth-otp-actions">
+                {canResend ? (
+                  <Button type="link" onClick={handleResendOtp}>
+                    {t("settings.resendCode")}
+                  </Button>
+                ) : (
+                  <Text type="secondary">
+                    {t("settings.resendIn")} {timer}s
+                  </Text>
+                )}
+              </div>
+            </Form>
+          </div>
+
+          <h5 className="auth-switch">
+            Back to{" "}
+            <Link className="active" to="/auth/signin">
+              Sign In
+            </Link>
+          </h5>
+        </div>
       </div>
 
       <div className="auth-cover cover-signup">
-        <img src="/assets/images/icons/icon-sport.png" alt="" />
-        <h1>{t("auth.hero_title")}</h1>
-        <p>
-          Create a free account and get full access to hundreds of courts around
-          you. No credit card needed. Trusted by over 4,000 sports enthusiasts.
-        </p>
-        <img src="/assets/images/icons/avatars.png" alt="" />
+        <span className="auth-cover-mark" dir="ltr">
+          court<span>+</span>
+        </span>
+        <div className="auth-cover-body">
+          <img
+            className="auth-cover-icon"
+            src="/assets/images/icons/icon-sport.png"
+            alt=""
+          />
+          <h1>{t("auth.hero_title")}</h1>
+          <p>{t("auth.hero_subtitle")}</p>
+          <img
+            className="auth-cover-avatars"
+            src="/assets/images/icons/avatars.png"
+            alt=""
+          />
+        </div>
       </div>
     </div>
   );

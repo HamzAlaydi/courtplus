@@ -21,15 +21,17 @@ const MetricRow = ({
       <CustomText
         onPress={onLeftValuePress}
         text={leftValue}
-        font="chip"
+        font="caption"
         weight="semiBold"
+        overrideStyle={themedStyles.text}
       />
       <View style={themedStyles.dot} />
       <CustomText
         onPress={onRightValuePress}
         text={rightValue}
-        font="chip"
+        font="caption"
         weight="semiBold"
+        overrideStyle={themedStyles.text}
       />
     </View>
   );

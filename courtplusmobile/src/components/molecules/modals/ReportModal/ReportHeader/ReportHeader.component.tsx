@@ -1,9 +1,9 @@
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
 import styles from "./ReportHeader.styles";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import { ReportHeaderProps } from "./ReportHeader.types";
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { Images } from "theme";
 import { useBottomSheet } from "@gorhom/bottom-sheet";
 
@@ -16,21 +16,33 @@ const ReportHeader = ({ title, showBack, onBack }: ReportHeaderProps) => {
   return (
     <View style={themedStyles.header}>
       {showBack && (
-        <View style={themedStyles.headerLeft}>
-          <TouchableOpacity onPress={onBack}>
-            <Image source={Images.arrowLeft} style={themedStyles.arrowIcon} />
-          </TouchableOpacity>
-        </View>
+        <PressableScale
+          onPress={onBack}
+          hitSlop={6}
+          accessibilityRole="button"
+          style={themedStyles.iconButton}
+        >
+          <Image source={Images.arrowLeft} style={themedStyles.arrowIcon} />
+        </PressableScale>
       )}
 
-      <CustomText text={title} font="fields" weight="semiBold" />
+      <CustomText
+        text={title}
+        font="screenTitle"
+        weight="extraBold"
+        numberOfLines={1}
+        accessibilityRole="header"
+        overrideStyle={themedStyles.title}
+      />
 
-      <TouchableOpacity
-        style={themedStyles.closeButton}
+      <PressableScale
+        style={themedStyles.iconButton}
         onPress={() => close()}
+        hitSlop={6}
+        accessibilityRole="button"
       >
-        <Image source={Images.close} />
-      </TouchableOpacity>
+        <Image source={Images.close} style={themedStyles.closeIcon} />
+      </PressableScale>
     </View>
   );
 };

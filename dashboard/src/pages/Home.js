@@ -15,10 +15,10 @@ import RecentReservations from "../components/home/RecentReservations";
 import ProfileCompletionCard from "../components/home/ProfileCompletionCard";
 import QuickActions from "../components/home/QuickActions";
 import BranchesSummary from "../components/home/BranchesSummary";
+import CourtsSummary from "../components/home/CourtsSummary";
 
 export default function Home() {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.dir() === "rtl";
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [subscribeBannerVisible, setSubscribeBannerVisible] = useState(true);
 
@@ -66,54 +66,45 @@ export default function Home() {
       pendingCharges?.count > 0);
 
   return (
-    <div className={`home ${isRTL ? "rtl" : ""}`}>
-      <section className="home-section" style={{ animationDelay: "0ms" }}>
-        <WelcomeHeader staff={staff} tenant={tenant} />
-      </section>
+    <div className="home cp-stack cp-stagger">
+      <WelcomeHeader staff={staff} tenant={tenant} />
 
       {showSubscribeBanner && (
-        <section className="home-section" style={{ animationDelay: "40ms" }}>
-          <Alert
-            type="info"
-            showIcon
-            closable
-            onClose={() => setSubscribeBannerVisible(false)}
-            message={t("home.subscribe_banner", {
-              amount: `${(
-                (billingOverview?.pricing?.baseAmountCents ?? 3000) / 100
-              ).toLocaleString()} ${(
-                billingOverview?.pricing?.currency || "usd"
-              ).toUpperCase()}`,
-            })}
-            action={
-              <Button
-                size="small"
-                type="primary"
-                onClick={() => navigate("/billing")}
-              >
-                {t("courts.pending_payment_action")}
-              </Button>
-            }
-          />
-        </section>
+        <Alert
+          type="info"
+          showIcon
+          closable
+          className="home-banner"
+          onClose={() => setSubscribeBannerVisible(false)}
+          message={t("home.subscribe_banner", {
+            amount: `${(
+              (billingOverview?.pricing?.baseAmountCents ?? 3000) / 100
+            ).toLocaleString()} ${(
+              billingOverview?.pricing?.currency || "usd"
+            ).toUpperCase()}`,
+          })}
+          action={
+            <Button
+              size="small"
+              type="primary"
+              onClick={() => navigate("/billing")}
+            >
+              {t("courts.pending_payment_action")}
+            </Button>
+          }
+        />
       )}
 
-      <section className="home-section" style={{ animationDelay: "80ms" }}>
-        <StatCards stats={stats} tenant={tenant} />
-      </section>
+      <StatCards stats={stats} tenant={tenant} />
 
-      <section className="home-section" style={{ animationDelay: "160ms" }}>
-        <HomeCharts stats={stats} />
-      </section>
-
-      <section className="home-section" style={{ animationDelay: "200ms" }}>
+      <div className="home-split">
         <RecentReservations />
-      </section>
+        <CourtsSummary />
+      </div>
 
-      <section
-        className="home-section home-bottom"
-        style={{ animationDelay: "240ms" }}
-      >
+      <HomeCharts stats={stats} />
+
+      <div className="home-bottom">
         <ProfileCompletionCard
           tenant={tenant}
           branches={branches}
@@ -121,7 +112,7 @@ export default function Home() {
         />
         <BranchesSummary branches={branches} />
         <QuickActions />
-      </section>
+      </div>
     </div>
   );
 }

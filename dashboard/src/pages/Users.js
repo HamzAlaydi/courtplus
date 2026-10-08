@@ -1,4 +1,4 @@
-import { EyeOutlined, StopOutlined } from "@ant-design/icons";
+import { EyeOutlined, SearchOutlined, StopOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Avatar,
@@ -9,7 +9,6 @@ import {
   Space,
   Table,
   Tag,
-  Typography,
   message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -118,36 +117,44 @@ export default function Users() {
       dataIndex: "firstName",
       key: "user",
       render: (_, record) => (
-        <Space>
-          <Avatar>{getAvatarChar(record)}</Avatar>
-          <div>
-            <div>
+        <div className="staff-person">
+          <Avatar size={36} className="staff-avatar">
+            {getAvatarChar(record)}
+          </Avatar>
+          <div className="staff-person-text">
+            <span className="staff-person-name">
               {record.firstName || ""} {record.lastName || ""}
-            </div>
-            <Typography.Text type="secondary">
+            </span>
+            <span className="staff-person-meta">
               {record.email || record.username || record.phoneNumber}
-            </Typography.Text>
+            </span>
           </div>
-        </Space>
+        </div>
       ),
     },
     {
       title: "Username",
       dataIndex: "username",
       key: "username",
+      render: (v) => <span className="cp-muted">{v}</span>,
     },
     {
       title: "Bookings",
       dataIndex: "bookingsCount",
       key: "bookings",
       sorter: true,
+      render: (v) => <span className="cp-num">{v}</span>,
     },
     {
       title: "Spending",
       dataIndex: "totalSpent",
       key: "spending",
       sorter: true,
-      render: (v) => `${Number(v ?? 0).toLocaleString()} ${t("home.currency")}`,
+      render: (v) => (
+        <span className="users-amount">{`${Number(v ?? 0).toLocaleString()} ${t(
+          "home.currency"
+        )}`}</span>
+      ),
     },
     {
       title: "Status",
@@ -162,14 +169,19 @@ export default function Users() {
     {
       title: "Actions",
       key: "actions",
+      align: "end",
       render: (_, record) => {
         const isBlocked = !!record.blockedAt;
         const isMutatingThis = mutating.id === record.id;
 
         return (
-          <Space>
+          <Space size={6}>
             {/* View */}
-            <Button icon={<EyeOutlined />} size="small" />
+            <Button
+              icon={<EyeOutlined />}
+              size="small"
+              shape="circle"
+            />
 
             {/* Block */}
             {!isBlocked && (
@@ -214,94 +226,97 @@ export default function Users() {
   ];
 
   return (
-    <div className="staff-container">
-      {/* Filters */}
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Input
-          placeholder="Search users..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          style={{ width: 220 }}
-          allowClear
+    <div className="content staff-container users-page">
+      <div className="cp-card users-card cp-enter">
+        {/* Filters */}
+        <div className="users-toolbar">
+          <Input
+            className="users-search"
+            prefix={<SearchOutlined />}
+            placeholder="Search users..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            allowClear
+          />
+
+          <Select
+            className="users-filter"
+            allowClear
+            placeholder="Blocked"
+            value={queryParams.blocked}
+            onChange={(value) =>
+              setQueryParams((prev) => ({ ...prev, page: 1, blocked: value }))
+            }
+          >
+            <Option value={true}>Blocked</Option>
+            <Option value={false}>Active</Option>
+          </Select>
+
+          <Select
+            className="users-sort"
+            value={queryParams.sortBy}
+            onChange={(value) =>
+              setQueryParams((prev) => ({ ...prev, page: 1, sortBy: value }))
+            }
+          >
+            {SORT_OPTIONS.map((o) => (
+              <Option key={o.value} value={o.value}>
+                {o.label}
+              </Option>
+            ))}
+          </Select>
+
+          {/* NEW: sort direction */}
+          <Select
+            className="users-order"
+            value={queryParams.sortOrder}
+            onChange={(value) =>
+              setQueryParams((prev) => ({ ...prev, page: 1, sortOrder: value }))
+            }
+          >
+            <Option value="ASC">ASC</Option>
+            <Option value="DESC">DESC</Option>
+          </Select>
+        </div>
+
+        {/* TABLE */}
+        <Table
+          loading={isLoading}
+          rowKey="id"
+          columns={columns}
+          dataSource={users}
+          pagination={{
+            current: pagination.currentPage,
+            total: pagination.totalCount,
+            pageSize: queryParams.pageSize,
+          }}
+          onChange={(pagination, filters, sorter) => {
+            setQueryParams((prev) => {
+              // sorter may be an array (AntD supports multiple) — handle safely
+              const s = Array.isArray(sorter) ? sorter[0] : sorter;
+
+              // determine new sortOrder only if sorter.order exists
+              const newSortOrder =
+                s && s.order
+                  ? s.order === "ascend"
+                    ? "ASC"
+                    : "DESC"
+                  : prev.sortOrder;
+
+              // determine new sortBy only if sorter.field exists
+              const newSortBy = s && s.field ? s.field : prev.sortBy;
+
+              return {
+                ...prev,
+                page: pagination.current,
+                pageSize: pagination.pageSize,
+                sortOrder: newSortOrder,
+                sortBy: newSortBy,
+              };
+            });
+          }}
         />
-
-        <Select
-          allowClear
-          placeholder="Blocked"
-          style={{ width: 150 }}
-          value={queryParams.blocked}
-          onChange={(value) =>
-            setQueryParams((prev) => ({ ...prev, page: 1, blocked: value }))
-          }
-        >
-          <Option value={true}>Blocked</Option>
-          <Option value={false}>Active</Option>
-        </Select>
-
-        <Select
-          value={queryParams.sortBy}
-          style={{ width: 180 }}
-          onChange={(value) =>
-            setQueryParams((prev) => ({ ...prev, page: 1, sortBy: value }))
-          }
-        >
-          {SORT_OPTIONS.map((o) => (
-            <Option key={o.value} value={o.value}>
-              {o.label}
-            </Option>
-          ))}
-        </Select>
-
-        {/* NEW: sort direction */}
-        <Select
-          value={queryParams.sortOrder}
-          style={{ width: 140 }}
-          onChange={(value) =>
-            setQueryParams((prev) => ({ ...prev, page: 1, sortOrder: value }))
-          }
-        >
-          <Option value="ASC">ASC</Option>
-          <Option value="DESC">DESC</Option>
-        </Select>
-      </Space>
-
-      {/* TABLE */}
-      <Table
-        loading={isLoading}
-        rowKey="id"
-        columns={columns}
-        dataSource={users}
-        pagination={{
-          current: pagination.currentPage,
-          total: pagination.totalCount,
-          pageSize: queryParams.pageSize,
-        }}
-        onChange={(pagination, filters, sorter) => {
-          setQueryParams((prev) => {
-            // sorter may be an array (AntD supports multiple) — handle safely
-            const s = Array.isArray(sorter) ? sorter[0] : sorter;
-
-            // determine new sortOrder only if sorter.order exists
-            const newSortOrder =
-              s && s.order
-                ? s.order === "ascend"
-                  ? "ASC"
-                  : "DESC"
-                : prev.sortOrder;
-
-            // determine new sortBy only if sorter.field exists
-            const newSortBy = s && s.field ? s.field : prev.sortBy;
-
-            return {
-              ...prev,
-              page: pagination.current,
-              pageSize: pagination.pageSize,
-              sortOrder: newSortOrder,
-              sortBy: newSortBy,
-            };
-          });
-        }}
-      />
+      </div>
     </div>
   );
 }

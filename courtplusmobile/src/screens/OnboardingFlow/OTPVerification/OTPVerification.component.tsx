@@ -2,11 +2,13 @@ import { useThemeContext } from "contexts";
 import { Header, OTPView } from "molecules/index";
 import React, { useMemo } from "react";
 import { Image, ImageBackground, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import styles from "./OTPVerification.styles";
 import { CustomText } from "atoms/index";
 import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { enterRise } from "utils";
 import { useOTPVerification } from "./OTPVerification.logic";
 
 const OTPVerificationScreen = () => {
@@ -31,7 +33,11 @@ const OTPVerificationScreen = () => {
     >
       <Header
         leadingComponent={
-          <Image source={Images.horizontalLogo} style={themedStyles.logo} />
+          <Image
+            source={Images.horizontalLogo}
+            style={themedStyles.logo}
+            accessibilityIgnoresInvertColors
+          />
         }
       />
       <KeyboardAwareScrollView
@@ -41,53 +47,64 @@ const OTPVerificationScreen = () => {
         contentContainerStyle={themedStyles.keyboard}
       >
         <View style={themedStyles.bottomContainer}>
-          <CustomText
-            text={t("auth.verificationOtpLogin")}
-            font="headline1"
-            weight="semiBold"
-            overrideStyle={themedStyles.title}
-          />
-          <Text style={themedStyles.codeContainer}>
+          <Animated.View entering={enterRise(0)}>
             <CustomText
-              text={t("auth.sendCode")}
-              font="body"
-              weight="medium"
-              overrideStyle={themedStyles.codeText}
+              text={t("auth.verificationOtpLogin")}
+              font="displayHero"
+              weight="extraBold"
+              accessibilityRole="header"
+              overrideStyle={themedStyles.title}
             />
-            <CustomText
-              text={phoneNumber}
-              font="body"
-              weight="medium"
-              overrideStyle={themedStyles.codeText1}
-            />
-            <CustomText
-              text={t("auth.checkMessages")}
-              font="body"
-              weight="medium"
-              overrideStyle={themedStyles.codeText}
-            />
-          </Text>
+            <Text style={themedStyles.codeContainer}>
+              <CustomText
+                text={t("auth.sendCode")}
+                font="headline3"
+                weight="regular"
+                overrideStyle={themedStyles.codeText}
+              />
+              <CustomText
+                text={phoneNumber}
+                font="headline3"
+                weight="semiBold"
+                overrideStyle={themedStyles.codeText1}
+              />
+              <CustomText
+                text={t("auth.checkMessages")}
+                font="headline3"
+                weight="regular"
+                overrideStyle={themedStyles.codeText}
+              />
+            </Text>
+          </Animated.View>
 
-          <OTPView
-            onFilled={onFilled}
-            onResendCode={onSendCode}
-            showButton={false}
-            overrideStyle={themedStyles.otpView}
-          />
+          <Animated.View entering={enterRise(1)}>
+            <OTPView
+              onFilled={onFilled}
+              onResendCode={onSendCode}
+              showButton={false}
+              overrideStyle={themedStyles.otpView}
+            />
+          </Animated.View>
 
-          <Text style={themedStyles.footerText}>
-            <CustomText
-              text={footerText}
-              overrideStyle={themedStyles.footerText1}
-            />
-            <CustomText
-              font="chip"
-              weight="semiBold"
-              text={footerText2}
-              onPress={onFooterPress}
-              overrideStyle={themedStyles.footerText2}
-            />
-          </Text>
+          <Animated.View entering={enterRise(2)}>
+            <Text style={themedStyles.footerText}>
+              <CustomText
+                text={footerText}
+                font="headline3"
+                weight="regular"
+                overrideStyle={themedStyles.footerText1}
+              />
+              <CustomText
+                font="headline3"
+                weight="semiBold"
+                text={footerText2}
+                onPress={onFooterPress}
+                accessibilityRole="link"
+                suppressHighlighting
+                overrideStyle={themedStyles.footerText2}
+              />
+            </Text>
+          </Animated.View>
         </View>
       </KeyboardAwareScrollView>
     </ImageBackground>

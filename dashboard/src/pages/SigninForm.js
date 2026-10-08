@@ -31,69 +31,89 @@ const SignInForm = () => {
   return (
     <div className="auth-layout">
       <div className="auth-form-container">
-        <div className="auth-form-header">
-          <img src="/assets/images/logo-horizontal.png" alt="" />
-          <img src="/assets/images/icons/auth-key.png" alt="" />
-        </div>
-        <div className="auth-form">
-          <h2>{t("auth.sign_in")}</h2>
-          <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              label={t("auth.email")}
-              name="email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: t("auth.email_invalid"),
-                },
-              ]}
-            >
-              <Input placeholder={t("auth.email_placeholder")} />
-            </Form.Item>
-
-            <Form.Item
-              label={t("auth.password")}
-              name="password"
-              rules={[
-                { required: true, message: t("auth.password_required") },
-              ]}
-            >
-              <Input.Password placeholder={t("auth.password_placeholder")} />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                style={{ color: "#000" }}
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
+        <div className="auth-card">
+          <div className="auth-form-header">
+            <img
+              className="auth-logo"
+              src="/assets/images/logo-horizontal.png"
+              alt="Court+"
+            />
+            <span className="auth-key">
+              <img src="/assets/images/icons/auth-key.png" alt="" />
+            </span>
+          </div>
+          <div className="auth-form">
+            <h2 className="auth-title">{t("auth.sign_in")}</h2>
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                label={t("auth.email")}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: t("auth.email_invalid"),
+                  },
+                ]}
               >
-                {loading ? "Loading..." : "Sign In"}
-              </Button>
-            </Form.Item>
-            <h6>
-              <Link to="/auth/forget-password">{t("auth.forgot_link")}</Link>
-            </h6>
-          </Form>
+                <Input placeholder={t("auth.email_placeholder")} />
+              </Form.Item>
+
+              <Form.Item
+                label={t("auth.password")}
+                name="password"
+                rules={[
+                  { required: true, message: t("auth.password_required") },
+                ]}
+              >
+                <Input.Password placeholder={t("auth.password_placeholder")} />
+              </Form.Item>
+
+              <div className="auth-forgot">
+                <Link to="/auth/forget-password">{t("auth.forgot_link")}</Link>
+              </div>
+
+              <Form.Item>
+                <Button
+                  className="cp-btn-display"
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  {loading ? "Loading..." : "Sign In"}
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+          <h5 className="auth-switch">
+            Do not have an account?{" "}
+            <Link className="active" to="/auth/signup">
+              Join Now
+            </Link>
+          </h5>
         </div>
-        <h5>
-          Do not have an account?{" "}
-          <Link className="active" to="/auth/signup">
-            Join Now
-          </Link>
-        </h5>
       </div>
 
       <div className="auth-cover cover-signup">
-        <img src="/assets/images/icons/icon-sport.png" alt="" />
-        <h1>{t("auth.hero_title")}</h1>{" "}
-        <p>
-          Create a free account and get full access to hundred of courts around
-          you. No credit card needed. Trusted by over 4,000 sports enthusiasts.
-        </p>
-        <img src="/assets/images/icons/avatars.png" alt="" />
+        <span className="auth-cover-mark" dir="ltr">
+          court<span>+</span>
+        </span>
+        <div className="auth-cover-body">
+          <img
+            className="auth-cover-icon"
+            src="/assets/images/icons/icon-sport.png"
+            alt=""
+          />
+          <h1>{t("auth.hero_title")}</h1>
+          <p>{t("auth.hero_subtitle")}</p>
+          <img
+            className="auth-cover-avatars"
+            src="/assets/images/icons/avatars.png"
+            alt=""
+          />
+        </div>
       </div>
     </div>
   );

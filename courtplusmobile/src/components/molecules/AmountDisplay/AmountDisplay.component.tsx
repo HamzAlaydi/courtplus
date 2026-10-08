@@ -20,16 +20,16 @@ const AmountDisplay = ({
   return (
     <View style={[themedStyles.container, overrideStyle]}>
       <CustomText
-        text={currency ?? t("general.currency")}
-        font="text"
-        weight="semiBold"
-        overrideStyle={themedStyles.text}
+        text={amount.toString()}
+        font="displayNumber"
+        weight="bold"
+        overrideStyle={themedStyles.amountText}
       />
       <CustomText
-        text={amount.toString()}
-        font="headline2"
+        text={currency ?? t("general.currency")}
+        font="caption"
         weight="semiBold"
-        overrideStyle={themedStyles.amountText}
+        overrideStyle={themedStyles.text}
       />
     </View>
   );

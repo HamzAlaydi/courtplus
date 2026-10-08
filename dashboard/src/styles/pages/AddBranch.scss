@@ -1,135 +1,374 @@
 @use "../base/index" as *;
+@use "AddCourt" as court-form;
 
-.addbranch {
-  align-self: center;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 6rem;
-  align-items: center;
-  min-width: 85rem;
-
-  .cover-container {
-    width: 100%;
-    position: relative;
+.addbranch-page {
+  .ant-alert {
+    margin: 0;
   }
 
-  .ant-upload {
+  .form-info-icon {
+    color: $cp-muted;
+    cursor: help;
+    flex-shrink: 0;
+  }
+
+  // Phone field, matched to the large AntD inputs of this form
+  .PhoneInput {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: $cp-control-height-lg;
+    padding: 0 16px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-input;
+    background: $cp-card;
+    transition: border-color $cp-transition, box-shadow $cp-transition;
+
+    &:hover {
+      border-color: $cp-line-strong;
+    }
+
+    &:focus-within {
+      border-color: $cp-ink;
+      box-shadow: $cp-focus-ring;
+    }
+  }
+
+  .PhoneInputInput {
+    height: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 16px;
+    color: $cp-ink;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .PhoneInputCountry {
+    font-size: 16px;
+  }
+
+  .PhoneInputCountryIcon--border {
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .ant-form-item-has-error .PhoneInput {
+    border-color: $cp-danger;
+  }
+}
+
+.addbranch {
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  width: 100%;
+  min-width: 0;
+  text-align: start;
+
+  // Cover upload with the logo overlapping its lower edge
+  .cover-container {
+    position: relative;
+    width: 100%;
+  }
+
+  // The cover's Upload is the container's first child; the logo uploader
+  // beside it keeps its own circle size.
+  .cover-container > .ant-upload-wrapper,
+  .cover-container > .ant-upload-wrapper .ant-upload {
+    display: block;
     width: 100%;
   }
 
   .cover {
-    min-height: 16rem;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    aspect-ratio: 4 / 1;
+    min-height: 160px;
+    max-height: 280px;
+    border-radius: $cp-radius-card;
+    box-shadow: $cp-shadow-card;
+    overflow: hidden;
     cursor: pointer;
-    border-radius: $border-radius;
+
+    &--empty {
+      background: $cp-card;
+      box-shadow: none;
+      border: 1.5px dashed $cp-line-strong;
+      transition: border-color $cp-transition, background-color $cp-transition;
+
+      &:hover {
+        border-color: $cp-ink;
+        background: $cp-lime-wash;
+
+        .cover-placeholder-icon {
+          background: $cp-lime;
+        }
+      }
+
+      .cover-overlay {
+        display: none;
+      }
+    }
 
     .cover-overlay {
-      border-radius: $border-radius;
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
+      gap: 8px;
+      background: rgba(10, 21, 23, 0.55);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
       opacity: 0;
-      transition: opacity 0.3s ease-in-out;
-      color: white;
-      font-weight: bold;
+      transition: opacity $cp-transition;
 
       h5 {
         margin: 0;
+        font-size: $cp-fs-body;
+        font-weight: 600;
+        text-transform: none;
+        color: #ffffff;
       }
     }
 
-    &:hover {
-      .cover-image {
-        filter: blur(3px);
-      }
-      .cover-overlay {
-        opacity: 1;
-      }
+    &:hover .cover-overlay {
+      opacity: 1;
     }
+  }
+
+  .cover-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    text-align: center;
+    color: $cp-ink;
+
+    h5 {
+      margin: 0;
+      font-size: $cp-fs-body;
+      font-weight: 600;
+      text-transform: none;
+      color: $cp-ink;
+    }
+  }
+
+  .cover-placeholder-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: $cp-radius-pill;
+    background: $cp-ground;
+    color: $cp-ink;
+    transition: background-color $cp-transition;
   }
 
   .logo {
-    border-radius: 50%;
-    background: 50%;
     position: absolute;
-    left: 45%;
-    bottom: -50px;
+    inset-inline-start: 28px;
+    bottom: -56px;
+    z-index: 2;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px #0000000c;
+    padding: 4px;
+    border-radius: $cp-radius-pill;
+    background: $cp-card;
+    box-shadow: $cp-shadow-card;
     cursor: pointer;
-    background-color: white;
+
+    .ant-upload-wrapper {
+      display: block;
+      width: auto;
+    }
+
+    .ant-upload-list-item {
+      border-color: transparent;
+    }
+
+    .img-circle {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
+  .logo-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: $cp-ink;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+  }
+
+  // Status as pill chips: ink when selected
   .custom-radio-group {
     display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
+    gap: 8px;
 
     .ant-radio-button-wrapper {
-      border-radius: 2rem;
-      transition: all 0.3s ease-in-out;
-      border: none;
-      background: #eeffff;
-      color: #999;
-      overflow: hidden;
+      height: 40px;
+      padding: 0 16px;
+      line-height: 38px;
+      border: 1px solid $cp-line;
+      border-radius: $cp-radius-pill;
+      background: $cp-card;
+      color: $cp-ink;
+      font-size: $cp-fs-small;
+      font-weight: 600;
+      transition: background-color $cp-transition, border-color $cp-transition,
+        color $cp-transition;
+
+      &::before {
+        display: none;
+      }
 
       &:hover {
-        background: #e0e3e8; // Light hover effect
+        border-color: $cp-ink;
+        color: $cp-ink;
       }
 
       &.ant-radio-button-wrapper-checked {
-        background: $color-green !important; // Green background for selected button
-        color: #fff !important; // White text
+        border-color: $cp-ink;
+        background: $cp-ink;
+        color: #ffffff;
 
         &:hover {
-          background: #00a650 !important; // Prevent hover color change
+          border-color: $cp-deep;
+          background: $cp-deep;
+          color: #ffffff;
         }
       }
     }
   }
 
+  // Form: two section cards and a floating action bar
+  .addbranch-form-root {
+    display: flex;
+    flex-direction: column;
+    gap: $cp-gap-section;
+  }
+
+  .addbranch-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $cp-gap-grid;
+    align-items: start;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    &-left,
+    &-right {
+      @include court-form.form-card;
+    }
+  }
+
+  .addbranch-form-root .form-switch-item.ant-form-item {
+    @include court-form.form-switch-row;
+  }
+
   .submit-btns {
-    margin-top: 4rem;
+    @include court-form.form-actions-bar;
+    margin-top: 0;
+
+    .btn-submit {
+      order: 2;
+      width: auto;
+      min-width: 168px;
+    }
   }
 }
 
-.addbranch-form {
+// AntD paints the picture-circle select with a primary (lime) hover line;
+// these selectors outrank it so the hairline stays ink.
+.addbranch-page .addbranch .logo .ant-upload-wrapper .ant-upload.ant-upload-select {
+  border: 1.5px dashed $cp-line-strong;
+  background: $cp-ground;
+  transition: border-color $cp-transition, background-color $cp-transition;
+
+  &:hover {
+    border-color: $cp-ink;
+    background: $cp-lime-wash;
+  }
+}
+
+// Map and address read-out of the location picker
+.location-selector {
   display: flex;
-  gap: 4rem;
+  flex-direction: column;
+  gap: 12px;
 
-  &-left {
-    min-width: 50%;
-    flex: 1;
+  @include court-form.form-autocomplete;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: $cp-fs-small;
+    font-weight: 500;
+    color: $cp-muted;
+  }
+
+  &__address {
+    min-height: 44px;
+    padding: 11px 14px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-input;
+    background: $cp-ground;
+    font-size: $cp-fs-small;
+    line-height: 1.5;
+    color: $cp-ink;
+    overflow-wrap: anywhere;
+
+    &.is-empty {
+      color: $cp-muted;
+    }
   }
 }
 
-.PhoneInputInput {
-  border: 1px solid #ddd;
-  font-size: 1.6rem;
-  padding: 1rem;
-  border-radius: $border-radius;
-  font-weight: 400;
-  color: #333;
-  letter-spacing: 1.1px;
-}
-
-.PhoneInputCountry {
-  font-size: 1.8rem;
-  border-radius: $border-radius;
-}
-.PhoneInputCountryIcon--border {
-  border-radius: $border-radius;
+// Leaflet panes use z-index 400+; isolating the map keeps them under the
+// floating action bar and popups.
+.location-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  border: 1px solid $cp-line;
+  border-radius: $cp-radius-panel;
   overflow: hidden;
+
+  .leaflet-control-zoom {
+    border: 0;
+    border-radius: $cp-radius-chip;
+    box-shadow: $cp-shadow-card;
+    overflow: hidden;
+
+    a {
+      color: $cp-ink;
+    }
+  }
 }

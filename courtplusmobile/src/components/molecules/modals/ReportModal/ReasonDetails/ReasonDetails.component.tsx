@@ -1,23 +1,35 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View } from "react-native";
 import { ReasonDetailsProps } from "./ReasonDetails.types";
 import { CustomButton, CustomText, TextArea } from "atoms/index";
 import styles from "./ReasonDetails.styles";
 import { useReasonDetails } from "./ReasonDetails.logic";
 import { useTranslation } from "react-i18next";
+import { useThemeContext } from "contexts";
 
 const ReasonDetails = ({ reason, onSubmit }: ReasonDetailsProps) => {
   const { showTextArea, isButtonDisabled, description, setDescription } =
     useReasonDetails(reason);
   const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
   return (
-    <View style={styles.container}>
-      <CustomText font="headline3" weight="medium" text={reason?.title} />
+    <View style={themedStyles.container}>
+      <View style={themedStyles.reasonChip}>
+        <CustomText
+          font="headline3"
+          weight="semiBold"
+          text={reason?.title}
+          overrideStyle={themedStyles.reasonText}
+        />
+      </View>
       {!showTextArea && (
         <CustomText
           font="headline3"
           weight="regular"
-          overrideStyle={styles.description}
+          overrideStyle={themedStyles.description}
           text={t("report.reasonDetailsDescription")}
         />
       )}
@@ -26,15 +38,18 @@ const ReasonDetails = ({ reason, onSubmit }: ReasonDetailsProps) => {
           value={description}
           onChangeText={setDescription}
           placeholder={t("report.reasonPlaceholder")}
-          overrideWrapperStyle={styles.textArea}
+          overrideStyle={themedStyles.textAreaContainer}
+          overrideWrapperStyle={themedStyles.textArea}
           maxLength={120}
         />
       )}
-      <View style={styles.bottomContainer}>
+      <View style={themedStyles.bottomContainer}>
         <CustomButton
           disabled={isButtonDisabled}
           title={t("general.submit")}
-          variant={isButtonDisabled && showTextArea ? "disabledDark" : "dark"}
+          variant={
+            isButtonDisabled && showTextArea ? "disabledDark" : "primary"
+          }
           onPress={() => onSubmit(description)}
         />
       </View>

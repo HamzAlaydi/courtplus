@@ -39,17 +39,17 @@ const ReportModal = forwardRef<BottomSheetModal, ReportModalProps>(
           style={themedStyles.contentContainer}
           initialPage={0}
         >
-          <View key="page-list" style={{ flex: 1 }}>
+          <View key="page-list" style={themedStyles.page}>
             <ReasonList onSelectReason={goDetails} />
           </View>
 
-          <View key="page-details">
+          <View key="page-details" style={themedStyles.page}>
             <ReasonDetails reason={selectedReason!!} onSubmit={onSubmit} />
           </View>
         </PagerView>
       </BottomSheetOverlay>
     );
-  },
+  }
 );
 
 export default ReportModal;

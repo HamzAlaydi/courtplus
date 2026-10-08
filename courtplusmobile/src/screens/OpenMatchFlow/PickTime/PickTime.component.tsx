@@ -1,14 +1,23 @@
 import { Header } from "molecules/index";
 import { MainWrapper, TimeSlots } from "organisms/index";
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { usePickTime } from "./PickTime.logic";
 import styles from "./PickTime.styles";
 import { View } from "react-native";
+import Animated from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomButton } from "atoms/index";
+import { useThemeContext } from "contexts";
+import { enterRise, verticalScale } from "utils";
 
 const PickTimeScreen = () => {
   const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
+  const { bottom } = useSafeAreaInsets();
   const {
     timeSlots,
     isLoading,
@@ -25,24 +34,30 @@ const PickTimeScreen = () => {
     // this screen had NO scrollable container at all: everything past the
     // fold, Confirm included, was unreachable. Same structure as
     // CourtFlow/ChooseTime, which does this correctly.
-    <View style={styles.container}>
+    <View style={themedStyles.container}>
       <MainWrapper
         scrollEnabled
-        whiteBackground
-        overrideContentStyle={styles.scrollViewContent}
+        disableBottomPadding
+        overrideContentStyle={themedStyles.scrollViewContent}
       >
         <Header whiteColor title={t("openMatch.pickTime")} />
-        <TimeSlots
-          slots={timeSlots}
-          isLoading={isLoading}
-          onTimeSlotPress={onTimeSlotPress}
-          selectedSlots={selectedSlots ?? []}
-          overrideStyle={styles.content}
-        />
+        <Animated.View entering={enterRise(0)} style={themedStyles.slotsCard}>
+          <TimeSlots
+            slots={timeSlots}
+            isLoading={isLoading}
+            onTimeSlotPress={onTimeSlotPress}
+            selectedSlots={selectedSlots ?? []}
+          />
+        </Animated.View>
       </MainWrapper>
-      <View style={styles.bottomContainer}>
+      <View
+        style={[
+          themedStyles.bottomContainer,
+          { paddingBottom: bottom + verticalScale(14) },
+        ]}
+      >
         <CustomButton
-          variant={isDisabled ? "disabledDark" : "dark"}
+          variant={isDisabled ? "disabledDark" : "primary"}
           title={t("general.confirm")}
           onPress={onConfirmPress}
           disabled={isDisabled}

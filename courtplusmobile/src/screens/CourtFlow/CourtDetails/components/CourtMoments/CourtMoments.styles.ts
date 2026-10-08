@@ -1,8 +1,16 @@
 import { StyleSheet } from "react-native";
-import { verticalScale } from "utils";
+import { Layout } from "theme";
+import { spacing, verticalScale } from "utils";
 
 export default StyleSheet.create({
   emptyContainer: {
-    marginTop: verticalScale(29),
+    marginTop: verticalScale(12),
+  },
+  listContent: {
+    paddingHorizontal: spacing[12],
+  },
+  loader: {
+    backgroundColor: "transparent",
+    paddingHorizontal: Layout.gutter,
   },
 });

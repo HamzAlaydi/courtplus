@@ -19,8 +19,11 @@ const Slider = ({ onValueChange, value }: SliderProps) => {
   return (
     <RNSlider
       theme={{
-        minimumTrackTintColor: colors.GREEN_YELLOWISH,
+        minimumTrackTintColor: colors.INK,
+        maximumTrackTintColor: colors.LINE,
+        cacheTrackTintColor: colors.LINE,
       }}
+      sliderHeight={4}
       renderThumb={() => <View style={themedStyles.thumb} />}
       progress={progress}
       minimumValue={min}

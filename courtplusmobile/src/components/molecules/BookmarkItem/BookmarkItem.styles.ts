@@ -1,52 +1,85 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { horizontalScale, isRTL, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      borderRadius: spacing[12],
-      borderWidth: 1,
-      borderColor: colors.LIGHT_GREY,
-      paddingHorizontal: spacing[4],
-      paddingTop: verticalScale(4),
-    },
-    content: {
-      paddingTop: verticalScale(32),
-      paddingBottom: verticalScale(20),
-      paddingStart: spacing[12],
-      paddingEnd: spacing[16],
+      paddingHorizontal: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
+      borderRadius: Radius.cardLarge,
+      ...Shadows.raised,
     },
     imageBg: {
       width: "100%",
-      height: verticalScale(255),
+      height: verticalScale(156),
+      borderTopLeftRadius: Radius.cardLarge,
+      borderTopRightRadius: Radius.cardLarge,
+      overflow: "hidden",
+      backgroundColor: colors.DIVIDER,
       alignItems: "flex-end",
     },
     image: {
-      borderRadius: spacing[12],
+      borderTopLeftRadius: Radius.cardLarge,
+      borderTopRightRadius: Radius.cardLarge,
+    },
+    content: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[12],
+      paddingHorizontal: spacing[14],
+      paddingTop: verticalScale(14),
+      paddingBottom: verticalScale(16),
+    },
+    textContainer: {
+      flex: 1,
+      gap: verticalScale(4),
     },
     locationContainer: {
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[4],
-      paddingTop: verticalScale(16),
+    },
+    locationIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
     locationName: {
-      color: colors.SLATE_GRAY,
+      color: colors.MUTED,
+      flexShrink: 1,
     },
     bookmarkContainer: {
-      width: horizontalScale(37),
-      height: horizontalScale(37),
-      backgroundColor: "#0A1517B2",
-      marginEnd: horizontalScale(12),
-      marginTop: verticalScale(10),
-      borderRadius: horizontalScale(40),
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      backgroundColor: colors.GLASS_LIGHT,
+      marginEnd: spacing[12],
+      marginTop: spacing[12],
+      borderRadius: Radius.pill,
       justifyContent: "center",
       alignItems: "center",
     },
     bookmarkIcon: {
-      tintColor: colors.GREEN_YELLOWISH,
-      width: horizontalScale(18),
-      height: horizontalScale(18),
+      tintColor: colors.INK,
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+    },
+    arrowButton: {
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.GROUND,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    arrowIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+      transform: [{ scaleX: isRTL ? 1 : -1 }],
     },
   });

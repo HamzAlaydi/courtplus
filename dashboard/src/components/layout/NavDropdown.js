@@ -89,9 +89,9 @@ const NavDropdown = () => {
   return (
     <>
       <Dropdown menu={{ items }} trigger={["click"]} placement="bottomRight">
-        <button className={`nav-prof-btn ${isRTL ? "rtl" : ""}`}>
+        <button type="button" className={`nav-prof-btn ${isRTL ? "rtl" : ""}`}>
           <Avatar
-            size={36}
+            size={38}
             className="nav-avatar"
             src={tenant?.logoURL || undefined}
           >

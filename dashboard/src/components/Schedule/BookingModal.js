@@ -37,21 +37,32 @@ const branchParams = {
   radius: null,
 };
 
+// Slot keys are "YYYY-MM-DD|HH:mm-HH:mm"; the date half is absent on older
+// payloads. Splitting the whole key on "-" cut through the date instead.
+const parseSlotKey = (slot) => {
+  const [slotDate, range] = slot.includes("|") ? slot.split("|") : ["", slot];
+  const [start, end] = range.split("-");
+  return { slotDate, range, start, end };
+};
+
+const compareSlots = (a, b) =>
+  `${a.slotDate} ${a.start}`.localeCompare(`${b.slotDate} ${b.start}`);
+
 // Helper function to check if selected slots are continuous
 const areSlotsContinuous = (slots) => {
   if (slots.length <= 1) return true;
 
-  // Sort slots by start time
-  const sortedSlots = slots
-    .map((slot) => {
-      const [start, end] = slot.split("-");
-      return { start, end };
-    })
-    .sort((a, b) => a.start.localeCompare(b.start));
+  // Sort slots by date, then start time
+  const sortedSlots = slots.map(parseSlotKey).sort(compareSlots);
 
-  // Check if each slot's end time matches the next slot's start time
+  // Each slot must be on the same date as the next one and end when it starts
   for (let i = 0; i < sortedSlots.length - 1; i++) {
-    if (sortedSlots[i].end !== sortedSlots[i + 1].start) {
+    const current = sortedSlots[i];
+    const following = sortedSlots[i + 1];
+    if (
+      current.slotDate !== following.slotDate ||
+      current.end !== following.start
+    ) {
       return false;
     }
   }
@@ -64,19 +75,8 @@ const calculateBookingDetails = (date, timeSlots) => {
     return { startAt: null, duration: 0 };
   }
 
-  // Sort slots by start time
-  const sortedSlots = timeSlots
-    .map((slot) => {
-      // "YYYY-MM-DD|HH:mm-HH:mm"; the date half is absent on older payloads.
-      const [slotDate, range] = slot.includes("|")
-        ? slot.split("|")
-        : ["", slot];
-      const [start, end] = range.split("-");
-      return { slotDate, start, end };
-    })
-    .sort((a, b) =>
-      `${a.slotDate} ${a.start}`.localeCompare(`${b.slotDate} ${b.start}`)
-    );
+  // Sort slots by date, then start time
+  const sortedSlots = timeSlots.map(parseSlotKey).sort(compareSlots);
 
   // Start from the slot's OWN date so a post-midnight slot books the right
   // night, falling back to the selected day when the API did not send one.
@@ -275,9 +275,9 @@ const BookingModal = ({ open, onClose }) => {
     <div className="step step-0">
       <div className="selectors">
         <Select
+          className="booking-select"
           value={formData.branch}
           onChange={onBranchChange}
-          style={{ width: "48%" }}
           placeholder="Select Branch"
           loading={isLoading}
           suffixIcon={<EnvironmentOutlined />}
@@ -290,9 +290,9 @@ const BookingModal = ({ open, onClose }) => {
         </Select>
 
         <Select
+          className="booking-select"
           value={formData.court}
           onChange={onCourtChange}
-          style={{ width: "48%" }}
           placeholder="Select Court"
           disabled={!selectedBranchId || isLoadingData}
           loading={isLoadingData}
@@ -305,23 +305,27 @@ const BookingModal = ({ open, onClose }) => {
           ))}
         </Select>
       </div>
-      <BookingCalendar
-        value={formData.date}
-        onChange={onDayChange}
-        availability={monthAvailability}
-        onMonthChange={onMonthDay}
-      />
+      <div className="booking-calendar-panel">
+        <BookingCalendar
+          value={formData.date}
+          onChange={onDayChange}
+          availability={monthAvailability}
+          onMonthChange={onMonthDay}
+        />
+      </div>
     </div>,
 
     // Step 1: Select time
     <div className="step step-1">
-      <h4>
-        {formData.date ? dayjs(formData.date).format("DD MMMM YYYY") : ""}
-      </h4>
-      <p style={{ color: "#999", marginBottom: 8 }}>Booking time</p>
+      <div className="step-heading">
+        <h4 className="step-date">
+          {formData.date ? dayjs(formData.date).format("DD MMMM YYYY") : ""}
+        </h4>
+        <p className="step-caption">Booking time</p>
+      </div>
 
       {isLoadingData ? (
-        <p>Loading time slots...</p>
+        <p className="step-caption">Loading time slots...</p>
       ) : (
         <>
           {(() => {
@@ -334,9 +338,9 @@ const BookingModal = ({ open, onClose }) => {
             if (hasNoSlots) {
               return (
                 <Empty
+                  className="slots-empty"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description="No availability"
-                  style={{ marginTop: 20 }}
                 />
               );
             }
@@ -378,71 +382,54 @@ const BookingModal = ({ open, onClose }) => {
               };
 
               return (
-                <Button
+                <button
+                  type="button"
                   key={slotKey}
                   onClick={handleToggleSlot}
                   disabled={isBooked}
-                  type={isSelected ? "primary" : "default"}
-                  style={{
-                    margin: 6,
-                    backgroundColor: isBooked ? "#00c46c" : undefined,
-                    color: isBooked ? "#fff" : undefined,
-                    borderRadius: 12,
-                    minWidth: 70,
-                    fontSize: "1.2rem",
-                  }}
+                  aria-pressed={isSelected}
+                  className={`time-slot${isSelected ? " is-selected" : ""}${
+                    isBooked ? " is-taken" : ""
+                  }`}
                 >
                   {slot.startTime} - {slot.endTime}
-                </Button>
+                </button>
               );
             };
 
             return (
               <>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>
-                    🟢 Morning
+                <div className="slot-group">
+                  <div className="slot-group-title">
+                    <span className="slot-group-dot" aria-hidden="true" />
+                    Morning
                   </div>
-                  <div>{morningSlots.map(renderSlot)}</div>
+                  <div className="slot-grid">
+                    {morningSlots.map(renderSlot)}
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>🟢 Day</div>
-                  <div>{daySlots.map(renderSlot)}</div>
+                <div className="slot-group">
+                  <div className="slot-group-title">
+                    <span className="slot-group-dot" aria-hidden="true" />
+                    Day
+                  </div>
+                  <div className="slot-grid">{daySlots.map(renderSlot)}</div>
                 </div>
-                <div
-                  style={{
-                    marginTop: 12,
-                    display: "flex",
-                    gap: 16,
-                    fontSize: 12,
-                  }}
-                >
-                  <div>
+                <div className="slot-legend">
+                  <span className="slot-legend-item">
                     <span
-                      style={{
-                        background: "#00c46c",
-                        display: "inline-block",
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        marginRight: 4,
-                      }}
+                      className="slot-swatch slot-swatch--taken"
+                      aria-hidden="true"
                     />
                     Booked
-                  </div>
-                  <div>
+                  </span>
+                  <span className="slot-legend-item">
                     <span
-                      style={{
-                        border: "1px solid #ccc",
-                        display: "inline-block",
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        marginRight: 4,
-                      }}
+                      className="slot-swatch slot-swatch--free"
+                      aria-hidden="true"
                     />
                     Available
-                  </div>
+                  </span>
                 </div>
               </>
             );
@@ -453,48 +440,47 @@ const BookingModal = ({ open, onClose }) => {
 
     // Step 2: Confirm
     <div className="step step-2">
-      <div style={{ marginBottom: 12 }}>
-        <CalendarOutlined /> <strong>Date:</strong>{" "}
-        {dayjs(formData.date).format("DD MMM YYYY")}
+      <div className="confirm-list">
+        <div className="confirm-row">
+          <span className="confirm-label">
+            <CalendarOutlined /> <strong>Date:</strong>
+          </span>
+          <span className="confirm-value">
+            {dayjs(formData.date).format("DD MMM YYYY")}
+          </span>
+        </div>
+        <div className="confirm-row">
+          <span className="confirm-label">
+            <ClockCircleOutlined /> <strong>Time:</strong>
+          </span>
+          {formData.time?.length > 0 ? (
+            <div className="confirm-slots">
+              {formData.time
+                .map(parseSlotKey)
+                .sort(compareSlots)
+                .map(({ slotDate, range }, idx) => (
+                  <span key={idx} className="confirm-slot">
+                    {slotDate ? `${slotDate} · ${range}` : range}
+                  </span>
+                ))}
+            </div>
+          ) : (
+            <span className="confirm-value cp-muted">No slots selected</span>
+          )}
+        </div>
       </div>
-      <div style={{ marginBottom: 12 }}>
-        <ClockCircleOutlined /> <strong>Time:</strong>{" "}
-        {formData.time?.length > 0 ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {formData.time
-              .slice()
-              .sort((a, b) => {
-                const [aH, aM] = a.split("-")[0].split(":").map(Number);
-                const [bH, bM] = b.split("-")[0].split(":").map(Number);
-                return aH * 60 + aM - (bH * 60 + bM);
-              })
-              .map((slot, idx) => (
-                <span
-                  key={idx}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "6px",
-                    backgroundColor: "#f8f8f8",
-                    border: "1px solid #ccc",
-                    fontSize: 14,
-                  }}
-                >
-                  {slot}
-                </span>
-              ))}
-          </div>
-        ) : (
-          <span style={{ marginLeft: 8 }}>No slots selected</span>
-        )}
-      </div>
-      <strong>Participants: </strong> <br />
-      <div className="user-confirm">
-        <CustomersSelect onChange={handleParticipantsChange} />
+      <div className="confirm-field">
+        <strong className="confirm-field-label">Participants: </strong>
+        <div className="user-confirm">
+          <CustomersSelect onChange={handleParticipantsChange} />
+        </div>
       </div>
       <Radio.Group
+        className="booking-method"
+        optionType="button"
+        buttonStyle="solid"
         value={formData.method}
         onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-        style={{ marginTop: 12 }}
       >
         <Radio value="call">Through call</Radio>
         <Radio value="walkin">Walk In</Radio>
@@ -509,49 +495,25 @@ const BookingModal = ({ open, onClose }) => {
       onCancel={onClose}
       footer={null}
       closable
-      width={600}
+      width={640}
       className="booking-modal"
+      title="New Book"
     >
       {isLoadingData && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backdropFilter: "blur(6px)",
-            backgroundColor: "rgba(255, 255, 255, 0.4)",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "8px",
-          }}
-        >
-          <Spin
-            style={{
-              zIndex: 11,
-            }}
-            spinning={isLoadingData}
-            tip="Loading..."
-            size="large"
-          />
+        <div className="booking-modal-loading">
+          <Spin spinning={isLoadingData} tip="Loading..." size="large" />
         </div>
       )}
-      <h2>New Book</h2>
-      <Steps size="small" current={currentStep} style={{ marginBottom: 24 }}>
+      <Steps size="small" current={currentStep} className="booking-steps">
         <Step title="Select Date" />
         <Step title="Choose Time" />
         <Step title="Confirm" />
       </Steps>
-      {stepContent[currentStep]}
-      <div
-        className="footer-btns"
-        style={{ marginTop: 24, textAlign: "right" }}
-      >
-        {currentStep > 0 && (
-          <Button onClick={prev} style={{ marginRight: 8 }}>
-            Back
-          </Button>
-        )}
+      <div className="booking-step-body" key={currentStep}>
+        {stepContent[currentStep]}
+      </div>
+      <div className="footer-btns">
+        {currentStep > 0 && <Button onClick={prev}>Back</Button>}
         {currentStep < 2 ? (
           <Button
             disabled={!selectedCourtId || !selectedDay}
@@ -563,8 +525,8 @@ const BookingModal = ({ open, onClose }) => {
         ) : (
           <Button
             type="primary"
+            className="cp-btn-display"
             onClick={handleSubmit}
-            style={{ background: "#C5FF3D", border: "none" }}
           >
             Book now
           </Button>

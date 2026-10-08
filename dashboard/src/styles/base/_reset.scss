@@ -17,7 +17,7 @@ html {
 }
 
 .ant-layout {
-  font-family: "Inter", sans-serif !important;
+  font-family: $cp-font-text;
 }
 
 *,
@@ -35,11 +35,15 @@ body {
 }
 
 body {
-  font-family: "Inter", sans-serif !important;
+  font-family: $cp-font-text;
+  font-size: $cp-fs-body;
+  line-height: 1.5;
   color: $color-text;
   overflow-x: hidden;
   margin: 0 auto;
-  letter-spacing: 0.4px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body[dir="rtl"] {
@@ -52,16 +56,22 @@ body[dir="rtl"] {
 
 a {
   text-decoration: none;
-  color: inherit;
-  color: $color-text;
+  color: $cp-ink;
   cursor: pointer;
-  transition: ease-in-out 0.2s;
+  transition: color $cp-transition, background-color $cp-transition;
+
+  &:hover {
+    color: $cp-deep;
+  }
 }
 
 button {
   border: none;
   cursor: pointer;
-  transition: ease-in-out 0.3s;
+  font-family: inherit;
+  transition: background-color $cp-transition, color $cp-transition,
+    border-color $cp-transition, box-shadow $cp-transition,
+    transform $cp-duration-press $cp-ease;
 }
 
 img {
@@ -73,14 +83,9 @@ ul {
   list-style: none;
 }
 
-.ant-btn {
-  padding: 2rem 3rem;
-}
-
-.ant-btn-color-primary,
-.ant-btn-color-primary:hover {
-  color: #333 !important;
-  font-weight: 500 !important;
+::selection {
+  background: $cp-lime;
+  color: $cp-ink;
 }
 
 .ant-radio-button-wrapper {
@@ -88,13 +93,13 @@ ul {
 }
 
 .ant-switch.ant-switch-checked {
-  background: $color-green-dark;
+  background: $cp-ink;
 
   &:hover {
-    background: $color-green-dark !important;
+    background: $cp-deep !important;
   }
 
   .ant-switch-handle::before {
-    background-color: $primary-color;
+    background-color: $cp-lime;
   }
 }

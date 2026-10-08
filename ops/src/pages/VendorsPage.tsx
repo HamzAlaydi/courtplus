@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  App,
-  Button,
-  Empty,
-  Input,
-  Popconfirm,
-  Space,
-  Table,
-  Tabs,
-  Typography,
-} from "antd";
+import { App, Button, Empty, Input, Popconfirm, Space, Table, Tabs, Typography } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
@@ -23,8 +13,27 @@ import {
 } from "@/api/ops";
 import { apiErrorMessage } from "@/api/client";
 import type { Tenant, UnsuspendRequest } from "@/api/types";
+import PageHeader from "@/components/PageHeader";
 import ReasonModal from "@/components/ReasonModal";
 import StatusTag from "@/components/StatusTag";
+import TableSkeleton from "@/components/TableSkeleton";
+
+function VendorName({ name }: { name?: string }) {
+  return (
+    <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 180 }}>
+      <span className="ops-list__avatar" aria-hidden="true">
+        {(name ?? "").charAt(0).toUpperCase()}
+      </span>
+      <span style={{ fontWeight: 600, overflowWrap: "anywhere" }}>{name ?? "—"}</span>
+    </span>
+  );
+}
+
+const muted = (v: string) => (
+  <span className="ops-muted" style={{ whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+    {v}
+  </span>
+);
 
 function TenantsTab() {
   const { message } = App.useApp();
@@ -45,8 +54,7 @@ function TenantsTab() {
   };
 
   const suspendMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      suspendTenant(id, reason),
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => suspendTenant(id, reason),
     onSuccess: () => {
       message.success("Vendor suspended");
       setSuspendTarget(null);
@@ -65,7 +73,7 @@ function TenantsTab() {
   });
 
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Input.Search
         placeholder="Search by name"
         allowClear
@@ -73,13 +81,23 @@ function TenantsTab() {
           setSearch(v.trim());
           setPage(1);
         }}
-        style={{ maxWidth: 320, marginBottom: 16 }}
+        style={{ maxWidth: 360 }}
       />
       <Table<Tenant>
         rowKey="id"
-        loading={isLoading}
         dataSource={data?.items}
-        locale={{ emptyText: <Empty description="No vendors found" /> }}
+        scroll={{ x: true }}
+        locale={{
+          emptyText: isLoading ? (
+            <TableSkeleton />
+          ) : (
+            <Empty
+              className="ops-empty"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="No vendors found"
+            />
+          ),
+        }}
         pagination={{
           current: page,
           pageSize,
@@ -91,14 +109,28 @@ function TenantsTab() {
           },
         }}
         columns={[
-          { title: "Name", dataIndex: "name", render: (v?: string) => v ?? "—" },
+          { title: "Name", dataIndex: "name", render: (v?: string) => <VendorName name={v} /> },
           {
             title: "Contact",
             dataIndex: "phoneNumber",
-            render: (v?: string) => v ?? "—",
+            render: (v?: string) => muted(v ?? "—"),
           },
-          { title: "Branches", dataIndex: "totalBranches", width: 100, render: (v?: number) => v ?? 0 },
-          { title: "Courts", dataIndex: "totalCourts", width: 90, render: (v?: number) => v ?? 0 },
+          {
+            title: "Branches",
+            dataIndex: "totalBranches",
+            width: 100,
+            render: (v?: number) => (
+              <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{v ?? 0}</span>
+            ),
+          },
+          {
+            title: "Courts",
+            dataIndex: "totalCourts",
+            width: 90,
+            render: (v?: number) => (
+              <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{v ?? 0}</span>
+            ),
+          },
           {
             title: "Status",
             dataIndex: "blockedAt",
@@ -109,7 +141,7 @@ function TenantsTab() {
           {
             title: "Joined",
             dataIndex: "createdAt",
-            render: (d: string) => dayjs(d).format("MMM D, YYYY"),
+            render: (d: string) => muted(dayjs(d).format("MMM D, YYYY")),
           },
           {
             title: "Actions",
@@ -143,7 +175,7 @@ function TenantsTab() {
         }
         onCancel={() => setSuspendTarget(null)}
       />
-    </>
+    </div>
   );
 }
 
@@ -189,9 +221,19 @@ function UnsuspendRequestsTab() {
     <>
       <Table<UnsuspendRequest>
         rowKey="id"
-        loading={isLoading}
         dataSource={data?.items}
-        locale={{ emptyText: <Empty description="Inbox zero — no pending requests" /> }}
+        scroll={{ x: true }}
+        locale={{
+          emptyText: isLoading ? (
+            <TableSkeleton />
+          ) : (
+            <Empty
+              className="ops-empty"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Inbox zero — no pending requests"
+            />
+          ),
+        }}
         pagination={{
           current: page,
           pageSize,
@@ -205,13 +247,16 @@ function UnsuspendRequestsTab() {
         columns={[
           {
             title: "Vendor",
-            render: (_, r) => r.tenant?.name ?? r.tenantId,
+            render: (_, r) => <VendorName name={r.tenant?.name ?? r.tenantId} />,
           },
           {
             title: "Message",
             dataIndex: "message",
             render: (m: string) => (
-              <Typography.Paragraph style={{ margin: 0, maxWidth: 480 }} ellipsis={{ rows: 2, expandable: true }}>
+              <Typography.Paragraph
+                style={{ margin: 0, minWidth: 220, maxWidth: 480 }}
+                ellipsis={{ rows: 2, expandable: true }}
+              >
                 {m}
               </Typography.Paragraph>
             ),
@@ -220,13 +265,13 @@ function UnsuspendRequestsTab() {
             title: "Requested",
             dataIndex: "createdAt",
             width: 170,
-            render: (d: string) => dayjs(d).format("MMM D, YYYY HH:mm"),
+            render: (d: string) => muted(dayjs(d).format("MMM D, YYYY HH:mm")),
           },
           {
             title: "Actions",
             width: 220,
             render: (_, r) => (
-              <Space size="small">
+              <Space size={8}>
                 <Popconfirm
                   title="Approve this request and unsuspend the vendor?"
                   description="The vendor's account is reinstated and their staff are notified."
@@ -250,9 +295,7 @@ function UnsuspendRequestsTab() {
         confirmText="Deny request"
         danger
         loading={denyMutation.isPending}
-        onConfirm={(reason) =>
-          denyTarget && denyMutation.mutate({ id: denyTarget.id, reason })
-        }
+        onConfirm={(reason) => denyTarget && denyMutation.mutate({ id: denyTarget.id, reason })}
         onCancel={() => setDenyTarget(null)}
       />
     </>
@@ -264,10 +307,8 @@ export default function VendorsPage() {
   const tab = searchParams.get("tab") === "requests" ? "requests" : "vendors";
 
   return (
-    <>
-      <Typography.Title level={3} style={{ marginTop: 0 }}>
-        Vendors
-      </Typography.Title>
+    <div className="ops-page">
+      <PageHeader title="Vendors" />
       <Tabs
         activeKey={tab}
         onChange={(k) => setSearchParams(k === "requests" ? { tab: "requests" } : {})}
@@ -280,6 +321,6 @@ export default function VendorsPage() {
           },
         ]}
       />
-    </>
+    </div>
   );
 }

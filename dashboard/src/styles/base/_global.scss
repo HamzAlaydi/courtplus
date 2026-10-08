@@ -1,13 +1,39 @@
 @use "variables" as *;
 
-// The app never declared a background, so it relied on the browser's default
-// white. Headings are #333, so anything that supplies a dark backdrop — a
-// dark-mode browser extension, an embedded webview, a forced-colors setting —
-// rendered dark text on dark. Declaring both colour and background keeps the
-// contrast pair intact wherever it renders.
+// The same tokens as CSS custom properties, for inline styles and charts.
+:root {
+  --cp-ink: #{$cp-ink};
+  --cp-deep: #{$cp-deep};
+  --cp-lime: #{$cp-lime};
+  --cp-ground: #{$cp-ground};
+  --cp-card: #{$cp-card};
+  --cp-line: #{$cp-line};
+  --cp-divider: #{$cp-divider};
+  --cp-muted: #{$cp-muted};
+  --cp-faint: #{$cp-faint};
+  --cp-lime-tint: #{$cp-lime-tint};
+  --cp-lime-tint-text: #{$cp-lime-tint-text};
+  --cp-success: #{$cp-success};
+  --cp-success-bg: #{$cp-success-bg};
+  --cp-warning: #{$cp-warning};
+  --cp-warning-bg: #{$cp-warning-bg};
+  --cp-danger: #{$cp-danger};
+  --cp-danger-bg: #{$cp-danger-bg};
+  --cp-star: #{$cp-star};
+  --cp-on-ink-muted: #{$cp-on-ink-muted};
+  --cp-font-text: #{$cp-font-text};
+  --cp-font-display: #{$cp-font-display};
+  --cp-radius-card: #{$cp-radius-card};
+  --cp-radius-input: #{$cp-radius-input};
+  --cp-shadow-card: #{$cp-shadow-card};
+  --cp-gutter: #{$cp-gutter};
+}
+
+// Declaring both colour and background keeps the contrast pair intact
+// wherever the app renders (dark-mode extensions, embedded webviews).
 html,
 body {
-  background-color: #ffffff;
+  background-color: $cp-ground;
   color: $color-text;
 }
 
@@ -25,7 +51,7 @@ h3 {
 }
 h4 {
   font-size: $font-size-m;
-  line-height: 1.1;
+  line-height: 1.25;
 }
 h5 {
   font-size: $font-size-s;
@@ -34,7 +60,7 @@ h5 {
 }
 h6 {
   font-size: $font-size-xs;
-  line-height: 1.1;
+  line-height: 1.3;
   font-weight: 500;
 }
 
@@ -45,24 +71,27 @@ h4,
 h5,
 h6 {
   text-transform: capitalize;
-  color: #333;
-  font-weight: 500;
+  color: $cp-ink;
+  font-weight: 600;
 }
+
 p {
   font-size: $font-size-s;
-  line-height: 1.2;
+  line-height: 1.5;
 }
 
 .btn-submit {
   width: 30rem;
+  max-width: 100%;
 }
 
 .active {
-  color: $primary-color-dark;
+  color: $cp-ink;
+  font-weight: 600;
 }
 
 .disactive {
-  color: #b8b8b8;
+  color: $cp-faint;
 }
 
 .img-circle {
@@ -100,7 +129,6 @@ p {
 
 .ant-picker {
   width: 100%;
-  border-radius: $border-radius;
 }
 
 .ant-form-item-label > label {
@@ -108,23 +136,11 @@ p {
 }
 
 .ant-input-number {
-  border-radius: $border-radius;
   width: 100%;
 }
 
-.ant-btn {
-  border-radius: $border-radius;
-  font-weight: 500;
-}
-
-.ant-input,
-.ant-select-selector {
-  border-radius: $border-radius;
-  padding: 4px 2rem;
-}
-
 .ant-form-item-label {
-  padding-bottom: 4px !important;
+  padding-bottom: 6px !important;
 }
 
 .non_cursor {

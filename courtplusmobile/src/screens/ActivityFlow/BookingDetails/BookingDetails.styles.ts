@@ -1,159 +1,222 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Radius, Shadows } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    container: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-    },
-    card: {
-      paddingVertical: verticalScale(18),
-      paddingHorizontal: horizontalScale(16),
+    scrollContent: {
+      paddingBottom: verticalScale(35),
     },
     content: {
-      paddingTop: verticalScale(28),
-      gap: verticalScale(6),
+      paddingTop: verticalScale(16),
+      gap: verticalScale(14),
     },
-    divider: {
-      height: 1,
-      borderColor: colors.LIGHT_GREY,
-      marginVertical: verticalScale(12),
-      borderStyle: "dashed",
-      borderWidth: 1,
+    restoreContainer: {
+      width: Layout.touch,
+      height: Layout.touch,
+      borderRadius: Layout.touch / 2,
+      backgroundColor: colors.CARD,
+      justifyContent: "center",
+      alignItems: "center",
+      ...Shadows.subtle,
     },
-    totalContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      paddingVertical: verticalScale(7.5),
+    restoreIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
-    total: {
-      color: colors.GREY,
+    courtCard: {
+      paddingHorizontal: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
+      borderRadius: Radius.cardLarge,
+      ...Shadows.raised,
     },
-    amount: {
-      fontSize: moderateScale(24),
+    courtImage: {
+      height: verticalScale(176),
+      borderTopLeftRadius: Radius.cardLarge,
+      borderTopRightRadius: Radius.cardLarge,
+      overflow: "hidden",
+      backgroundColor: colors.DIVIDER,
     },
-    courtCostContainer: {
-      marginTop: verticalScale(12),
+    courtImageInner: {
+      borderTopLeftRadius: Radius.cardLarge,
+      borderTopRightRadius: Radius.cardLarge,
     },
-    courtCostText: {
-      color: colors.GREY,
-    },
-    paymentStatusContainer: {
-      marginTop: verticalScale(12),
-      paddingVertical: verticalScale(16),
-      paddingHorizontal: horizontalScale(20),
-      backgroundColor: `${colors.BUTTON_GREEN}0A`,
-      borderRadius: spacing[12],
-    },
-    paymentStatusText: {
-      color: colors.BUTTON_GREEN,
-    },
-    dateContainer: {
+    imageBadges: {
+      position: "absolute",
+      top: spacing[12],
+      start: spacing[12],
+      end: spacing[12],
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
     },
-    dateItem: {
-      gap: verticalScale(6),
+    ratingBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[4],
+      backgroundColor: colors.GLASS_DARK,
+      borderRadius: Radius.pill,
+      paddingHorizontal: spacing[10],
+      paddingVertical: verticalScale(4),
     },
-    dateIconContainer: {
+    ratingBadgeIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.LIME,
+    },
+    ratingBadgeText: {
+      color: colors.WHITE,
+    },
+    courtInfoContainer: {
+      paddingHorizontal: spacing[16],
+      paddingTop: verticalScale(14),
+      paddingBottom: verticalScale(16),
+      gap: verticalScale(8),
+    },
+    metaContainer: {
+      gap: verticalScale(4),
+    },
+    metaRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[6],
     },
-    dateIcon: {
-      width: spacing[16],
-      height: spacing[16],
-      tintColor: colors.GREY,
+    metaIcon: {
+      width: horizontalScale(13),
+      height: horizontalScale(13),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
-    paymentInfoText: {
-      color: colors.GREY,
+    metaText: {
+      color: colors.MUTED,
+      flexShrink: 1,
     },
-    branchContainer: {
-      gap: spacing[4],
+    chipsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing[6],
+      marginTop: verticalScale(2),
+    },
+    whenCard: {
       flexDirection: "row",
       alignItems: "center",
-      marginTop: verticalScale(4),
-      marginBottom: verticalScale(2),
-    },
-    distanceContainer: {
-      gap: spacing[4],
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    ratingContainer: {
-      gap: spacing[4],
-      flexDirection: "row",
-      alignItems: "center",
-      marginTop: verticalScale(12),
-    },
-    courtImage: {
-      width: horizontalScale(319),
-      height: verticalScale(255),
-      borderRadius: spacing[8],
-    },
-    courtInfoContainer: {
+      gap: spacing[12],
       paddingHorizontal: spacing[12],
-      paddingTop: verticalScale(28),
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(12),
+    },
+    dateBlock: {
+      width: horizontalScale(56),
+      height: horizontalScale(60),
+      borderRadius: Radius.input,
+      backgroundColor: colors.INK,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dateBlockMonth: {
+      color: colors.LIME,
+    },
+    dateBlockDay: {
+      color: colors.WHITE,
+    },
+    whenItem: {
+      flex: 1,
+      gap: verticalScale(4),
+    },
+    whenLabelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[4],
+    },
+    whenIcon: {
+      width: horizontalScale(13),
+      height: horizontalScale(13),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+    },
+    verticalDivider: {
+      width: 1,
+      alignSelf: "stretch",
+      marginVertical: verticalScale(6),
+      backgroundColor: colors.DIVIDER,
+    },
+    card: {
+      paddingHorizontal: spacing[16],
+      paddingTop: verticalScale(16),
       paddingBottom: verticalScale(16),
     },
-    courtCard: {
-      paddingTop: 0,
-      paddingVertical: verticalScale(4),
-      paddingHorizontal: horizontalScale(4),
-      paddingBottom: 0,
-    },
-    scrollContent: {
-      paddingBottom: verticalScale(35),
-    },
-    location: {
-      color: colors.GRAYISH_BLUE,
-    },
-    rating: {
-      color: colors.SLATE_GRAY,
-    },
-    branchName: {
-      color: colors.SLATE_GRAY,
-    },
-    date: {
-      color: colors.SLATE_GRAY,
-    },
-    restoreContainer: {
-      backgroundColor: colors.GHOST_WHITE,
-      justifyContent: "center",
-      alignItems: "center",
-      width: spacing[40],
-      height: spacing[40],
-      borderRadius: spacing[40],
-    },
-    playersJoined: {
-      color: colors.GREY,
-      marginBottom: verticalScale(12),
-    },
-    header: {
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    playerImage: {
-      width: spacing[40],
-      height: spacing[40],
-      borderRadius: spacing[40],
-    },
-    participantsContainer: {
-      marginBottom: verticalScale(18),
+    cardHeader: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[8],
+      justifyContent: "space-between",
     },
-    playerName: {
-      color: colors.BLACK,
+    cardHeaderText: {
+      color: colors.MUTED,
     },
-    playerUsername: {
-      color: colors.GREY,
+    countBadge: {
+      minWidth: horizontalScale(28),
+      height: horizontalScale(28),
+      paddingHorizontal: spacing[8],
+      borderRadius: Radius.pill,
+      backgroundColor: colors.GROUND,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    participantsContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[12],
+      paddingVertical: verticalScale(12),
+    },
+    participantDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.DIVIDER,
+    },
+    playerImage: {
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      borderRadius: horizontalScale(22),
+      backgroundColor: colors.DIVIDER,
     },
     playerInfoContainer: {
-      gap: verticalScale(4),
+      flex: 1,
+      gap: verticalScale(2),
+    },
+    mutedText: {
+      color: colors.MUTED,
+    },
+    courtCostContainer: {
+      marginTop: verticalScale(14),
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.DIVIDER,
+      marginVertical: verticalScale(14),
+    },
+    totalContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    paymentStatusContainer: {
+      marginTop: verticalScale(14),
+      paddingVertical: verticalScale(10),
+      paddingHorizontal: spacing[12],
+      backgroundColor: colors.SUBTLE,
+      borderRadius: Radius.input,
+      borderWidth: 1,
+      borderColor: colors.DIVIDER,
+    },
+    actionsContainer: {
+      marginTop: verticalScale(6),
+      gap: verticalScale(10),
+    },
+    cancelClosed: {
+      color: colors.MUTED,
+      textAlign: "center",
     },
   });

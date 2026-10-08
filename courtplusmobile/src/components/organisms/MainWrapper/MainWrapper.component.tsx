@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { MainWrapperProps } from "./MainWrapper.types";
@@ -20,21 +20,22 @@ const MainWrapper = ({
   const {
     currentTheme: { colors },
   } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
 
   const Wrapper = scrollEnabled ? KeyboardAwareScrollView : View;
   const bottomPadding = disableBottomPadding ? 0 : bottom;
   return (
     <Wrapper
       style={[
-        styles.container,
+        themedStyles.container,
         { paddingBottom: bottomPadding, paddingTop: enableSafeArea ? top : 0 },
-        !scrollEnabled && styles.content,
+        !scrollEnabled && themedStyles.content,
         overrideContainerStyle,
         !scrollEnabled && overrideContentStyle,
-        whiteBackground && { backgroundColor: colors.WHITE },
+        whiteBackground && themedStyles.white,
       ]}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={[styles.content, overrideContentStyle]}
+      contentContainerStyle={[themedStyles.content, overrideContentStyle]}
       scrollEnabled={scrollEnabled}
       keyboardShouldPersistTaps="handled"
       {...(scrollEnabled && refreshControl ? { refreshControl } : {})}

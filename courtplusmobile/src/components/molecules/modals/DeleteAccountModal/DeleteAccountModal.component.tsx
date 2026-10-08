@@ -26,32 +26,35 @@ const DeleteAccountModal = forwardRef<
       overrideContentStyle={themedStyles.container}
     >
       <View style={themedStyles.content}>
-        <Image source={Images.user} style={themedStyles.image} />
+        <View style={themedStyles.iconBadge}>
+          <Image source={Images.user} style={themedStyles.image} />
+        </View>
         <CustomText
           font="bottomSheetTitle"
           weight="bold"
+          accessibilityRole="header"
           text={t("settings.deleteAccountTitle")}
           overrideStyle={themedStyles.title}
         />
         <CustomText
-          font="description"
-          weight="medium"
+          font="headline3"
+          weight="regular"
           overrideStyle={themedStyles.description}
           text={t("settings.deleteAccountDescription")}
         />
       </View>
-      <CustomButton
-        title={t("settings.deleteAccount")}
-        overrideStyle={themedStyles.deleteButton}
-        overrideTextStyle={themedStyles.deleteButtonText}
-        onPress={onDeleteAccount}
-      />
-      <CustomButton
-        title={t("general.cancel")}
-        onPress={onCancel}
-        overrideStyle={themedStyles.cancelButton}
-        overrideTextStyle={themedStyles.cancelButtonText}
-      />
+      <View style={themedStyles.actions}>
+        <CustomButton
+          variant="danger"
+          title={t("settings.deleteAccount")}
+          onPress={onDeleteAccount}
+        />
+        <CustomButton
+          variant="outline"
+          title={t("general.cancel")}
+          onPress={onCancel}
+        />
+      </View>
     </BottomSheetOverlay>
   );
 });

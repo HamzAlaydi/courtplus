@@ -1,39 +1,45 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     content: {
-      marginTop: verticalScale(21),
+      marginTop: verticalScale(16),
+      gap: verticalScale(16),
     },
     title: {
-      color: colors.SLATE_GRAY,
-      marginTop: verticalScale(25),
-      textAlign: "center",
-      letterSpacing: 0.1,
-    },
-    input: {
-      marginTop: verticalScale(32),
-    },
-    description: {
-      marginTop: verticalScale(10),
-      color: colors.GREY,
-      marginStart: horizontalScale(20),
+      color: colors.INK,
     },
     slotsContainer: {
       flexDirection: "row",
-      gap: horizontalScale(33),
-      alignItems: "center",
-      justifyContent: "center",
-      marginTop: verticalScale(30),
+      alignItems: "flex-start",
+      justifyContent: "space-around",
+      paddingVertical: verticalScale(16),
+      paddingHorizontal: spacing[8],
+      borderRadius: Radius.card,
+      backgroundColor: colors.CARD,
+      ...Shadows.card,
+    },
+    searchGroup: {
+      gap: verticalScale(8),
+    },
+    searchIcon: {
+      width: horizontalScale(18),
+      height: horizontalScale(18),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+    },
+    description: {
+      color: colors.MUTED,
+      paddingHorizontal: spacing[4],
     },
     separator: {
-      marginTop: verticalScale(8),
+      height: verticalScale(8),
     },
     listContent: {
-      paddingTop: verticalScale(25),
-      paddingBottom: verticalScale(100),
+      paddingTop: verticalScale(16),
+      paddingBottom: verticalScale(140),
     },
     profileCard: {
       marginTop: 0,

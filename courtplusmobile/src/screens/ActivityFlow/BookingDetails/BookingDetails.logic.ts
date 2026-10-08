@@ -11,7 +11,7 @@ import { useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "store";
-import { invalidateQuery, formatInZone } from "utils";
+import { invalidateQuery, formatInZone, getBookingStatusPill } from "utils";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 export const useBookingDetails = () => {
@@ -67,7 +67,7 @@ export const useBookingDetails = () => {
   };
 
   const onBookingTicketPress = () => {
-    navigate("BookingTicket", { item });
+    navigate("BookingTicket", { item, hasJustPaid });
   };
 
   const zone = item.timeZone;
@@ -131,7 +131,11 @@ export const useBookingDetails = () => {
             : t("activity.leaveConfirmMessage"),
           [
             { text: t("general.keep"), style: "cancel" },
-            { text: t("general.confirm"), style: "destructive", onPress: confirm },
+            {
+              text: t("general.confirm"),
+              style: "destructive",
+              onPress: confirm,
+            },
           ]
         ),
     };
@@ -159,9 +163,15 @@ export const useBookingDetails = () => {
     };
   }, [t, item.status, item.review, currentParticipant, hasJustPaid]);
 
+  const statusPill = getBookingStatusPill(item, {
+    participant: currentParticipant,
+    hasJustPaid,
+  });
+
   return {
     onActivityLogPress,
     item,
+    statusPill,
     formattedTime,
     bookingTicketButton,
     cancelAction,

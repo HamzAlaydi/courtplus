@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { Image, ImageBackground, TouchableOpacity, View } from "react-native";
+import { Image, ImageBackground, View } from "react-native";
 import { BookmarkItemProps } from "./BookmarkItem.types";
-import { CustomText } from "atoms/index";
+import { Card, CustomText, PressableScale } from "atoms/index";
 import { Images } from "theme";
 import { useThemeContext } from "contexts";
 import styles from "./BookmarkItem.styles";
@@ -20,8 +20,8 @@ const BookmarkItem = ({
   const themedStyles = useMemo(() => styles(colors), [colors]);
 
   return (
-    <TouchableOpacity
-      style={[themedStyles.container, overrideStyle]}
+    <Card
+      overrideStyle={[themedStyles.container, overrideStyle]}
       onPress={onPress}
     >
       <ImageBackground
@@ -29,26 +29,45 @@ const BookmarkItem = ({
         imageStyle={themedStyles.image}
         source={image}
       >
-        <TouchableOpacity
+        <PressableScale
           onPress={onBookmarkPress}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityState={{ selected: true }}
           style={themedStyles.bookmarkContainer}
         >
           <Image source={Images.bookmark2} style={themedStyles.bookmarkIcon} />
-        </TouchableOpacity>
+        </PressableScale>
       </ImageBackground>
       <View style={themedStyles.content}>
-        <CustomText font="headline2" weight="bold" text={title} />
-        <View style={themedStyles.locationContainer}>
-          <Image source={Images.location} />
+        <View style={themedStyles.textContainer}>
           <CustomText
-            font="chip"
-            weight="medium"
-            text={locationName}
-            overrideStyle={themedStyles.locationName}
+            font="cardTitle"
+            weight="bold"
+            text={title}
+            numberOfLines={1}
           />
+          {!!locationName && (
+            <View style={themedStyles.locationContainer}>
+              <Image
+                source={Images.location}
+                style={themedStyles.locationIcon}
+              />
+              <CustomText
+                font="caption"
+                weight="regular"
+                text={locationName}
+                numberOfLines={1}
+                overrideStyle={themedStyles.locationName}
+              />
+            </View>
+          )}
+        </View>
+        <View style={themedStyles.arrowButton}>
+          <Image source={Images.arrowLeft} style={themedStyles.arrowIcon} />
         </View>
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 };
 

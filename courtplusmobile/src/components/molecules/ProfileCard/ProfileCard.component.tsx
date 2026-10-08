@@ -1,7 +1,7 @@
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import { Images } from "theme";
 import styles from "./ProfileCard.styles";
 import { ProfileCardProps } from "./ProfileCard.types";
@@ -35,13 +35,18 @@ const ProfileCard = ({
     <View style={[themedStyles.container, overrideStyle]}>
       <View style={themedStyles.profileContainer}>
         <Image source={renderIcon()} style={themedStyles.image} />
-        <View>
-          <CustomText text={name} font="headline3" weight="semiBold" />
+        <View style={themedStyles.textContainer}>
+          <CustomText
+            text={name}
+            font="cardTitle"
+            weight="semiBold"
+            numberOfLines={1}
+          />
           {username && (
             <CustomText
               text={`@${username}`}
-              font="headline3"
-              weight="medium"
+              font="caption"
+              weight="regular"
               overrideStyle={themedStyles.username}
               numberOfLines={1}
             />
@@ -51,11 +56,14 @@ const ProfileCard = ({
       {rightIcon ? (
         rightIcon
       ) : (
-        <TouchableOpacity style={themedStyles.addButton} onPress={onAddPress}>
-          <View style={themedStyles.addButtonIcon}>
-            <Image source={Images.plus} style={themedStyles.icon} />
-          </View>
-        </TouchableOpacity>
+        <PressableScale
+          style={themedStyles.addButton}
+          onPress={onAddPress}
+          hitSlop={4}
+          accessibilityRole="button"
+        >
+          <Image source={Images.plus} style={themedStyles.icon} />
+        </PressableScale>
       )}
     </View>
   );

@@ -21,15 +21,17 @@ const ActionItem = ({
   return (
     <View style={[themedStyles.container, overrideStyle]}>
       <View style={themedStyles.titleContainer}>
-        <Image
-          source={image}
-          style={[themedStyles.image, overrideImageStyle]}
-        />
+        <View style={themedStyles.iconTile}>
+          <Image
+            source={image}
+            style={[themedStyles.image, overrideImageStyle]}
+          />
+        </View>
         <CustomText
           text={title}
           font="headline3"
           weight="medium"
-          overrideStyle={overrideTitleStyle}
+          overrideStyle={[themedStyles.title, overrideTitleStyle]}
         />
       </View>
       {right && right}

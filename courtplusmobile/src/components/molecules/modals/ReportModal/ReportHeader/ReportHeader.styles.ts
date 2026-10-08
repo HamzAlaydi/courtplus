@@ -1,24 +1,37 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, isRTL, spacing } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      gap: spacing[12],
     },
-    arrowIcon: {
-      tintColor: colors.BLACK,
+    title: {
+      flex: 1,
+      color: colors.INK,
     },
-    headerLeft: { width: horizontalScale(30) },
-    closeButton: {
-      width: horizontalScale(27),
-      height: horizontalScale(27),
+    iconButton: {
+      width: horizontalScale(36),
+      height: horizontalScale(36),
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.GREEN_YELLOWISH,
-      borderRadius: spacing[40],
+      backgroundColor: colors.GROUND,
+      borderRadius: Radius.pill,
+    },
+    arrowIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+      transform: [{ scaleX: isRTL ? -1 : 1 }],
+    },
+    closeIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
   });

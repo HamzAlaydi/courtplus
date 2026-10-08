@@ -13,11 +13,11 @@ import { Image, View } from "react-native";
 import styles from "./InviteFriend.styles";
 import { CustomText, Input } from "atoms/index";
 import { Images } from "theme";
-import { CourtStackNavigationProp } from "navigation/types";
-import { useNavigation } from "@react-navigation/native";
 import { useInviteFriend } from "./InviteFriend.logic";
 import { ListRenderItemInfo } from "@shopify/flash-list";
 import { User } from "models";
+import Animated from "react-native-reanimated";
+import { enterRise, useListEntering } from "utils";
 
 const InviteFriendScreen = () => {
   const { t } = useTranslation();
@@ -25,7 +25,6 @@ const InviteFriendScreen = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
-  const { navigate } = useNavigation<CourtStackNavigationProp>();
   const {
     customersData,
     fetchNextPage,
@@ -40,48 +39,58 @@ const InviteFriendScreen = () => {
     onCancelPress,
     onNextPress,
   } = useInviteFriend();
+  const entering = useListEntering();
 
-  const renderItem = ({ item }: ListRenderItemInfo<User>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<User>) => {
     return (
-      <ProfileCard
-        name={item.firstName}
-        username={item.username}
-        image={item.avatarUrl ?? ""}
-        onAddPress={() => onAddPress(item)}
-        gender={item.gender}
-        overrideStyle={themedStyles.profileCard}
-      />
+      <Animated.View entering={entering(index)}>
+        <ProfileCard
+          name={item.firstName}
+          username={item.username}
+          image={item.avatarUrl ?? ""}
+          onAddPress={() => onAddPress(item)}
+          gender={item.gender}
+          overrideStyle={themedStyles.profileCard}
+        />
+      </Animated.View>
     );
   };
 
   return (
-    <MainWrapper whiteBackground>
+    <MainWrapper>
       <Header whiteColor title={t("booking.title")} />
       <View style={themedStyles.content}>
         <Stepper flow={StepperFlow.Booking} currentStep={3} />
         <CustomText
           text={t("booking.inviteFriend")}
-          font="headline3"
-          weight="regular"
+          font="sectionTitle"
+          weight="bold"
+          accessibilityRole="header"
           overrideStyle={themedStyles.title}
         />
-        <View style={themedStyles.slotsContainer}>
+        <Animated.View
+          entering={enterRise(0)}
+          style={themedStyles.slotsContainer}
+        >
           <AvatarSlots slots={selectedFriends} onRemovePress={onRemovePress} />
-        </View>
+        </Animated.View>
 
-        <Input
-          leftComponent={<Image source={Images.search} />}
-          overrideStyle={themedStyles.input}
-          placeholder={t("booking.findPlayer")}
-          value={searchInput}
-          onChangeText={setSearchInput}
-        />
-        <CustomText
-          text={t("booking.findPlayerDescription")}
-          font="chip"
-          weight="regular"
-          overrideStyle={themedStyles.description}
-        />
+        <View style={themedStyles.searchGroup}>
+          <Input
+            leftComponent={
+              <Image source={Images.search} style={themedStyles.searchIcon} />
+            }
+            placeholder={t("booking.findPlayer")}
+            value={searchInput}
+            onChangeText={setSearchInput}
+          />
+          <CustomText
+            text={t("booking.findPlayerDescription")}
+            font="caption"
+            weight="regular"
+            overrideStyle={themedStyles.description}
+          />
+        </View>
       </View>
       <List
         data={customersData}

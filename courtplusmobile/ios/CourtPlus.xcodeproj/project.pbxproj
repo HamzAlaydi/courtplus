@@ -23,6 +23,26 @@
 		ED17C1052D60BEDB00DCABD4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = ED17C1042D60BEDB00DCABD4 /* GoogleService-Info.plist */; };
 		ED93137E2E5B511A000141AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED93137D2E5B5111000141AB /* AppDelegate.swift */; };
 		FDD25361967445F1935176CA /* Inter-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E26D9F79B5042E1B039A597 /* Inter-Thin.ttf */; };
+		BFCBB84260BD421586D1B773 /* Unbounded-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B62890CA0BD149D9823AD48B /* Unbounded-Bold.ttf */; };
+		2BA5AFA44DD8416AA24D9FDB /* Unbounded-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B62890CA0BD149D9823AD48B /* Unbounded-Bold.ttf */; };
+		8B8258861C55413B98B48493 /* Unbounded-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 20983CCF8E694BBEB74BF4E1 /* Unbounded-SemiBold.ttf */; };
+		29B2A91B78BC4D71AB461819 /* Unbounded-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 20983CCF8E694BBEB74BF4E1 /* Unbounded-SemiBold.ttf */; };
+		B16DC9CE586D4F88AC6C4B72 /* Unbounded-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 651E90D8B00F4530A27B8E0E /* Unbounded-ExtraBold.ttf */; };
+		CDC6A3E801114D6CAC6E537D /* Unbounded-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 651E90D8B00F4530A27B8E0E /* Unbounded-ExtraBold.ttf */; };
+		EF25663A3CDD47F1905086CF /* ReadexPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D7345CABD1B046AFA570B01B /* ReadexPro-Regular.ttf */; };
+		DCB34B21185F40D38D463257 /* ReadexPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D7345CABD1B046AFA570B01B /* ReadexPro-Regular.ttf */; };
+		812362B2B61A475EBFDD4F00 /* ReadexPro-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7D46BD4E4CB0400EB99A8621 /* ReadexPro-SemiBold.ttf */; };
+		D4D87AE798AE4C8C92143F72 /* ReadexPro-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7D46BD4E4CB0400EB99A8621 /* ReadexPro-SemiBold.ttf */; };
+		EBAA660280124340A6D6CB7B /* ReadexPro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3D32A6C18E6E43C78B661CF7 /* ReadexPro-Bold.ttf */; };
+		193647E96BEC4F4DB4F0B26A /* ReadexPro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3D32A6C18E6E43C78B661CF7 /* ReadexPro-Bold.ttf */; };
+		41236A6210CE44A1B1FAD189 /* ReadexPro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 84361858D2CF45AF91730D51 /* ReadexPro-Medium.ttf */; };
+		5E0F61D283F54DE1B91C9BAA /* ReadexPro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 84361858D2CF45AF91730D51 /* ReadexPro-Medium.ttf */; };
+		5D8F1025DBFC4F6BB566481C /* Alexandria-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A8DA320011D04F738CB362A3 /* Alexandria-SemiBold.ttf */; };
+		F6425EBCE4B44CAEA24A6E48 /* Alexandria-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A8DA320011D04F738CB362A3 /* Alexandria-SemiBold.ttf */; };
+		3FF48E9D82BD46E2B3A3AF6E /* Alexandria-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B28F298BFC346B6B1A2AC26 /* Alexandria-ExtraBold.ttf */; };
+		AF927209E07B4323984613E5 /* Alexandria-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B28F298BFC346B6B1A2AC26 /* Alexandria-ExtraBold.ttf */; };
+		36F0B42A9A20449F8F9FFE63 /* Alexandria-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 741715C4FE134C99BBBA4D73 /* Alexandria-Bold.ttf */; };
+		6BECFAED05A04D6F95B6D82A /* Alexandria-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 741715C4FE134C99BBBA4D73 /* Alexandria-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +79,16 @@
 		ED22FA2F2E3A212400D8F036 /* CourtPlus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = CourtPlus.entitlements; path = CourtPlus/CourtPlus.entitlements; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED93137D2E5B5111000141AB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B62890CA0BD149D9823AD48B /* Unbounded-Bold.ttf */ = {isa = PBXFileReference; name = "Unbounded-Bold.ttf"; path = "../assets/fonts/unbounded/Unbounded-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		20983CCF8E694BBEB74BF4E1 /* Unbounded-SemiBold.ttf */ = {isa = PBXFileReference; name = "Unbounded-SemiBold.ttf"; path = "../assets/fonts/unbounded/Unbounded-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		651E90D8B00F4530A27B8E0E /* Unbounded-ExtraBold.ttf */ = {isa = PBXFileReference; name = "Unbounded-ExtraBold.ttf"; path = "../assets/fonts/unbounded/Unbounded-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		D7345CABD1B046AFA570B01B /* ReadexPro-Regular.ttf */ = {isa = PBXFileReference; name = "ReadexPro-Regular.ttf"; path = "../assets/fonts/readexpro/ReadexPro-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		7D46BD4E4CB0400EB99A8621 /* ReadexPro-SemiBold.ttf */ = {isa = PBXFileReference; name = "ReadexPro-SemiBold.ttf"; path = "../assets/fonts/readexpro/ReadexPro-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3D32A6C18E6E43C78B661CF7 /* ReadexPro-Bold.ttf */ = {isa = PBXFileReference; name = "ReadexPro-Bold.ttf"; path = "../assets/fonts/readexpro/ReadexPro-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		84361858D2CF45AF91730D51 /* ReadexPro-Medium.ttf */ = {isa = PBXFileReference; name = "ReadexPro-Medium.ttf"; path = "../assets/fonts/readexpro/ReadexPro-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A8DA320011D04F738CB362A3 /* Alexandria-SemiBold.ttf */ = {isa = PBXFileReference; name = "Alexandria-SemiBold.ttf"; path = "../assets/fonts/alexandria/Alexandria-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		0B28F298BFC346B6B1A2AC26 /* Alexandria-ExtraBold.ttf */ = {isa = PBXFileReference; name = "Alexandria-ExtraBold.ttf"; path = "../assets/fonts/alexandria/Alexandria-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		741715C4FE134C99BBBA4D73 /* Alexandria-Bold.ttf */ = {isa = PBXFileReference; name = "Alexandria-Bold.ttf"; path = "../assets/fonts/alexandria/Alexandria-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +123,16 @@
 				99ED39B8662A4AEDAC219FA1 /* Cairo-Regular.ttf */,
 				75CA3E074A67463FABC53FDE /* Cairo-SemiBold.ttf */,
 				EA3BFE449AE747B58C8DA489 /* Cairo-Medium.ttf */,
+				B62890CA0BD149D9823AD48B /* Unbounded-Bold.ttf */,
+				20983CCF8E694BBEB74BF4E1 /* Unbounded-SemiBold.ttf */,
+				651E90D8B00F4530A27B8E0E /* Unbounded-ExtraBold.ttf */,
+				D7345CABD1B046AFA570B01B /* ReadexPro-Regular.ttf */,
+				7D46BD4E4CB0400EB99A8621 /* ReadexPro-SemiBold.ttf */,
+				3D32A6C18E6E43C78B661CF7 /* ReadexPro-Bold.ttf */,
+				84361858D2CF45AF91730D51 /* ReadexPro-Medium.ttf */,
+				A8DA320011D04F738CB362A3 /* Alexandria-SemiBold.ttf */,
+				0B28F298BFC346B6B1A2AC26 /* Alexandria-ExtraBold.ttf */,
+				741715C4FE134C99BBBA4D73 /* Alexandria-Bold.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -244,6 +284,26 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45657180CA9B482294C3A0F1 /* Unbounded-Bold.ttf in Resources */,
+				62DF92D12A624DD4A1386697 /* Unbounded-SemiBold.ttf in Resources */,
+				F9024E77BA0C4A4D9EAB6B55 /* Unbounded-ExtraBold.ttf in Resources */,
+				AB8B3D5412B84739838A2549 /* ReadexPro-Regular.ttf in Resources */,
+				06E4BBF4C57F4E8E89B1C16B /* ReadexPro-SemiBold.ttf in Resources */,
+				6F6932BDB9234EBD8F2C266B /* ReadexPro-Bold.ttf in Resources */,
+				D3059687A4844822AC8A9CAC /* ReadexPro-Medium.ttf in Resources */,
+				9D3DCEA7AAC14A7C81E0D6A6 /* Alexandria-SemiBold.ttf in Resources */,
+				6F08E01FA8154472BC0C1853 /* Alexandria-ExtraBold.ttf in Resources */,
+				E28C3B4F548B422D8B2BF511 /* Alexandria-Bold.ttf in Resources */,
+				2BA5AFA44DD8416AA24D9FDB /* Unbounded-Bold.ttf in Resources */,
+				29B2A91B78BC4D71AB461819 /* Unbounded-SemiBold.ttf in Resources */,
+				CDC6A3E801114D6CAC6E537D /* Unbounded-ExtraBold.ttf in Resources */,
+				DCB34B21185F40D38D463257 /* ReadexPro-Regular.ttf in Resources */,
+				D4D87AE798AE4C8C92143F72 /* ReadexPro-SemiBold.ttf in Resources */,
+				193647E96BEC4F4DB4F0B26A /* ReadexPro-Bold.ttf in Resources */,
+				5E0F61D283F54DE1B91C9BAA /* ReadexPro-Medium.ttf in Resources */,
+				F6425EBCE4B44CAEA24A6E48 /* Alexandria-SemiBold.ttf in Resources */,
+				AF927209E07B4323984613E5 /* Alexandria-ExtraBold.ttf in Resources */,
+				6BECFAED05A04D6F95B6D82A /* Alexandria-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,6 +325,16 @@
 				2BA11850D77E4CD288177013 /* Cairo-Regular.ttf in Resources */,
 				B74B79465E1C475EA941DB6F /* Cairo-SemiBold.ttf in Resources */,
 				827038F5AD694B47B91F1C87 /* Cairo-Medium.ttf in Resources */,
+				BFCBB84260BD421586D1B773 /* Unbounded-Bold.ttf in Resources */,
+				8B8258861C55413B98B48493 /* Unbounded-SemiBold.ttf in Resources */,
+				B16DC9CE586D4F88AC6C4B72 /* Unbounded-ExtraBold.ttf in Resources */,
+				EF25663A3CDD47F1905086CF /* ReadexPro-Regular.ttf in Resources */,
+				812362B2B61A475EBFDD4F00 /* ReadexPro-SemiBold.ttf in Resources */,
+				EBAA660280124340A6D6CB7B /* ReadexPro-Bold.ttf in Resources */,
+				41236A6210CE44A1B1FAD189 /* ReadexPro-Medium.ttf in Resources */,
+				5D8F1025DBFC4F6BB566481C /* Alexandria-SemiBold.ttf in Resources */,
+				3FF48E9D82BD46E2B3A3AF6E /* Alexandria-ExtraBold.ttf in Resources */,
+				36F0B42A9A20449F8F9FFE63 /* Alexandria-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

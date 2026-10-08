@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
@@ -8,17 +8,26 @@ export default (colors: ColorsType) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: spacing[8],
-      paddingHorizontal: horizontalScale(17),
-      paddingVertical: verticalScale(10),
-      backgroundColor: colors.LIGHT_BLUE,
-      borderColor: colors.WHITE,
-      borderWidth: 2,
-      borderRadius: spacing[20],
-      maxWidth: horizontalScale(108),
+      gap: spacing[6],
+      minHeight: verticalScale(40),
+      paddingHorizontal: spacing[14],
+      paddingVertical: verticalScale(6),
+      backgroundColor: colors.CARD,
+      borderColor: colors.LINE,
+      borderWidth: 1,
+      borderRadius: Radius.pill,
+      maxWidth: horizontalScale(140),
+      ...Shadows.subtle,
     },
     icon: {
       width: spacing[16],
       height: spacing[16],
+      resizeMode: "contain",
+    },
+    title: {
+      color: colors.INK,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(18),
+      flexShrink: 1,
     },
   });

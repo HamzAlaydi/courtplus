@@ -17,12 +17,19 @@ const SportBadge = ({ sport, overrideStyle }: SportBadgeProps) => {
 
   return (
     <WidgetWrapper overrideStyle={[themedStyles.sportContainer, overrideStyle]}>
-      <Image source={Images[sportItem.icon]} />
+      <View style={themedStyles.iconContainer}>
+        <Image source={Images[sportItem.icon]} style={themedStyles.icon} />
+      </View>
       <View>
-        <CustomText font="headline3" weight="semiBold" text={sportItem.name} />
+        <CustomText
+          font="headline3"
+          weight="semiBold"
+          text={sportItem.name}
+          overrideStyle={themedStyles.title}
+        />
         {sport.level && (
           <CustomText
-            font="chip"
+            font="caption"
             weight="regular"
             text={sportItem.level}
             overrideStyle={themedStyles.subtitle}

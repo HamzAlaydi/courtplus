@@ -24,11 +24,11 @@ export default function UploadProgress({ percent, label }) {
       <span className="upload-progress__label">{label}</span>
       <Progress
         percent={percent}
-        size="small"
         status="active"
         showInfo={false}
-        strokeColor="#c0ff42"
-        trailColor="#e3e8e6"
+        strokeColor="#0a1517"
+        trailColor="#e4e9e8"
+        size={["100%", 6]}
         className="upload-progress__bar"
       />
       <span className="upload-progress__percent">

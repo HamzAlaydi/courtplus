@@ -24,34 +24,37 @@ const ChangePhoneModal = forwardRef<BottomSheetModal, ChangePhoneModalProps>(
         overrideContentStyle={[themedStyles.container, overrideStyle]}
       >
         <View style={themedStyles.centeredContainer}>
-          <Image source={Images.phone} style={themedStyles.image} />
+          <View style={themedStyles.iconBadge}>
+            <Image source={Images.phone} style={themedStyles.image} />
+          </View>
           <CustomText
-            font="headline3"
+            font="bottomSheetTitle"
             weight="bold"
+            accessibilityRole="header"
             text={`${t("changePhone.yourPhoneNumber")} ${maskPhoneNumber(
               phone
             )}`}
             overrideStyle={themedStyles.title}
           />
           <CustomText
-            font="chip"
-            weight="medium"
+            font="headline3"
+            weight="regular"
             overrideStyle={themedStyles.description}
             text={t("changePhone.description")}
           />
         </View>
-        <CustomButton
-          title={t("changePhone.changePhoneNumber")}
-          overrideStyle={themedStyles.changePhoneButton}
-          overrideTextStyle={themedStyles.changePhoneButtonText}
-          onPress={onChangePhone}
-        />
-        <CustomButton
-          title={t("general.cancel")}
-          onPress={onCancel}
-          overrideStyle={themedStyles.cancelButton}
-          overrideTextStyle={themedStyles.cancelButtonText}
-        />
+        <View style={themedStyles.actions}>
+          <CustomButton
+            variant="primary"
+            title={t("changePhone.changePhoneNumber")}
+            onPress={onChangePhone}
+          />
+          <CustomButton
+            variant="outline"
+            title={t("general.cancel")}
+            onPress={onCancel}
+          />
+        </View>
       </BottomSheetOverlay>
     );
   }

@@ -1,6 +1,7 @@
 import CustomText from "atoms/CustomText/CustomText.component";
+import PressableScale from "atoms/PressableScale/PressableScale.component";
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { Image } from "react-native";
 import { LanguageButtonProps } from "./LanguageButton.types";
 import { useThemeContext } from "contexts";
 import styles from "./LanguageButton.styles";
@@ -18,8 +19,10 @@ const LanguageButton = ({
   const themedStyles = useMemo(() => styles(colors), [colors]);
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
       style={[
         themedStyles.container,
         isSelected && themedStyles.selected,
@@ -30,13 +33,13 @@ const LanguageButton = ({
       <CustomText
         text={title}
         font="fields"
-        weight="bold"
+        weight="semiBold"
         overrideStyle={[
           themedStyles.title,
           isSelected && themedStyles.selectedTitle,
         ]}
       />
-    </TouchableOpacity>
+    </PressableScale>
   );
 };
 

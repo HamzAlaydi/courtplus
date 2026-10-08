@@ -1,12 +1,96 @@
-// Colors
-$primary-color: #c0ff42;
-$primary-color-dark: #54c39e;
-$primary-color-light: #caf86d;
-$color-green: #00a650;
-$color-green-dark: #28483e;
-$color-white: #fff;
-$color-text: #171717;
-$color-text-light: #717588;
+// Court+ design tokens. Use the `$cp-*` names in new code; the older names
+// further down are kept (and point at the same palette) so existing page
+// styles keep compiling.
+
+// Colour
+$cp-ink: #0a1517;
+$cp-deep: #142326;
+$cp-lime: #c0ff42;
+$cp-lime-hover: #b5f536;
+$cp-lime-active: #a6e62a;
+$cp-ground: #f3f5f4;
+$cp-card: #ffffff;
+$cp-line: #e4e9e8;
+$cp-line-strong: #c9d3d2;
+$cp-divider: #eef1f0;
+$cp-muted: #627174;
+$cp-faint: #9aa6a8;
+$cp-row-hover: #f7f9f8;
+$cp-lime-tint: #eef9d4;
+$cp-lime-tint-text: #2f4a08;
+$cp-lime-wash: #f7fbec;
+$cp-success-bg: #e6f6ee;
+$cp-success: #0b6b3d;
+$cp-warning-bg: #fff6dc;
+$cp-warning: #7a5300;
+$cp-danger: #d92d20;
+$cp-danger-bg: #feeceb;
+$cp-danger-text: #b42318;
+$cp-info-bg: #e9eefb;
+$cp-info: #2f4bb3;
+$cp-star: #e8a400;
+$cp-on-ink-muted: #aebbbd;
+$cp-sidebar-text: #c8d3d4;
+
+// Type
+$cp-font-text: "Readex Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+$cp-font-display: "Unbounded", "Alexandria", "Readex Pro", sans-serif;
+$cp-font-display-ar: "Alexandria", "Readex Pro", sans-serif;
+
+$cp-fs-page-title: 26px;
+$cp-fs-screen-title: 20px;
+$cp-fs-section: 14px;
+$cp-fs-section-ar: 16px;
+$cp-fs-card-title: 16px;
+$cp-fs-body: 14px;
+$cp-fs-small: 13px;
+$cp-fs-caption: 12px;
+$cp-fs-kpi: 30px;
+
+// Shape
+$cp-radius-card: 22px;
+$cp-radius-panel: 16px;
+$cp-radius-input: 14px;
+$cp-radius-chip: 12px;
+$cp-radius-sm: 10px;
+$cp-radius-pill: 999px;
+
+// Depth
+$cp-shadow-card: 0 1px 2px rgba(10, 21, 23, 0.05),
+  0 6px 18px rgba(10, 21, 23, 0.06);
+$cp-shadow-card-hover: 0 2px 4px rgba(10, 21, 23, 0.06),
+  0 12px 28px rgba(10, 21, 23, 0.1);
+$cp-shadow-soft: 0 1px 2px rgba(10, 21, 23, 0.06);
+$cp-shadow-popup: 0 2px 6px rgba(10, 21, 23, 0.06),
+  0 14px 36px rgba(10, 21, 23, 0.14);
+$cp-focus-ring: 0 0 0 3px rgba(192, 255, 66, 0.55);
+
+// Spacing
+$cp-gutter: clamp(16px, 3vw, 40px);
+$cp-gap-section: 24px;
+$cp-gap-grid: 16px;
+$cp-card-padding: 22px;
+$cp-control-height: 44px;
+$cp-control-height-lg: 52px;
+$cp-sider-width: 248px;
+$cp-sider-collapsed-width: 80px;
+
+// Motion
+$cp-ease: cubic-bezier(0.2, 0, 0, 1);
+$cp-duration-press: 120ms;
+$cp-duration: 180ms;
+$cp-duration-slow: 220ms;
+$cp-transition: $cp-duration $cp-ease;
+
+// Legacy names, mapped onto the palette above
+$primary-color: $cp-lime;
+$primary-color-dark: $cp-lime-tint-text;
+$primary-color-light: $cp-lime-tint;
+$color-green: $cp-success;
+$color-green-dark: $cp-deep;
+$color-white: $cp-card;
+$color-text: $cp-ink;
+$color-text-light: $cp-muted;
 
 // Font Sizes and Related Line Heights
 $font-size-xxxl: 6.4rem; // 64px
@@ -45,38 +129,15 @@ $spacing-s: 0.8rem; // 8px
 $spacing-xs: 0.4rem; // 4px
 
 // Borders and Border Radius
-$border-radius: 6px;
+$border-radius: $cp-radius-chip;
 
 // Shadows
-$box-shadow: 0px 0px 5rem rgba(0, 0, 0, 0.1); // 50px
-$bg-box-shadow: 0px 0.4rem 0.4rem rgba(0, 0, 0, 0.25); // 4px 4px
+$box-shadow: $cp-shadow-card;
+$bg-box-shadow: $cp-shadow-card;
 
-$border: 1px solid #eee;
+$border: 1px solid $cp-line;
 
 $bg-backdrop-filter: blur(20rem); // 200px
 
 // Utility Classes
-$transition-duration: 0.3s;
-
-@media (max-width: 1050px) {
-  $font-size-xxxl: 8rem; // 64px
-  $line-height-xxxl: 1.1;
-
-  $font-size-xxl: 6.4rem; // 48px
-  $line-height-xxl: 1.2;
-
-  $font-size-xl: 3.2rem; // 32px
-  $line-height-xl: 1.4;
-
-  $font-size-l: 2.4rem; // 24px
-  $line-height-l: 1.5;
-
-  $font-size-m: 1.8rem; // 18px
-  $line-height-m: 1.6;
-
-  $font-size-s: 1.4rem; // 16px
-  $line-height-s: 1.6;
-
-  $font-size-xs: 1.2rem; // 14px
-  $line-height-xs: 1.6;
-}
+$transition-duration: 0.18s;

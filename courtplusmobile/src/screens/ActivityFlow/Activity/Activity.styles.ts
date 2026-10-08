@@ -1,49 +1,43 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Shadows } from "theme";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    leadingComponent: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[8],
+    header: {
+      paddingHorizontal: Layout.gutter,
     },
-    content: {
-      paddingTop: verticalScale(22),
-      paddingHorizontal: spacing[24],
-    },
-    layersContainer: {
-      width: spacing[40],
-      height: spacing[40],
+    bellContainer: {
+      width: Layout.touch,
+      height: Layout.touch,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.GHOST_WHITE,
-      borderRadius: spacing[40],
+      backgroundColor: colors.CARD,
+      borderRadius: Layout.touch / 2,
+      ...Shadows.subtle,
     },
-    layersIcon: {
-      tintColor: colors.BLACK,
-    },
-    header: {
-      paddingHorizontal: spacing[24],
-      gap: 0,
-      justifyContent: "space-between",
+    bellIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
     scrollContent: {
       paddingHorizontal: 0,
       paddingBottom: 0,
     },
     tabs: {
-      marginTop: verticalScale(28),
+      marginTop: verticalScale(18),
     },
     tab: {
-      width: horizontalScale(140),
+      flexBasis: 0,
+      flexGrow: 1,
       alignItems: "center",
     },
     tabsContent: {
-      paddingHorizontal: spacing[16],
-      backgroundColor: colors.LIGHT_GREY,
       flex: 1,
-      paddingTop: verticalScale(20),
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(18),
+      backgroundColor: colors.GROUND,
     },
   });

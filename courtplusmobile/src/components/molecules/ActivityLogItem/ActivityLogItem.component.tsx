@@ -13,23 +13,23 @@ const ActivityLogItem = ({ overrideStyle }: ActivityLogItemProps) => {
   return (
     <View style={[themedStyles.container, overrideStyle]}>
       <View style={themedStyles.imageContainer} />
-      <View>
+      <View style={themedStyles.details}>
         <Text style={themedStyles.description}>
           <CustomText
             text="Elizabeth Chandra entering to the booked court "
-            font="chip"
+            font="headline3"
             weight="medium"
           />
           <CustomText
             text="Tennis Outdoor Court A"
-            font="chip"
-            weight="medium"
+            font="headline3"
+            weight="semiBold"
             overrideStyle={themedStyles.court}
           />
         </Text>
         <CustomText
           text="2 days ago"
-          font="chip"
+          font="caption"
           weight="regular"
           overrideStyle={themedStyles.timestamp}
         />

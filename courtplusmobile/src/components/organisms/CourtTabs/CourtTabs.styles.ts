@@ -1,15 +1,16 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout } from "theme";
 import { verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     tabs: {
-      paddingTop: verticalScale(20),
-      backgroundColor: colors.WHITE,
+      paddingTop: Layout.sectionGap,
+      backgroundColor: colors.CARD,
     },
     content: {
-      backgroundColor: colors.LIGHT_GREY,
+      backgroundColor: colors.CARD,
       flex: 1,
+      paddingTop: verticalScale(16),
     },
   });

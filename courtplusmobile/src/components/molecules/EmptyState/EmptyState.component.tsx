@@ -1,9 +1,11 @@
 import React, { useMemo } from "react";
-import { Image, View } from "react-native";
+import { Image } from "react-native";
+import Animated from "react-native-reanimated";
 import { EmptyStateProps } from "./EmptyState.types";
 import styles from "./EmptyState.styles";
 import { CustomButton, CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
+import { enterRise } from "utils";
 
 const EmptyState = ({
   image,
@@ -19,31 +21,35 @@ const EmptyState = ({
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   return (
-    <View style={[themedStyles.container, overrideStyle]}>
-      <Image source={image} style={overrideImageStyle} />
+    <Animated.View
+      entering={enterRise(0)}
+      style={[themedStyles.container, overrideStyle]}
+    >
+      <Image source={image} style={[themedStyles.image, overrideImageStyle]} />
       <CustomText
         text={title}
-        font="headline3"
-        weight="semiBold"
+        font="cardTitle"
+        weight="bold"
         overrideStyle={themedStyles.text}
       />
       {!!subtitle && (
         <CustomText
           text={subtitle}
-          font="chip"
+          font="caption"
           weight="regular"
           overrideStyle={themedStyles.subtitle}
         />
       )}
       {!!buttonTitle && !!onButtonPress && (
         <CustomButton
-          variant="dark"
+          variant="secondary"
+          size="medium"
           title={buttonTitle}
           onPress={onButtonPress}
           overrideStyle={themedStyles.button}
         />
       )}
-    </View>
+    </Animated.View>
   );
 };
 

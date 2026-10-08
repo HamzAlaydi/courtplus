@@ -1,6 +1,12 @@
 import { useThemeContext } from "contexts";
 import React, { useEffect, useMemo, useRef } from "react";
-import { Image, View } from "react-native";
+import { View } from "react-native";
+import Animated, {
+  Easing,
+  FadeIn,
+  ReduceMotion,
+  ZoomIn,
+} from "react-native-reanimated";
 import styles from "./Splash.styles";
 import { Images } from "theme";
 import { StackActions, useNavigation } from "@react-navigation/native";
@@ -8,7 +14,22 @@ import { MainStackNavigationProp } from "navigation/types";
 import { useAppStore } from "store";
 import { useDisableBackHandler, useLocation } from "hooks";
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "utils";
+import { MOTION, queryKeys } from "utils";
+
+const LOGO_ENTER_MS = MOTION.enter * 2;
+
+const ringEntering = FadeIn.duration(LOGO_ENTER_MS)
+  .delay(MOTION.enter)
+  .reduceMotion(ReduceMotion.System);
+
+const fadeEntering = FadeIn.duration(LOGO_ENTER_MS).reduceMotion(
+  ReduceMotion.System
+);
+
+const logoEntering = ZoomIn.duration(LOGO_ENTER_MS)
+  .easing(Easing.out(Easing.cubic))
+  .withInitialValues({ transform: [{ scale: 0.88 }] })
+  .reduceMotion(ReduceMotion.System);
 
 const SplashScreen = () => {
   const {
@@ -45,7 +66,16 @@ const SplashScreen = () => {
   }, []);
   return (
     <View style={themedStyles.container}>
-      <Image source={Images.logoGraph} style={themedStyles.image} />
+      <Animated.View entering={ringEntering} style={themedStyles.outerRing} />
+      <Animated.View entering={ringEntering} style={themedStyles.ring} />
+      <Animated.View entering={fadeEntering}>
+        <Animated.Image
+          entering={logoEntering}
+          source={Images.logoGraph}
+          style={themedStyles.image}
+          accessibilityIgnoresInvertColors
+        />
+      </Animated.View>
     </View>
   );
 };

@@ -34,11 +34,11 @@ const ResendCodeButton = ({
     });
   }, [timer]);
 
+  const isReady = timer === 0;
+
   const getButtonVariant = () => {
     if (isDark) {
-      return "dark";
-    } else if (timer === 0 && isDark) {
-      return "disabledDark";
+      return isReady ? "secondary" : "bordered";
     }
     return "bordered";
   };
@@ -59,11 +59,20 @@ const ResendCodeButton = ({
   return (
     <CustomButton
       variant={getButtonVariant()}
+      size="medium"
       title={timerText}
       onPress={onResendCode}
-      disabled={timer !== 0}
-      overrideStyle={[timer === 0 && themedStyles.button, overrideStyle]}
-      overrideTextStyle={timer === 0 && themedStyles.text}
+      disabled={!isReady}
+      overrideStyle={[
+        !isDark && themedStyles.onInk,
+        !isDark && isReady && themedStyles.onInkReady,
+        overrideStyle,
+      ]}
+      overrideTextStyle={[
+        themedStyles.text,
+        !isDark && themedStyles.onInkText,
+        !isDark && isReady && themedStyles.onInkReadyText,
+      ]}
     />
   );
 };

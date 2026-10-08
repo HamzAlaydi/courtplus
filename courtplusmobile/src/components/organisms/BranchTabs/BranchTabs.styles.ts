@@ -1,39 +1,57 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Radius } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingTop: verticalScale(12),
-      marginTop: verticalScale(5.5),
+      paddingTop: Layout.sectionGap,
     },
     header: {
-      marginBottom: verticalScale(16),
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[8],
+      gap: spacing[10],
+      paddingHorizontal: Layout.gutter,
+      marginBottom: verticalScale(14),
     },
     iconContainer: {
-      backgroundColor: colors.GHOST_WHITE,
-      width: spacing[40],
-      height: spacing[40],
-      borderRadius: spacing[40],
+      backgroundColor: colors.LIME_TINT,
+      width: horizontalScale(36),
+      height: horizontalScale(36),
+      borderRadius: Radius.pill,
       justifyContent: "center",
       alignItems: "center",
     },
     icon: {
-      width: spacing[24],
-      height: spacing[24],
-      tintColor: colors.BLACK,
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.LIME_TINT_TEXT,
+    },
+    title: {
+      flexShrink: 1,
+    },
+    countBadge: {
+      minWidth: horizontalScale(24),
+      height: horizontalScale(24),
+      paddingHorizontal: spacing[8],
+      borderRadius: Radius.pill,
+      backgroundColor: colors.INK,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    countText: {
+      color: colors.WHITE,
+    },
+    tabs: {
+      marginBottom: verticalScale(4),
     },
     contentContainer: {
-      paddingHorizontal: spacing[24],
-      paddingTop: verticalScale(16),
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(14),
       paddingBottom: verticalScale(32),
-      backgroundColor: colors.GHOST_WHITE,
     },
     separator: {
-      marginTop: verticalScale(20),
+      height: verticalScale(14),
     },
   });

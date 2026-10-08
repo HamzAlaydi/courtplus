@@ -1,27 +1,46 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { verticalScale } from "utils";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
+    hero: {
+      height: verticalScale(360),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    disc: {
+      position: "absolute",
+      width: horizontalScale(280),
+      height: horizontalScale(280),
+      borderRadius: horizontalScale(140),
+      backgroundColor: colors.CARD,
+    },
     image: {
-      height: verticalScale(442),
+      height: verticalScale(340),
       width: "100%",
+      resizeMode: "contain",
+    },
+    centeredContainer: {
+      alignItems: "center",
+      paddingHorizontal: horizontalScale(8),
+      marginTop: verticalScale(8),
+    },
+    title: {
+      textAlign: "center",
     },
     description: {
       textAlign: "center",
-      marginTop: verticalScale(10.18),
-      color: colors.SLATE_GRAY,
-    },
-    centeredContainer: {
-      justifyContent: "center",
-      alignItems: "center",
+      marginTop: verticalScale(10),
+      color: colors.MUTED,
     },
     bottomContainer: {
       flex: 1,
       justifyContent: "flex-end",
+      paddingTop: verticalScale(28),
+      paddingBottom: verticalScale(8),
     },
     startFreshButton: {
-      minHeight: verticalScale(10),
+      marginTop: verticalScale(4),
     },
   });

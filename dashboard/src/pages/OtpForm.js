@@ -134,68 +134,74 @@ export default function OtpForm() {
   return (
     <div className="auth-layout">
       <div className="auth-form-container">
-        <div className="auth-form-header">
-          <img src="/assets/images/logo-horizontal.png" alt="" />
-          <img src="/assets/images/icons/auth-key.png" alt="" />
-        </div>
-        <h2>{t("auth.otp_title")}</h2>
-
-        <div className="auth-form">
-          <p style={{ marginBottom: "2rem" }}>
-            {t("auth.otp_sent_to", { email })}
-          </p>
-          <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              name="code"
-              // Without this an incomplete entry was posted, came back as
-              // "incorrect code", and burned one of only six attempts before
-              // a one-hour lockout.
-              rules={[
-                {
-                  required: true,
-                  len: CODE_LENGTH,
-                  message: t("auth.otp_code_required"),
-                },
-              ]}
-            >
-              <Input.OTP size="large" length={CODE_LENGTH} />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                style={{ color: "#000" }}
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
+        <div className="auth-card">
+          <div className="auth-form-header">
+            <img
+              className="auth-logo"
+              src="/assets/images/logo-horizontal.png"
+              alt="Court+"
+            />
+            <span className="auth-key">
+              <img src="/assets/images/icons/auth-key.png" alt="" />
+            </span>
+          </div>
+          <div className="auth-form">
+            <h2 className="auth-title">{t("auth.otp_title")}</h2>
+            <p className="auth-lead">{t("auth.otp_sent_to", { email })}</p>
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                name="code"
+                // Without this an incomplete entry was posted, came back as
+                // "incorrect code", and burned one of only six attempts before
+                // a one-hour lockout.
+                rules={[
+                  {
+                    required: true,
+                    len: CODE_LENGTH,
+                    message: t("auth.otp_code_required"),
+                  },
+                ]}
               >
-                {t("auth.otp_submit")}
-              </Button>
-            </Form.Item>
-            <div style={{ textAlign: "center", marginTop: 12 }}>
-              {canResend ? (
-                <Button type="link" onClick={handleResendOtp}>
-                  {t("settings.resendCode")}
+                <Input.OTP size="large" length={CODE_LENGTH} />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  className="cp-btn-display"
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  {t("auth.otp_submit")}
                 </Button>
-              ) : (
-                <Text type="secondary">
-                  {t("settings.resendIn")} {timer}s
-                </Text>
-              )}
-            </div>
-            <div style={{ textAlign: "center", marginTop: 4 }}>
-              <Text type="secondary">{t("auth.otp_wrong_email")}</Text>
-              <Button type="link" onClick={() => setChangeOpen(true)}>
-                {t("auth.otp_change_email")}
-              </Button>
-            </div>
-          </Form>
+              </Form.Item>
+              <div className="auth-otp-actions">
+                {canResend ? (
+                  <Button type="link" onClick={handleResendOtp}>
+                    {t("settings.resendCode")}
+                  </Button>
+                ) : (
+                  <Text type="secondary">
+                    {t("settings.resendIn")} {timer}s
+                  </Text>
+                )}
+              </div>
+              <div className="auth-otp-actions">
+                <Text type="secondary">{t("auth.otp_wrong_email")}</Text>
+                <Button type="link" onClick={() => setChangeOpen(true)}>
+                  {t("auth.otp_change_email")}
+                </Button>
+              </div>
+            </Form>
+          </div>
+          <h5 className="auth-switch">
+            {t("auth.have_account")}
+            <Link className="active" to="/auth/signin">
+              {t("auth.sign_in")}
+            </Link>
+          </h5>
         </div>
-        <h5>
-          {t("auth.have_account")}
-          <Link className="active" to="/auth/signin">
-            {t("auth.sign_in")}
-          </Link>
-        </h5>
       </div>
 
       <Modal
@@ -229,10 +235,23 @@ export default function OtpForm() {
       </Modal>
 
       <div className="auth-cover cover-signup">
-        <img src="/assets/images/icons/icon-sport.png" alt="" />
-        <h1>{t("auth.hero_title")}</h1>{" "}
-        <p>{t("auth.hero_subtitle")}</p>
-        <img src="/assets/images/icons/avatars.png" alt="" />
+        <span className="auth-cover-mark" dir="ltr">
+          court<span>+</span>
+        </span>
+        <div className="auth-cover-body">
+          <img
+            className="auth-cover-icon"
+            src="/assets/images/icons/icon-sport.png"
+            alt=""
+          />
+          <h1>{t("auth.hero_title")}</h1>
+          <p>{t("auth.hero_subtitle")}</p>
+          <img
+            className="auth-cover-avatars"
+            src="/assets/images/icons/avatars.png"
+            alt=""
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,29 +1,56 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout, Radius, Shadows } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
+      flex: 1,
       width: "100%",
-      height: "100%",
-      justifyContent: "flex-end",
-      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: colors.CARD,
+    },
+    topBar: {
+      flexDirection: "row",
+      paddingHorizontal: Layout.gutter,
     },
     content: {
-      paddingBottom: verticalScale(70),
       alignItems: "center",
       width: "100%",
-      paddingHorizontal: spacing[24],
+      gap: verticalScale(18),
+      paddingHorizontal: Layout.gutter,
+    },
+    badge: {
+      width: horizontalScale(64),
+      height: horizontalScale(64),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.LIME,
+      alignItems: "center",
+      justifyContent: "center",
+      ...Shadows.card,
+    },
+    badgeIcon: {
+      width: horizontalScale(28),
+      height: horizontalScale(28),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    copy: {
+      alignItems: "center",
+      gap: verticalScale(8),
+      paddingHorizontal: spacing[8],
+    },
+    title: {
+      textAlign: "center",
+      color: colors.INK,
     },
     description: {
       textAlign: "center",
-      color: colors.SLATE_GRAY,
-      width: horizontalScale(249),
-      marginTop: verticalScale(12),
+      color: colors.MUTED,
+      maxWidth: horizontalScale(280),
     },
-    button: {
+    buttonRow: {
       width: "100%",
-      marginTop: verticalScale(22),
+      marginTop: verticalScale(4),
     },
   });

@@ -1,65 +1,54 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
+    calendar: {
+      backgroundColor: "transparent",
+    },
+    header: {
+      paddingVertical: verticalScale(8),
+    },
+    month: {
+      color: colors.INK,
+    },
+    arrow: {
+      width: horizontalScale(36),
+      height: horizontalScale(36),
+      padding: 0,
+      borderRadius: Radius.pill,
+      backgroundColor: colors.GROUND,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     availabilityContainer: {
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
+      flexWrap: "wrap",
       gap: spacing[16],
-      marginTop: verticalScale(23),
+      marginTop: verticalScale(16),
+      paddingHorizontal: spacing[12],
     },
-    bookedRowContainer: {
+    legendItem: {
       flexDirection: "row",
+      alignItems: "center",
       gap: spacing[6],
     },
     bookedDot: {
-      height: spacing[16],
-      width: spacing[16],
-      backgroundColor: colors.SLATE_GRAY,
-      borderRadius: spacing[40],
+      height: spacing[10],
+      width: spacing[10],
+      backgroundColor: colors.HANDLE,
+      borderRadius: Radius.pill,
     },
     availableDot: {
-      height: spacing[16],
-      width: spacing[16],
-      backgroundColor: colors.MED_GREEN,
-      borderRadius: spacing[40],
-    },
-    headerContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: verticalScale(15),
-      paddingHorizontal: spacing[10],
-    },
-    arrowsContainer: {
-      flexDirection: "row",
-      gap: spacing[20],
-    },
-    arrowButton: {
-      padding: spacing[4],
-    },
-    arrowIcon: {
-      width: spacing[24],
-      height: spacing[24],
-      resizeMode: "contain",
-      tintColor: colors.BLACK,
-    },
-    rotateArrow: {
-      transform: [{ rotate: "180deg" }],
-    },
-    disabledArrow: {
-      opacity: 0.3,
-    },
-    disabledArrowIcon: {
-      tintColor: colors.GREY,
-    },
-    month: {
-      color: colors.BLACK,
+      height: spacing[10],
+      width: spacing[10],
+      backgroundColor: colors.INK,
+      borderRadius: Radius.pill,
     },
     infoText: {
-      color: colors.SLATE_GRAY,
+      color: colors.MUTED,
     },
   });

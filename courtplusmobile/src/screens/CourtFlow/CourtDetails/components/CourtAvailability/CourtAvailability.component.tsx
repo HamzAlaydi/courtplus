@@ -1,10 +1,15 @@
+import { useThemeContext } from "contexts";
 import { CustomCalendar } from "organisms/index";
-import React from "react";
+import React, { useMemo } from "react";
 import { useCourtAvailability } from "./CourtAvailability.logic";
 import { CourtAvailabilityProps } from "./CourtAvailability.types";
 import styles from "./CourtAvailability.styles";
 
 const CourtAvailability = ({ courtId }: CourtAvailabilityProps) => {
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
   const { unavailableDays, isLoading, onMonthChange } =
     useCourtAvailability(courtId);
 
@@ -14,7 +19,8 @@ const CourtAvailability = ({ courtId }: CourtAvailabilityProps) => {
       isLoading={isLoading}
       onMonthChange={onMonthChange}
       showInfo
-      overrideContainerStyle={styles.container}
+      calendarBackgroundColor={colors.CARD}
+      overrideContainerStyle={themedStyles.container}
     />
   );
 };

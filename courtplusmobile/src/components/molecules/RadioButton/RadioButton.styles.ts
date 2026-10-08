@@ -1,6 +1,9 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing } from "utils";
+import { ColorsType, Layout } from "theme";
+import { horizontalScale, spacing } from "utils";
+
+const RADIO_SIZE = horizontalScale(24);
+const DOT_SIZE = horizontalScale(10);
 
 export default (colors: ColorsType, isDark: boolean) =>
   StyleSheet.create({
@@ -8,23 +11,30 @@ export default (colors: ColorsType, isDark: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      gap: spacing[12],
+      minHeight: Layout.touch,
     },
     title: {
-      color: !isDark ? colors.WHITE : colors.BLACK,
+      flex: 1,
+      color: isDark ? colors.INK : colors.WHITE,
     },
     radio: {
-      width: spacing[18],
-      height: spacing[18],
-      borderColor: !isDark ? colors.WHITE : colors.BLACK,
-      borderWidth: 1,
-      borderRadius: spacing[18],
+      width: RADIO_SIZE,
+      height: RADIO_SIZE,
+      borderRadius: RADIO_SIZE / 2,
+      borderWidth: 1.5,
+      borderColor: isDark ? colors.HANDLE : colors.ON_INK_MUTED,
       justifyContent: "center",
       alignItems: "center",
     },
+    radioOn: {
+      backgroundColor: isDark ? colors.INK : colors.LIME,
+      borderColor: isDark ? colors.INK : colors.LIME,
+    },
     selected: {
-      backgroundColor: colors.GREEN_YELLOWISH,
-      width: spacing[14],
-      height: spacing[14],
-      borderRadius: spacing[14],
+      backgroundColor: isDark ? colors.LIME : colors.INK,
+      width: DOT_SIZE,
+      height: DOT_SIZE,
+      borderRadius: DOT_SIZE / 2,
     },
   });

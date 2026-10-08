@@ -1,7 +1,8 @@
 import { useThemeContext } from "contexts";
 import { MainWrapper } from "organisms/index";
 import React, { useMemo, useState } from "react";
-import { View, Image } from "react-native";
+import { View } from "react-native";
+import Animated from "react-native-reanimated";
 import styles from "./Welcome.styles";
 import { Images } from "theme";
 import { CustomButton, CustomText, LanguageButton } from "atoms/index";
@@ -9,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import { OnboardingStackNavigationProp } from "navigation/types";
 import i18n from "translation/index";
-import { changeLanguage, isRTL } from "utils";
+import { changeLanguage, enterDrop, enterRise, isRTL } from "utils";
 import { useAppStore } from "store";
 
 const WelcomeScreen = () => {
@@ -39,39 +40,52 @@ const WelcomeScreen = () => {
   };
 
   return (
-    <MainWrapper
-      overrideContentStyle={themedStyles.content}
-      overrideContainerStyle={themedStyles.container}
-    >
-      <Image source={Images.logoGroup} style={themedStyles.logo} />
+    <MainWrapper enableSafeArea overrideContainerStyle={themedStyles.container}>
+      <View style={themedStyles.logoContainer}>
+        <Animated.Image
+          entering={enterDrop(0)}
+          source={Images.logoGroup}
+          style={themedStyles.logo}
+          accessibilityIgnoresInvertColors
+        />
+      </View>
       <View style={themedStyles.languageContainer}>
-        <CustomText
-          text={t("language.title")}
-          font="fields"
-          weight="semiBold"
-          overrideStyle={themedStyles.title}
-        />
+        <Animated.View entering={enterRise(1)}>
+          <CustomText
+            text={t("language.title")}
+            font="screenTitle"
+            weight="extraBold"
+            accessibilityRole="header"
+            overrideStyle={themedStyles.title}
+          />
+        </Animated.View>
 
-        <LanguageButton
-          image={Images.saudi}
-          title={t("language.arabic")}
-          isSelected={currentLanguage === "ar"}
-          onPress={() => setCurrentLanguage("ar")}
-          overrideStyle={themedStyles.arabicButton}
-        />
-        <LanguageButton
-          image={Images.us}
-          title={t("language.english")}
-          isSelected={currentLanguage === "en"}
-          onPress={() => setCurrentLanguage("en")}
-        />
+        <Animated.View entering={enterRise(2)}>
+          <LanguageButton
+            image={Images.saudi}
+            title={t("language.arabic")}
+            isSelected={currentLanguage === "ar"}
+            onPress={() => setCurrentLanguage("ar")}
+          />
+        </Animated.View>
+        <Animated.View entering={enterRise(3)}>
+          <LanguageButton
+            image={Images.us}
+            title={t("language.english")}
+            isSelected={currentLanguage === "en"}
+            onPress={() => setCurrentLanguage("en")}
+          />
+        </Animated.View>
+      </View>
 
+      <Animated.View entering={enterRise(4)}>
         <CustomButton
           title={t("general.done")}
+          variant="primary"
           onPress={handleDonePress}
           overrideStyle={themedStyles.button}
         />
-      </View>
+      </Animated.View>
     </MainWrapper>
   );
 };

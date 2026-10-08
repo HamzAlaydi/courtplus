@@ -1,71 +1,39 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Layout } from "theme";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType, top: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: verticalScale(top),
-      paddingBottom: verticalScale(26),
+      backgroundColor: colors.INK,
+      paddingTop: top + verticalScale(8),
+      paddingBottom: verticalScale(12),
     },
     headerContainer: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "flex-end",
-      gap: spacing[34],
-      paddingHorizontal: spacing[24],
+      justifyContent: "space-between",
+      paddingHorizontal: Layout.gutter,
     },
     bottomContainer: {
       flex: 1,
       justifyContent: "flex-end",
-      paddingHorizontal: spacing[26],
+      paddingHorizontal: Layout.gutter,
+    },
+    title: {
+      color: colors.WHITE,
     },
     input: {
-      backgroundColor: colors.DARK_GREEN,
-      height: verticalScale(61),
-      borderRadius: spacing[12],
-      marginTop: verticalScale(17.53),
-    },
-    footerText: {
-      marginTop: verticalScale(30),
-      marginBottom: verticalScale(24),
-    },
-    socialContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[26],
-      justifyContent: "center",
-      paddingTop: verticalScale(17),
-    },
-    orContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[16],
-      paddingTop: verticalScale(14),
-    },
-    divider: {
-      height: 1,
-      width: spacing[40],
-      backgroundColor: colors.GREEN_YELLOWISH,
-      flex: 1,
+      marginTop: verticalScale(20),
     },
     button: {
-      marginTop: verticalScale(16.47),
-    },
-    socialButton: {
-      height: verticalScale(44),
-      width: spacing[48],
-      backgroundColor: colors.DARK_GREEN,
-      borderRadius: spacing[12],
-    },
-    or: {
-      color: colors.GREEN_YELLOWISH,
-      marginBottom: verticalScale(4),
+      marginTop: verticalScale(16),
     },
     logo: {
-      width: horizontalScale(180),
-      height: verticalScale(52),
+      width: horizontalScale(132),
+      height: horizontalScale(38),
+      resizeMode: "contain",
     },
     keyboard: {
       flexGrow: 1,

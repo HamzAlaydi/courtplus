@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { MobileControllerProps } from "./MobileController.types";
-import { CustomText, FloatingInput } from "atoms/index";
-import { Image, TouchableOpacity, View } from "react-native";
+import { CustomText, FloatingInput, PressableScale } from "atoms/index";
+import { Image, View } from "react-native";
 import { Images } from "theme";
 import { CountryPickerModal } from "molecules/index";
 import { CountryItem } from "react-native-country-codes-picker";
@@ -34,7 +34,10 @@ const MobileController = ({
   const {
     currentTheme: { colors },
   } = useThemeContext();
-  const themedStyles = useMemo(() => styles(colors), [colors]);
+  const themedStyles = useMemo(
+    () => styles(colors, greyBackground),
+    [colors, greyBackground]
+  );
   const setSelectedCountryCode = useAppStore(
     (state) => state.setSelectedCountryCode
   );
@@ -54,15 +57,17 @@ const MobileController = ({
   };
 
   const leftComponent = (
-    <TouchableOpacity
+    <PressableScale
       onPress={handleOpenCountryPicker}
       style={themedStyles.countryItemContainer}
+      accessibilityRole="button"
+      hitSlop={8}
     >
       <Flag
         code={selectedCountry?.code || "EG"}
         style={themedStyles.countryItemFlag}
       />
-      <Image source={Images.arrowDown} />
+      <Image source={Images.arrowDown} style={themedStyles.arrowIcon} />
       <View style={themedStyles.countryItemSeparator} />
       <CustomText
         font="fields"
@@ -70,7 +75,7 @@ const MobileController = ({
         text={selectedCountry?.dial_code || "+20"}
         overrideStyle={themedStyles.countryCode}
       />
-    </TouchableOpacity>
+    </PressableScale>
   );
 
   const handleGetDeviceCountryCode = async () => {

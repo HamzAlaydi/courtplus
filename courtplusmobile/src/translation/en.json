@@ -63,7 +63,9 @@
     "apply": "Apply",
     "camera": "Camera",
     "gallery": "Gallery",
-    "keep": "Keep"
+    "keep": "Keep",
+    "perHour": "/ hr",
+    "back": "Back"
   },
   "language": {
     "title": "Choose Your language",
@@ -131,7 +133,11 @@
     "notAirConditioned": "Not air conditioned",
     "womenOnly": "Women Only",
     "womenOnlyYes": "Yes — fully enclosed",
-    "womenOnlyNo": "Open to everyone"
+    "womenOnlyNo": "Open to everyone",
+    "surfaces": {
+      "grass": "Grass",
+      "hard": "Hard court"
+    }
   },
   "completeProfile": {
     "title": "Complete Your Profile Setup",
@@ -445,6 +451,12 @@
       "payment_completed": "The booking was paid in full",
       "somePlayer": "A player",
       "unknown": "Booking activity"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     }
   },
   "community": {
@@ -474,7 +486,10 @@
     "radius": "Search radius",
     "noPlaceFound": "No place found for that search.",
     "airConditioned": "Air conditioned only",
-    "womenOnly": "Women-only courts"
+    "womenOnly": "Women-only courts",
+    "airConditionedHint": "Indoor courts with air conditioning",
+    "womenOnlyHint": "Fully enclosed and private",
+    "availabilityHint": "Pick a specific day and time"
   },
   "booking": {
     "title": "Booking",
@@ -503,7 +518,8 @@
     "noSlots": "No Times are Added Until now",
     "noEvents": "No Events until now",
     "cancellationPolicy": "Free cancellation up to 12 hours before the start; after that the booking is non-refundable.",
-    "selectionMustBeContiguous": "Please pick back-to-back times with no gaps."
+    "selectionMustBeContiguous": "Please pick back-to-back times with no gaps.",
+    "bookingSuccessSubtitle": "Your court is booked. See you on the court!"
   },
   "branchDetails": {
     "sessions": "sessions",
@@ -595,5 +611,18 @@
   "reportSubmitted": {
     "title": "We are Sorry !",
     "description": "Your Report has been submitted, We are working on it and we will keep you updated"
+  },
+  "home": {
+    "greeting": "Hey, {{name}}",
+    "subtitle": "Find a court and get playing today.",
+    "bookCourt": "Book a court",
+    "myBookings": "My bookings"
+  },
+  "tabBar": {
+    "home": "Home",
+    "courts": "Courts",
+    "community": "Community",
+    "activity": "Activity",
+    "profile": "Profile"
   }
 }

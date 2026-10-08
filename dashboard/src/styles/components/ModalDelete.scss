@@ -1,35 +1,58 @@
+@use "../base/index" as *;
+
 .delete-modal {
   .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px 0;
     text-align: center;
-    padding: 20px;
   }
 
   .warning-icon {
-    width: 80px;
-    margin-bottom: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 4px;
+    border-radius: $cp-radius-pill;
+    background: $cp-danger-bg;
+    color: $cp-danger;
+    font-size: 30px;
+    box-shadow: 0 0 0 8px rgba(217, 45, 32, 0.06);
   }
 
-  .modal-title {
-    font-size: 18px;
-    color: #333;
+  .modal-title.ant-typography {
+    @include cp-display(18px, 800, 0.01em);
+    margin: 0;
+    color: $cp-ink;
+  }
+
+  .modal-copy {
+    margin: 0;
+    font-size: $cp-fs-body;
+    line-height: 1.6;
+    color: $cp-muted;
   }
 
   .modal-description {
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
+    font-size: $cp-fs-body;
+    color: $cp-muted;
   }
 
   .modal-warning {
-    font-size: 14px;
-    color: red;
-    margin-top: 10px;
+    font-size: $cp-fs-body;
+    font-weight: 600;
+    color: $cp-danger-text;
   }
 
   .modal-buttons {
-    margin-top: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
+    margin-top: 12px;
   }
 }

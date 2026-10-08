@@ -1,64 +1,109 @@
+@use "../base/index" as *;
+
 .posts-wrapper {
-  padding: 1rem;
-
-  &.rtl {
-    direction: rtl;
-  }
-
   .posts-grid {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $cp-gap-grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   }
 
   .post-card {
-    border-radius: 14px;
+    border-color: $cp-line;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
+
+    .ant-card-cover {
+      margin: 0;
+    }
 
     .post-image {
       width: 100%;
-      height: 220px;
+      height: 200px;
       object-fit: cover;
+      display: block;
+      border-radius: 0;
+    }
+
+    .ant-card-body {
+      padding: 16px;
     }
 
     .post-header {
       display: flex;
       align-items: center;
+      gap: 10px;
       margin-bottom: 10px;
+    }
 
-      .post-user {
-        margin-left: 10px;
+    .post-avatar {
+      flex-shrink: 0;
+      background: $cp-ground;
+      color: $cp-ink;
+      font-weight: 600;
+    }
 
-        .post-name {
-          font-size: 15px;
-          font-weight: 600;
-        }
+    .post-user {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
 
-        .post-date {
-          font-size: 12px;
-          color: #999;
-        }
-      }
+    .post-name {
+      font-size: $cp-fs-body;
+      font-weight: 600;
+      color: $cp-ink;
+    }
+
+    .post-date {
+      font-size: $cp-fs-caption;
+      color: $cp-muted;
     }
 
     .post-body {
-      font-size: 14px;
-      margin-top: 8px;
-      line-height: 1.4;
+      margin: 0;
+      font-size: $cp-fs-body;
+      line-height: 1.55;
+      color: $cp-ink;
+      overflow-wrap: anywhere;
+
+      &:empty {
+        display: none;
+      }
     }
 
     .post-likes {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #555;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: $cp-fs-small;
       font-weight: 500;
+      color: $cp-muted;
     }
+
+    .post-likes-icon {
+      color: $cp-danger;
+    }
+  }
+
+  .posts-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
   }
 }
 
 .posts-loading,
+.posts-error,
+.posts-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
 .posts-error {
-  text-align: center;
-  padding: 40px;
+  color: $cp-danger-text;
 }

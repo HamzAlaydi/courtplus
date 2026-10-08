@@ -1,19 +1,18 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { spacing } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: horizontalScale(4),
+      alignItems: "baseline",
+      gap: spacing[4],
     },
     text: {
-      marginTop: verticalScale(4),
-      color: colors.BLACK,
+      color: colors.MUTED,
     },
     amountText: {
-      color: colors.BLACK,
+      color: colors.INK,
     },
   });

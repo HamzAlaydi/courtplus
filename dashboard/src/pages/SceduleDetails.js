@@ -4,15 +4,19 @@ import {
   Avatar,
   Button,
   Tag,
-  Divider,
   Tooltip,
   Modal,
-  Spin,
-  List, Input } from "antd";
+  Skeleton,
+  List,
+  Input,
+} from "antd";
 import {
+  AppstoreOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   EnvironmentOutlined,
+  ShopOutlined,
+  StarFilled,
   UserOutlined,
   LinkOutlined,
 } from "@ant-design/icons";
@@ -44,8 +48,15 @@ const ScheduleDetails = () => {
 
   if (isLoading || !match)
     return (
-      <div className="loading-container">
-        <Spin size="large" />
+      <div className="content schedule-details">
+        <div className="schedule-details-grid">
+          <div className="cp-card">
+            <Skeleton active paragraph={{ rows: 7 }} />
+          </div>
+          <div className="cp-card">
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </div>
+        </div>
       </div>
     );
 
@@ -55,170 +66,201 @@ const ScheduleDetails = () => {
   const fallbackCourt = "/assets/images/placeholder.png";
 
   return (
-    <div className="schedule-details">
+    <div className="content schedule-details">
       {/* Header */}
-      <div className="schedule-header">
-        <div className="info">
-          <span>
-            {t("scheduleDetails.booking_id")}: {match.id.slice(0, 8)} •{" "}
-            {match.court?.sport?.toUpperCase() || t("scheduleDetails.court")}
-          </span>
+      <div className="schedule-details-head">
+        <div className="schedule-details-heading">
+          <div className="schedule-details-title-row">
+            <h2 className="schedule-details-title">
+              {t("scheduleDetails.booking_id")}:{" "}
+              <span className="schedule-details-id">{match.id.slice(0, 8)}</span>
+            </h2>
+            <span className="cp-pill cp-pill--outline">
+              {match.court?.sport?.toUpperCase() || t("scheduleDetails.court")}
+            </span>
+          </div>
           <div className="created">
             <CalendarOutlined /> {dayjs(match.createdAt).fromNow()}
           </div>
         </div>
-        <Button danger type="primary" onClick={handleCancelBooking}>
+        <Button danger onClick={handleCancelBooking}>
           {t("scheduleDetails.cancel_booking")}
         </Button>
       </div>
 
-      {/* Booking Details */}
-      <Card className="schedule-card user-card">
-        <h3 className="participants-title">{t("scheduleDetails.details")}</h3>
-        <Divider />
+      <div className="schedule-details-grid">
+        <div className="schedule-details-main cp-stagger">
+          {/* Booking Details */}
+          <Card
+            title={t("scheduleDetails.details")}
+            className="schedule-card user-card"
+          >
+            <dl className="details-grid">
+              <dt className="label">
+                <CalendarOutlined /> {t("scheduleDetails.date")}
+              </dt>
+              <dd className="value">
+                {dayjs(match.startDate).format("DD MMMM YYYY")}{" "}
+                {dayjs(match.startDate).diff(dayjs(), "day") === 1 && (
+                  <Tag color="green">{t("scheduleDetails.tomorrow")}</Tag>
+                )}
+              </dd>
 
-        <div className="details-grid">
-          <div className="label">
-            <CalendarOutlined /> {t("scheduleDetails.date")}
-          </div>
-          <div>
-            {dayjs(match.startDate).format("DD MMMM YYYY")}{" "}
-            {dayjs(match.startDate).diff(dayjs(), "day") === 1 && (
-              <Tag color="green">{t("scheduleDetails.tomorrow")}</Tag>
-            )}
-          </div>
+              <dt className="label">
+                <ClockCircleOutlined /> {t("scheduleDetails.time")}
+              </dt>
+              <dd className="value cp-num">
+                {dayjs(match.startDate).format("HH:mm")} -{" "}
+                {dayjs(match.endDate).format("HH:mm")}
+              </dd>
 
-          <div className="label">
-            <ClockCircleOutlined /> {t("scheduleDetails.time")}
-          </div>
-          <div>
-            {dayjs(match.startDate).format("HH:mm")} -{" "}
-            {dayjs(match.endDate).format("HH:mm")}
-          </div>
+              <dt className="label">
+                <ShopOutlined /> {t("scheduleDetails.branch")}
+              </dt>
+              <dd className="value branch-box">
+                <span>{match.court?.branch?.name}</span>
+                <Tooltip title={t("scheduleDetails.open_branch_page")}>
+                  <Link
+                    className="details-open"
+                    to={`/branches/${match.court?.branch?.id}`}
+                    aria-label={t("scheduleDetails.open_branch_page")}
+                  >
+                    <LinkOutlined />
+                  </Link>
+                </Tooltip>
+              </dd>
 
-          <div className="label">
-            <EnvironmentOutlined /> {t("scheduleDetails.branch")}
-          </div>
-          <div className="branch-box">
-            <span>{match.court?.branch?.name}</span>
-            <Tooltip title={t("scheduleDetails.open_branch_page")}>
-              <Link to={`/branches/${match.court?.branch?.id}`}>
-                <LinkOutlined />
-              </Link>
-            </Tooltip>
-          </div>
+              <dt className="label">
+                <AppstoreOutlined /> {t("scheduleDetails.court")}
+              </dt>
+              <dd className="value branch-box">
+                <span>{match.court?.name}</span>
+                <Tooltip title={t("scheduleDetails.open_court_page")}>
+                  <Link
+                    className="details-open"
+                    to={`/courts/${match.court?.id}`}
+                    aria-label={t("scheduleDetails.open_court_page")}
+                  >
+                    <LinkOutlined />
+                  </Link>
+                </Tooltip>
+              </dd>
 
-          <div className="label">
-            <EnvironmentOutlined /> {t("scheduleDetails.court")}
-          </div>
-          <div className="branch-box">
-            <span>{match.court?.name}</span>
-            <Tooltip title={t("scheduleDetails.open_court_page")}>
-              <Link to={`/courts/${match.court?.id}`}>
-                <LinkOutlined />
-              </Link>
-            </Tooltip>
-          </div>
+              <dt className="label">
+                <EnvironmentOutlined /> {t("scheduleDetails.location")}
+              </dt>
+              <dd className="value">{match.court?.branch?.location?.address}</dd>
+            </dl>
+          </Card>
 
-          <div className="label">
-            <EnvironmentOutlined /> {t("scheduleDetails.location")}
-          </div>
-          <div>{match.court?.branch?.location?.address}</div>
-        </div>
-      </Card>
-
-      {/* Participants */}
-      <Card className="schedule-card participants-card">
-        <h3 className="participants-title">
-          {t("scheduleDetails.participants")}
-        </h3>
-        <Divider />
-        <List
-          itemLayout="horizontal"
-          dataSource={participants}
-          renderItem={(p) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={
-                  <Avatar
-                    src={p.user?.avatarUrl}
-                    icon={!p.user?.avatarUrl && <UserOutlined />}
+          {/* Participants */}
+          <Card
+            title={t("scheduleDetails.participants")}
+            extra={
+              <span className="cp-pill cp-pill--neutral cp-num">
+                {participants.length}
+              </span>
+            }
+            className="schedule-card participants-card"
+          >
+            <List
+              itemLayout="horizontal"
+              dataSource={participants}
+              renderItem={(p) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={
+                      <Avatar
+                        size={40}
+                        className="participant-avatar"
+                        src={p.user?.avatarUrl}
+                        icon={!p.user?.avatarUrl && <UserOutlined />}
+                      />
+                    }
+                    title={
+                      <span className="participant-name">
+                        {p.user?.firstName} {p.user?.lastName}{" "}
+                        {p.isCreator && (
+                          <Tag color="lime">{t("scheduleDetails.creator")}</Tag>
+                        )}
+                      </span>
+                    }
+                    description={
+                      <span className="participant-meta">
+                        @{p.user?.username || "unknown"}{" "}
+                        <Tag
+                          color={
+                            p.status === "ready" || p.status === "entered"
+                              ? "green"
+                              : p.status?.startsWith("pending")
+                              ? "orange"
+                              : "red"
+                          }
+                        >
+                          {t(`scheduleDetails.status.${p.status}`)}
+                        </Tag>
+                      </span>
+                    }
                   />
-                }
-                title={
-                  <span>
-                    {p.user?.firstName} {p.user?.lastName}{" "}
-                    {p.isCreator && (
-                      <Tag color="blue">{t("scheduleDetails.creator")}</Tag>
-                    )}
-                  </span>
-                }
-                description={
-                  <>
-                    @{p.user?.username || "unknown"}{" "}
-                    <Tag
-                      color={
-                        p.status === "ready" || p.status === "entered"
-                          ? "green"
-                          : p.status?.startsWith("pending")
-                          ? "orange"
-                          : "red"
-                      }
-                    >
-                      {t(`scheduleDetails.status.${p.status}`)}
-                    </Tag>
-                  </>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      </Card>
-
-      {/* Court Info */}
-      <Card className="schedule-card court-card">
-        <div className="court-layout">
-          <div className="court-image-container">
-            <img
-              src={match.court?.mainAsset || fallbackCourt}
-              alt="Court"
-              className="court-image"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = fallbackCourt;
-              }}
+                </List.Item>
+              )}
             />
-          </div>
+          </Card>
+        </div>
 
-          <div className="court-info">
-            <h3>
-              <Link to={`/courts/${match.court?.id}`}>
-                {match.court?.name || t("scheduleDetails.unnamed_court")}
-              </Link>
-            </h3>
-            <div className="rating">⭐ {match.court?.avgRating || 0} / 5</div>
-            {/* The court model has `surface` and `size`; the previous
-                `surfaceType`/`capacity` never existed, so both read N/A. */}
-            <div className="surface">
-              {t("scheduleDetails.surface")}:{" "}
-              {match.court?.surface
-                ? t(`courtForm.surface_${match.court.surface}`, match.court.surface)
-                : "N/A"}
+        <aside className="schedule-details-aside cp-stagger">
+          {/* Court Info */}
+          <Card
+            className="schedule-card booking-court-card"
+            cover={
+              <img
+                src={match.court?.mainAsset || fallbackCourt}
+                alt="Court"
+                className="court-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = fallbackCourt;
+                }}
+              />
+            }
+          >
+            <div className="court-info">
+              <h3>
+                <Link to={`/courts/${match.court?.id}`}>
+                  {match.court?.name || t("scheduleDetails.unnamed_court")}
+                </Link>
+              </h3>
+              <div className="rating">
+                <StarFilled className="rating-star" />{" "}
+                {match.court?.avgRating || 0} / 5
+              </div>
+              {/* The court model has `surface` and `size`; the previous
+                  `surfaceType`/`capacity` never existed, so both read N/A. */}
+              <dl className="court-facts">
+                <dt>{t("scheduleDetails.surface")}</dt>
+                <dd className="surface">
+                  {match.court?.surface
+                    ? t(`courtForm.surface_${match.court.surface}`, match.court.surface)
+                    : "N/A"}
+                </dd>
+                <dt>{t("scheduleDetails.capacity")}</dt>
+                <dd className="capacity">
+                  {match.playersASide
+                    ? `${match.playersASide} vs ${match.playersASide}`
+                    : match.court?.size
+                      ? t(`courtForm.size_${match.court.size}`, match.court.size)
+                      : "N/A"}
+                </dd>
+              </dl>
             </div>
-            <div className="capacity">
-              {t("scheduleDetails.capacity")}:{" "}
-              {match.playersASide
-                ? `${match.playersASide} vs ${match.playersASide}`
-                : match.court?.size
-                  ? t(`courtForm.size_${match.court.size}`, match.court.size)
-                  : "N/A"}
-            </div>
-          </div>
+          </Card>
 
-          <div className="payment">
+          {/* Payment */}
+          <div className="cp-card cp-card--ink payment">
             <div className="label">{t("scheduleDetails.payment")}</div>
             <div className="amount">
-              {parseFloat(match.totalAmount).toFixed(2)} {t("home.currency")}
+              {parseFloat(match.totalAmount).toFixed(2)}
+              <span className="amount-unit">{t("home.currency")}</span>
             </div>
             <div
               className={`status ${
@@ -232,11 +274,12 @@ const ScheduleDetails = () => {
               {t(`scheduleDetails.payment_status.${match.paymentStatus}`)}
             </div>
           </div>
-        </div>
-      </Card>
+        </aside>
+      </div>
 
       {/* Cancel Modal */}
       <Modal
+        className="schedule-cancel-modal"
         title={t("scheduleDetails.cancel_confirm_title")}
         open={isCancelModalOpen}
         onOk={async () => {
@@ -256,7 +299,9 @@ const ScheduleDetails = () => {
         cancelText={t("scheduleDetails.no")}
         okButtonProps={{ danger: true }}
       >
-        <p>{t("scheduleDetails.cancel_warning")}</p>
+        <p className="schedule-cancel-warning">
+          {t("scheduleDetails.cancel_warning")}
+        </p>
         <Input.TextArea
           rows={3}
           maxLength={500}

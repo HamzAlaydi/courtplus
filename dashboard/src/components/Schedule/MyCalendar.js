@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
@@ -25,6 +26,7 @@ const localizer = dateFnsLocalizer({
 
 const MyCalendar = ({ branchId }) => {
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState("month");
 
@@ -72,9 +74,10 @@ const MyCalendar = ({ branchId }) => {
   };
 
   return (
-    <div style={{ height: "85vh" }}>
+    <div className="schedule-calendar cp-card cp-enter">
       <Calendar
         localizer={localizer}
+        rtl={i18n.dir() === "rtl"}
         events={events}
         startAccessor="start"
         endAccessor="end"

@@ -1,110 +1,151 @@
 import { StyleSheet } from "react-native";
-import { ColorsType, Typography } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
+
+const SLOT_SIZE = horizontalScale(34);
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingHorizontal: 0,
-      paddingBottom: 0,
+      paddingHorizontal: spacing[14],
+      paddingTop: verticalScale(14),
+      paddingBottom: verticalScale(14),
+      gap: verticalScale(12),
     },
-    infoHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingEnd: spacing[8],
-    },
-    participantsContainer: {
-      marginTop: verticalScale(9),
+    topRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[30],
-      paddingEnd: horizontalScale(23),
+      gap: spacing[12],
     },
-    content: {
-      paddingStart: spacing[16],
+    dateBlock: {
+      width: horizontalScale(58),
+      paddingVertical: verticalScale(8),
+      borderRadius: Radius.input,
+      backgroundColor: colors.INK,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    date: {
-      marginTop: verticalScale(4.18),
-      color: colors.BLACK,
+    dateBlockDay: {
+      color: colors.LIME,
     },
-    restrictionsContainer: {
+    dateBlockNumber: {
+      color: colors.WHITE,
+    },
+    dateBlockMonth: {
+      color: colors.ON_INK_MUTED,
+    },
+    infoColumn: {
+      flex: 1,
+      gap: verticalScale(2),
+    },
+    timeRow: {
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing[8],
-      marginTop: verticalScale(8),
+      alignItems: "baseline",
+      gap: spacing[6],
     },
-    restrictionBadge: {
-      backgroundColor: colors.LIGHT_GREY,
-      borderRadius: spacing[8],
-      paddingHorizontal: horizontalScale(10),
-      paddingVertical: verticalScale(4),
-    },
-    restrictionText: {
-      color: colors.SLATE_GRAY,
+    mutedText: {
+      color: colors.MUTED,
     },
     locationContainer: {
-      marginTop: verticalScale(15),
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[4],
     },
-    greyText: {
-      color: colors.SLATE_GRAY,
+    locationIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
-    amountContainer: {
+    locationText: {
+      color: colors.MUTED,
+      flexShrink: 1,
+    },
+    chipsRow: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[8],
-    },
-    bottomContainer: {
-      borderTopColor: colors.LIGHT_GREY,
-      borderTopWidth: 1,
-      paddingStart: spacing[10],
-      marginTop: verticalScale(10),
-      flexDirection: "row",
-      justifyContent: "space-between",
-    },
-    divider: {
-      width: horizontalScale(1),
-      height: verticalScale(25),
-      backgroundColor: colors.MED_GREY_3,
-    },
-    timeContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[4],
-      paddingStart: spacing[6],
-    },
-    timerIcon: {
-      width: spacing[12],
-      height: spacing[12],
-      tintColor: colors.SLATE_GRAY,
-    },
-    button: {
-      height: verticalScale(43),
-      borderEndEndRadius: spacing[12],
-      borderStartEndRadius: 0,
-      borderEndStartRadius: 0,
-      borderStartStartRadius: 0,
-    },
-    buttonText: {
-      ...Typography.chip.medium,
-    },
-    sportContainer: {
-      height: spacing[24],
-      width: spacing[24],
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: colors.BLACK,
-      borderRadius: spacing[12],
+      flexWrap: "wrap",
+      gap: spacing[6],
     },
     sportIcon: {
-      tintColor: colors.GREEN_YELLOWISH,
-      width: horizontalScale(21),
-      height: horizontalScale(21),
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.LIME_TINT_TEXT,
     },
-    bottomContainerNoBookNow: {
-      paddingVertical: verticalScale(12),
+    playersRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing[12],
+      paddingVertical: verticalScale(10),
+      paddingHorizontal: spacing[10],
+      backgroundColor: colors.SUBTLE,
+      borderRadius: Radius.input,
+    },
+    slots: {
+      flexDirection: "row",
+      alignItems: "center",
+      flexShrink: 1,
+    },
+    slot: {
+      width: SLOT_SIZE,
+      height: SLOT_SIZE,
+      borderRadius: SLOT_SIZE / 2,
+      borderWidth: 2,
+      borderColor: colors.SUBTLE,
+      backgroundColor: colors.DIVIDER,
+    },
+    slotOverlap: {
+      marginStart: -spacing[8],
+    },
+    emptySlot: {
+      backgroundColor: colors.CARD,
+      borderWidth: 1.5,
+      borderStyle: "dashed",
+      borderColor: colors.HANDLE,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    emptySlotIcon: {
+      width: horizontalScale(10),
+      height: horizontalScale(10),
+      resizeMode: "contain",
+      tintColor: colors.FAINT,
+    },
+    moreSlot: {
+      backgroundColor: colors.INK,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    moreSlotText: {
+      color: colors.WHITE,
+    },
+    countPill: {
+      paddingHorizontal: spacing[10],
+      paddingVertical: verticalScale(3),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+    },
+    footer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing[12],
+      minHeight: verticalScale(44),
+      paddingTop: verticalScale(12),
+      borderTopWidth: 1,
+      borderTopColor: colors.DIVIDER,
+    },
+    priceRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: spacing[4],
+      flexShrink: 1,
+    },
+    button: {
+      minHeight: verticalScale(44),
+      paddingHorizontal: spacing[22],
     },
   });

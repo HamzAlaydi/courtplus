@@ -1,8 +1,15 @@
 import { StyleSheet } from "react-native";
-import { verticalScale } from "utils";
+import { ColorsType, Radius, Shadows } from "theme";
+import { spacing, verticalScale } from "utils";
 
-export default StyleSheet.create({
-  calendar: {
-    marginTop: verticalScale(24),
-  },
-});
+export default (colors: ColorsType) =>
+  StyleSheet.create({
+    calendarCard: {
+      marginTop: verticalScale(20),
+      paddingHorizontal: spacing[8],
+      paddingVertical: verticalScale(12),
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.card,
+      ...Shadows.card,
+    },
+  });

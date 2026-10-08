@@ -1,19 +1,23 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { isRTL, spacing } from "utils";
+import { ColorsType, Shadows } from "theme";
+import { horizontalScale, isRTL } from "utils";
 
 export default (colors: ColorsType, whiteColor: boolean) =>
   StyleSheet.create({
     container: {
-      width: spacing[40],
-      height: spacing[40],
-      backgroundColor: whiteColor ? colors.GHOST_WHITE : colors.DARK_GREEN,
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      backgroundColor: whiteColor ? colors.CARD : colors.DEEP,
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: spacing[40],
+      borderRadius: horizontalScale(22),
+      ...(whiteColor ? Shadows.subtle : {}),
     },
     image: {
-      tintColor: whiteColor ? colors.BLACK : colors.WHITE,
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: whiteColor ? colors.INK : colors.WHITE,
       transform: [{ scaleX: isRTL ? -1 : 1 }],
     },
   });

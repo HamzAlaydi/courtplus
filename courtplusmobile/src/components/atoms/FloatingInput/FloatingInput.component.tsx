@@ -142,7 +142,8 @@ const FloatingLabelInput = forwardRef<
         <View
           style={[
             themedStyles.container,
-            errorText && themedStyles.errorContainer,
+            isFocused && themedStyles.focusedContainer,
+            !!errorText && themedStyles.errorContainer,
           ]}
         >
           <View style={themedStyles.inputWrapper}>
@@ -166,6 +167,7 @@ const FloatingLabelInput = forwardRef<
                 onChangeText={onChangeText}
                 onFocus={onFocusHandler}
                 onBlur={onBlurHandler}
+                selectionColor={greyBackground ? colors.INK : colors.LIME}
                 {...props}
               />
             </View>

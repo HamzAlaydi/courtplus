@@ -24,32 +24,35 @@ const LogoutModal = forwardRef<BottomSheetModal, LogoutModalProps>(
         overrideContentStyle={themedStyles.container}
       >
         <View style={themedStyles.content}>
-          <Image source={Images.logout} style={themedStyles.image} />
+          <View style={themedStyles.iconBadge}>
+            <Image source={Images.logout} style={themedStyles.image} />
+          </View>
           <CustomText
             font="bottomSheetTitle"
             weight="bold"
+            accessibilityRole="header"
             text={t("profile.logout", { username })}
             overrideStyle={themedStyles.title}
           />
           <CustomText
-            font="description"
-            weight="medium"
+            font="headline3"
+            weight="regular"
             overrideStyle={themedStyles.description}
             text={t("profile.logoutDescription")}
           />
         </View>
-        <CustomButton
-          title={t("settings.logout")}
-          overrideStyle={themedStyles.deleteButton}
-          overrideTextStyle={themedStyles.deleteButtonText}
-          onPress={onLogout}
-        />
-        <CustomButton
-          title={t("general.cancel")}
-          onPress={onCancel}
-          overrideStyle={themedStyles.cancelButton}
-          overrideTextStyle={themedStyles.cancelButtonText}
-        />
+        <View style={themedStyles.actions}>
+          <CustomButton
+            variant="danger"
+            title={t("settings.logout")}
+            onPress={onLogout}
+          />
+          <CustomButton
+            variant="outline"
+            title={t("general.cancel")}
+            onPress={onCancel}
+          />
+        </View>
       </BottomSheetOverlay>
     );
   }

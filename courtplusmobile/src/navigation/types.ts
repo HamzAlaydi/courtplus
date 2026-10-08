@@ -103,7 +103,7 @@ export type ProfileStackParamList = {
 export type ActivityStackParamList = {
   BookingDetails: { item: Booking };
   ActivityLog: { id: string };
-  BookingTicket: { item: Booking };
+  BookingTicket: { item: Booking; hasJustPaid?: boolean };
 };
 
 export type MainStackParamList = {

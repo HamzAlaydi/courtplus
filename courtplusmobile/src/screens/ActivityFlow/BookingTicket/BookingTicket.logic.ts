@@ -2,10 +2,15 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { useGetProfile } from "apis";
 import { ActivityStackParamList } from "navigation/types";
 import { useTranslation } from "react-i18next";
-import { formatDate, generateFullName, formatInZone } from "utils";
+import {
+  formatDate,
+  generateFullName,
+  formatInZone,
+  getBookingStatusPill,
+} from "utils";
 
 export const useBookingTicket = () => {
-  const { item } =
+  const { item, hasJustPaid } =
     useRoute<RouteProp<ActivityStackParamList, "BookingTicket">>().params;
   const { data: profileData } = useGetProfile();
   const { t } = useTranslation();
@@ -18,6 +23,12 @@ export const useBookingTicket = () => {
   const player = item.participants.find(
     (item) => item.userId === profileData?.id
   );
+
+  // Same viewer-aware pill as the booking details and the list card.
+  const statusPill = getBookingStatusPill(item, {
+    participant: player,
+    hasJustPaid,
+  });
 
   const list = [
     {
@@ -45,5 +56,6 @@ export const useBookingTicket = () => {
   return {
     item,
     list,
+    statusPill,
   };
 };

@@ -35,6 +35,7 @@ export default function CourtMediaGallery({ images = [], video = null }) {
           />
         ) : (
           <img
+            key={active.key}
             src={active.url}
             alt="Court"
             className="media-stage-media media-stage-image"
@@ -48,6 +49,7 @@ export default function CourtMediaGallery({ images = [], video = null }) {
             <button
               key={item.key}
               type="button"
+              aria-pressed={item.key === active.key}
               className={`media-thumb ${
                 item.key === active.key ? "media-thumb-active" : ""
               }`}
@@ -58,7 +60,7 @@ export default function CourtMediaGallery({ images = [], video = null }) {
                   <PlayCircleFilled className="media-thumb-play" />
                 </span>
               ) : (
-                <img src={item.url} alt="Court" />
+                <img src={item.url} alt="Court" loading="lazy" />
               )}
             </button>
           ))}

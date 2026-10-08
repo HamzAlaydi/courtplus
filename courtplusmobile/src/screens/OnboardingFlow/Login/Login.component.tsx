@@ -1,6 +1,7 @@
 import { useThemeContext } from "contexts";
 import React, { useMemo } from "react";
 import { View, ImageBackground, Image } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Images } from "theme";
 import styles from "./Login.styles";
@@ -9,6 +10,7 @@ import { MobileController, OnboardingFooter } from "molecules/index";
 import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FormProvider } from "react-hook-form";
+import { enterDrop, enterRise } from "utils";
 import { useLogin } from "./Login.logic";
 
 const LoginScreen = () => {
@@ -16,16 +18,23 @@ const LoginScreen = () => {
   const {
     currentTheme: { colors },
   } = useThemeContext();
-  const themedStyles = useMemo(() => styles(colors, top), [colors]);
+  const themedStyles = useMemo(() => styles(colors, top), [colors, top]);
   const { t } = useTranslation();
   const { onLoginPress, onSignUpPress, methods } = useLogin();
 
   return (
     <ImageBackground source={Images.loginBg} style={themedStyles.container}>
-      <View style={themedStyles.headerContainer}>
-        <Image source={Images.horizontalLogo} style={themedStyles.logo} />
+      <Animated.View
+        entering={enterDrop(0)}
+        style={themedStyles.headerContainer}
+      >
+        <Image
+          source={Images.horizontalLogo}
+          style={themedStyles.logo}
+          accessibilityIgnoresInvertColors
+        />
         <LanguageIcon />
-      </View>
+      </Animated.View>
       <KeyboardAwareScrollView
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
@@ -33,27 +42,37 @@ const LoginScreen = () => {
         contentContainerStyle={themedStyles.keyboard}
       >
         <View style={themedStyles.bottomContainer}>
-          <CustomText
-            text={t("auth.signIn")}
-            font="headline1"
-            weight="semiBold"
-            overrideStyle={{ color: colors.WHITE }}
-          />
+          <Animated.View entering={enterRise(1)}>
+            <CustomText
+              text={t("auth.signIn")}
+              font="displayHero"
+              weight="extraBold"
+              accessibilityRole="header"
+              overrideStyle={themedStyles.title}
+            />
+          </Animated.View>
           <FormProvider {...methods}>
-            <MobileController
-              name="phoneNumber"
-              label={t("general.mobileNumber")}
-              overrideStyle={themedStyles.input}
-            />
+            <Animated.View entering={enterRise(2)}>
+              <MobileController
+                name="phoneNumber"
+                label={t("general.mobileNumber")}
+                overrideStyle={themedStyles.input}
+              />
+            </Animated.View>
 
-            <CustomButton
-              title={t("auth.signIn")}
-              onPress={methods.handleSubmit(onLoginPress)}
-              overrideStyle={themedStyles.button}
-            />
+            <Animated.View entering={enterRise(3)}>
+              <CustomButton
+                title={t("auth.signIn")}
+                variant="primary"
+                onPress={methods.handleSubmit(onLoginPress)}
+                overrideStyle={themedStyles.button}
+              />
+            </Animated.View>
           </FormProvider>
 
-          <OnboardingFooter type="login" onPress={onSignUpPress} />
+          <Animated.View entering={enterRise(4)}>
+            <OnboardingFooter type="login" onPress={onSignUpPress} />
+          </Animated.View>
         </View>
       </KeyboardAwareScrollView>
     </ImageBackground>

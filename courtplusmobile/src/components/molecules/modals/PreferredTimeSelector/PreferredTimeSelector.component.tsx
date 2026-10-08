@@ -30,8 +30,8 @@ const PreferredTimeSelector = forwardRef<
       <View>
         <CustomText
           text={t("profile.preferredTimeDesc")}
-          font="chip"
-          weight="medium"
+          font="headline3"
+          weight="regular"
           overrideStyle={themedStyles.description}
         />
         <View style={themedStyles.preferredTimeContainer}>
@@ -43,6 +43,7 @@ const PreferredTimeSelector = forwardRef<
               time={item.time}
               onPress={() => handleSelectTime(item.key)}
               isSelected={selectedTime === item.key}
+              overrideStyle={themedStyles.option}
             />
           ))}
         </View>
@@ -50,7 +51,7 @@ const PreferredTimeSelector = forwardRef<
           title={t("general.done")}
           onPress={() => onTimeSelect(selectedTime)}
           disabled={isNextButtonDisabled}
-          variant={isNextButtonDisabled ? "disabledDark" : "dark"}
+          variant={isNextButtonDisabled ? "disabledDark" : "primary"}
           overrideStyle={themedStyles.button}
         />
       </View>

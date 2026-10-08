@@ -37,8 +37,10 @@ export default function ReasonModal({
       onOk={() => form.validateFields().then((v) => onConfirm(v.reason.trim()))}
       onCancel={onCancel}
       destroyOnHidden
+      centered
+      width={480}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+      <Form form={form} layout="vertical" style={{ marginTop: 18 }}>
         <Form.Item
           name="reason"
           label="Reason (shown to the vendor)"
@@ -50,6 +52,7 @@ export default function ReasonModal({
           <Input.TextArea
             rows={4}
             placeholder="Explain why…"
+            style={{ padding: "12px 14px", resize: "vertical" }}
             onChange={(e) => setReason(e.target.value)}
           />
         </Form.Item>

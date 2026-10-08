@@ -5,16 +5,16 @@ import { Image, View } from "react-native";
 import { Images } from "theme";
 import styles from "./OpenMatchItem.styles";
 import { OpenMatchItemProps } from "./OpenMatchItem.types";
-import { formatDate } from "date-fns";
-import { convertToUTCTime, mapSportItem } from "utils";
+import { convertToUTCTime, formatInZone, mapSportItem } from "utils";
 import { useTranslation } from "react-i18next";
-import { Sport, User } from "models";
+import { Sport } from "models";
 
 /** API levels are snake_case ("intermediate_high"); locale keys are camelCase. */
 const camelCaseLevel = (level: string) =>
   level.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
-import AmountDisplay from "molecules/AmountDisplay/AmountDisplay.component";
-import { AvatarSlots } from "organisms/index";
+
+/** Player slots drawn on the card before the rest collapse into "+n". */
+const MAX_VISIBLE_SLOTS = 6;
 
 const OpenMatchItem = ({
   booking,
@@ -61,102 +61,180 @@ const OpenMatchItem = ({
   // the player only discovered the restriction from an error message after
   // tapping Book now.
   const restrictions = [
-    booking.level ? t(`general.${camelCaseLevel(booking.level)}`, booking.level) : null,
+    booking.level
+      ? t(`general.${camelCaseLevel(booking.level)}`, booking.level)
+      : null,
     booking.gender && booking.gender !== "other"
       ? t(`general.${booking.gender}`, booking.gender)
       : null,
   ].filter(Boolean) as string[];
 
+  const zone = booking.timeZone;
+  const players = booking.participants;
+  const visibleSlots = Math.max(
+    Math.min(seats, MAX_VISIBLE_SLOTS),
+    Math.min(players.length, MAX_VISIBLE_SLOTS)
+  );
+  const visiblePlayers = players.slice(0, visibleSlots);
+  const emptySlots = Math.max(0, visibleSlots - visiblePlayers.length);
+  const hiddenSlots = Math.max(
+    0,
+    Math.max(seats, players.length) - visibleSlots
+  );
+  const venue =
+    booking.court?.branch?.location?.name ??
+    booking.court?.location?.name ??
+    booking.court?.branch?.name ??
+    "";
+
   return (
-    <Card disabled overrideStyle={[themedStyles.container, overrideStyle]}>
-      <View style={themedStyles.content}>
-        <View style={themedStyles.infoHeader}>
+    <Card overrideStyle={[themedStyles.container, overrideStyle]}>
+      <View style={themedStyles.topRow}>
+        <View style={themedStyles.dateBlock}>
+          <CustomText
+            font="overline"
+            weight="semiBold"
+            text={formatInZone(booking.startDate, "EEE", zone)}
+            overrideStyle={themedStyles.dateBlockDay}
+          />
+          <CustomText
+            font="dayNumber"
+            weight="bold"
+            text={formatInZone(booking.startDate, "dd", zone)}
+            overrideStyle={themedStyles.dateBlockNumber}
+          />
+          <CustomText
+            font="overline"
+            weight="semiBold"
+            text={formatInZone(booking.startDate, "MMM", zone)}
+            overrideStyle={themedStyles.dateBlockMonth}
+          />
+        </View>
+        <View style={themedStyles.infoColumn}>
+          <View style={themedStyles.timeRow}>
+            <CustomText
+              font="displayNumber"
+              weight="bold"
+              text={convertToUTCTime(booking.startDate, booking.timeZone)}
+            />
+            <CustomText
+              font="caption"
+              weight="medium"
+              text={`– ${convertToUTCTime(booking.endDate, booking.timeZone)}`}
+              overrideStyle={themedStyles.mutedText}
+            />
+          </View>
           <CustomText
             text={booking.court.name}
-            font="chip"
-            weight="bold"
-            overrideStyle={themedStyles.greyText}
+            font="cardTitle"
+            weight="semiBold"
+            numberOfLines={1}
           />
-          <Chip
-            title={sport.name}
-            isSelected={true}
-            leftComponent={
-              <View style={themedStyles.sportContainer}>
-                <Image
-                  source={Images[sport.icon]}
-                  style={themedStyles.sportIcon}
-                />
-              </View>
-            }
-          />
+          {!!venue && (
+            <View style={themedStyles.locationContainer}>
+              <Image
+                source={Images.location}
+                style={themedStyles.locationIcon}
+              />
+              <CustomText
+                font="caption"
+                weight="regular"
+                text={venue}
+                numberOfLines={1}
+                overrideStyle={themedStyles.locationText}
+              />
+            </View>
+          )}
         </View>
-        <View style={themedStyles.participantsContainer}>
-          <AvatarSlots
-            showUsername={false}
-            showRemoveButton={false}
-            slots={booking.participants.map(
-              (participant) => participant.user as User
-            )}
-          />
-        </View>
-        <CustomText
-          font="headline2"
-          weight="semiBold"
-          text={formatDate(booking.startDate, "E dd MMM, hh:mm a")}
-          overrideStyle={themedStyles.date}
+      </View>
+
+      <View style={themedStyles.chipsRow}>
+        <Chip
+          title={sport.name}
+          isSelected={false}
+          variant="feature"
+          size="small"
+          leftComponent={
+            <Image source={Images[sport.icon]} style={themedStyles.sportIcon} />
+          }
         />
-        {restrictions.length > 0 && (
-          <View style={themedStyles.restrictionsContainer}>
-            {restrictions.map((label) => (
-              <View key={label} style={themedStyles.restrictionBadge}>
-                <CustomText
-                  font="chip"
-                  weight="medium"
-                  text={label}
-                  overrideStyle={themedStyles.restrictionText}
-                />
-              </View>
-            ))}
-          </View>
-        )}
-        <View style={themedStyles.locationContainer}>
-          <Image source={Images.location} />
+        {restrictions.map((label) => (
+          <Chip key={label} title={label} isSelected={false} size="small" />
+        ))}
+      </View>
+
+      <View style={themedStyles.playersRow}>
+        <View style={themedStyles.slots}>
+          {visiblePlayers.map((player, index) => (
+            <Image
+              key={player.id}
+              source={
+                player.user?.avatarUrl
+                  ? { uri: player.user.avatarUrl }
+                  : Images.maleProfile
+              }
+              style={[themedStyles.slot, index > 0 && themedStyles.slotOverlap]}
+            />
+          ))}
+          {Array.from({ length: emptySlots }).map((_, index) => (
+            <View
+              key={`empty-${index}`}
+              style={[
+                themedStyles.slot,
+                themedStyles.emptySlot,
+                (visiblePlayers.length > 0 || index > 0) &&
+                  themedStyles.slotOverlap,
+              ]}
+            >
+              <Image source={Images.plus} style={themedStyles.emptySlotIcon} />
+            </View>
+          ))}
+          {hiddenSlots > 0 && (
+            <View
+              style={[
+                themedStyles.slot,
+                themedStyles.moreSlot,
+                themedStyles.slotOverlap,
+              ]}
+            >
+              <CustomText
+                font="caption"
+                weight="semiBold"
+                text={`+${hiddenSlots}`}
+                overrideStyle={themedStyles.moreSlotText}
+              />
+            </View>
+          )}
+        </View>
+        <View style={themedStyles.countPill}>
           <CustomText
-            font="chip"
-            weight="medium"
-            text={
-              booking.court?.branch?.location?.name ??
-              booking.court?.location?.name ??
-              booking.court?.branch?.name ??
-              ""
-            }
-            overrideStyle={themedStyles.greyText}
+            font="caption"
+            weight="semiBold"
+            text={`${players.length}/${seats}`}
           />
         </View>
       </View>
-      <View
-        style={[
-          themedStyles.bottomContainer,
-          !showBookNowButton && themedStyles.bottomContainerNoBookNow,
-        ]}
-      >
-        <View style={themedStyles.amountContainer}>
-          <AmountDisplay
-            amount={sharePerPlayer}
-            currency={booking.court.currency}
+
+      <View style={themedStyles.footer}>
+        <View style={themedStyles.priceRow}>
+          <CustomText
+            font="displayNumber"
+            weight="bold"
+            text={`${sharePerPlayer}`}
           />
-          <View style={themedStyles.divider} />
-          <View style={themedStyles.timeContainer}>
-            <Image source={Images.timeCircle} style={themedStyles.timerIcon} />
-            <CustomText text={convertToUTCTime(booking.startDate, booking.timeZone)} />
-          </View>
+          <CustomText
+            font="caption"
+            weight="medium"
+            text={booking.court.currency ?? t("general.currency")}
+            overrideStyle={themedStyles.mutedText}
+          />
         </View>
         {showBookNowButton && (
           <CustomButton
             title={t("openMatch.bookNow")}
-            variant="dark"
+            variant="primary"
+            size="small"
             onPress={onBookNowPress}
-            overrideTextStyle={themedStyles.buttonText}
             overrideStyle={themedStyles.button}
           />
         )}

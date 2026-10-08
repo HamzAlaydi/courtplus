@@ -71,100 +71,123 @@ const SignUpForm = () => {
   return (
     <div className="auth-layout">
       <div className="auth-form-container">
-        <div className="auth-form-header">
-          <img src="/assets/images/logo-horizontal.png" alt="" />
-          <img src="/assets/images/icons/auth-key.png" alt="" />
-        </div>
-        <div className="auth-form">
-          <h2>{isInvited ? t("auth.finish_setup") : t("auth.sign_up")}</h2>
-          <Form
-            layout="vertical"
-            onFinish={onFinish}
-            initialValues={invitedEmail ? { email: invitedEmail } : undefined}
-          >
-            <Form.Item label={t("auth.first_name")} name="firstName" rules={[{ required: true, min: 2, message: t("auth.first_name_min") }]}>
-              <Input placeholder={t("auth.first_name_placeholder")} />
-            </Form.Item>
-
-            <Form.Item label={t("auth.last_name")} name="lastName" rules={[{ required: true, min: 2, message: t("auth.last_name_min") }]}>
-              <Input placeholder={t("auth.last_name_placeholder")} />
-            </Form.Item>
-
-            <Form.Item
-              label={t("auth.email")}
-              name="email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: t("auth.email_invalid"),
-                },
-              ]}
+        <div className="auth-card">
+          <div className="auth-form-header">
+            <img
+              className="auth-logo"
+              src="/assets/images/logo-horizontal.png"
+              alt="Court+"
+            />
+            <span className="auth-key">
+              <img src="/assets/images/icons/auth-key.png" alt="" />
+            </span>
+          </div>
+          <div className="auth-form">
+            <h2 className="auth-title">
+              {isInvited ? t("auth.finish_setup") : t("auth.sign_up")}
+            </h2>
+            <Form
+              layout="vertical"
+              onFinish={onFinish}
+              initialValues={invitedEmail ? { email: invitedEmail } : undefined}
             >
-              <Input placeholder={t("auth.email_placeholder")} disabled={isInvited} />
-            </Form.Item>
+              <div className="auth-name-row">
+                <Form.Item label={t("auth.first_name")} name="firstName" rules={[{ required: true, min: 2, message: t("auth.first_name_min") }]}>
+                  <Input placeholder={t("auth.first_name_placeholder")} />
+                </Form.Item>
 
-            <Form.Item
-              label={t("auth.password")}
-              name="password"
-              rules={[
-                { required: true, message: t("auth.password_required") },
-                { min: 8, message: t("auth.password_min") },
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder={t("auth.password_placeholder")} />
-            </Form.Item>
+                <Form.Item label={t("auth.last_name")} name="lastName" rules={[{ required: true, min: 2, message: t("auth.last_name_min") }]}>
+                  <Input placeholder={t("auth.last_name_placeholder")} />
+                </Form.Item>
+              </div>
 
-            <Form.Item
-              label={t("auth.confirm_password")}
-              name="confirmPassword"
-              dependencies={["password"]}
-              rules={[
-                { required: true, message: t("auth.confirm_password_required") },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject("Passwords do not match!");
+              <Form.Item
+                label={t("auth.email")}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: t("auth.email_invalid"),
                   },
-                }),
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder={t("auth.confirm_password_placeholder")} />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                style={{ color: "#000" }}
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
+                ]}
               >
-                Sign Up
-              </Button>
-            </Form.Item>
-          </Form>
+                <Input placeholder={t("auth.email_placeholder")} disabled={isInvited} />
+              </Form.Item>
+
+              <Form.Item
+                label={t("auth.password")}
+                name="password"
+                rules={[
+                  { required: true, message: t("auth.password_required") },
+                  { min: 8, message: t("auth.password_min") },
+                ]}
+                hasFeedback
+              >
+                <Input.Password placeholder={t("auth.password_placeholder")} />
+              </Form.Item>
+
+              <Form.Item
+                label={t("auth.confirm_password")}
+                name="confirmPassword"
+                dependencies={["password"]}
+                rules={[
+                  { required: true, message: t("auth.confirm_password_required") },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("password") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject("Passwords do not match!");
+                    },
+                  }),
+                ]}
+                hasFeedback
+              >
+                <Input.Password placeholder={t("auth.confirm_password_placeholder")} />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  className="cp-btn-display"
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  Sign Up
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+          <h5 className="auth-switch">
+            have an account?
+            <Link className="active" to="/auth/signin">
+              Join Now
+            </Link>
+          </h5>
         </div>
-        <h5>
-          have an account?
-          <Link className="active" to="/auth/signin">
-            Join Now
-          </Link>
-        </h5>
       </div>
 
       <div className="auth-cover cover-signup">
-        <img src="/assets/images/icons/icon-sport.png" alt="" />
-        <h1>{t("auth.hero_title")}</h1>{" "}
-        <p>
-          Create a free account and get full access to hundred of courts around
-          you. No credit card needed. Trusted by over 4,000 sports enthusiasts.
-        </p>
-        <img src="/assets/images/icons/avatars.png" alt="" />
+        <span className="auth-cover-mark" dir="ltr">
+          court<span>+</span>
+        </span>
+        <div className="auth-cover-body">
+          <img
+            className="auth-cover-icon"
+            src="/assets/images/icons/icon-sport.png"
+            alt=""
+          />
+          <h1>{t("auth.hero_title")}</h1>
+          <p>{t("auth.hero_subtitle")}</p>
+          <img
+            className="auth-cover-avatars"
+            src="/assets/images/icons/avatars.png"
+            alt=""
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,14 @@
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { useThemeContext } from "contexts";
-import React, { useMemo } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { Image, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 import { Images } from "theme";
+import { TOGGLE_SPRING } from "utils";
 import styles from "./PaymentOptionItem.styles";
 import { PaymentOptionItemProps } from "./PaymentOptionItem.types";
 import { useTranslation } from "react-i18next";
@@ -20,32 +26,67 @@ const PaymentOptionItem = ({
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
   const { t } = useTranslation();
+  const dotScale = useSharedValue(isSelected ? 1 : 0);
+
+  useEffect(() => {
+    dotScale.value = withSpring(isSelected ? 1 : 0, TOGGLE_SPRING);
+  }, [isSelected, dotScale]);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: dotScale.value }],
+  }));
 
   return (
-    <View style={[themedStyles.container, overrideStyle]}>
+    <PressableScale
+      onPress={onPress}
+      disabled={disabled}
+      disableScale={disabled}
+      scaleTo={0.98}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isSelected, disabled }}
+      style={[
+        themedStyles.container,
+        isSelected && themedStyles.selectedContainer,
+        overrideStyle,
+      ]}
+    >
       <View style={themedStyles.rowContainer}>
-        <TouchableOpacity
-          onPress={onPress}
-          disabled={disabled}
-          style={themedStyles.radioContainer}
+        <View
+          style={[
+            themedStyles.radioContainer,
+            isSelected && themedStyles.radioSelected,
+          ]}
         >
-          {isSelected && <View style={themedStyles.radio} />}
-        </TouchableOpacity>
+          <Animated.View style={[themedStyles.radio, dotStyle]} />
+        </View>
         <View style={themedStyles.cardContainer}>
-          <Image source={Images.card} />
-          <CustomText font="headline3" weight="medium" text={title} />
+          <View style={themedStyles.cardIconTile}>
+            <Image source={Images.card} style={themedStyles.cardIcon} />
+          </View>
+          <CustomText
+            font="headline3"
+            weight="semiBold"
+            text={title}
+            numberOfLines={2}
+            overrideStyle={themedStyles.title}
+          />
         </View>
       </View>
       <View style={themedStyles.amountContainer}>
         <CustomText
-          font="text"
-          weight="semiBold"
+          font="displayNumber"
+          weight="bold"
+          text={amount.toString()}
+          overrideStyle={themedStyles.amount}
+        />
+        <CustomText
+          font="caption"
+          weight="medium"
           text={t("general.currency")}
           overrideStyle={themedStyles.amountText}
         />
-        <CustomText font="body" weight="semiBold" text={amount.toString()} />
       </View>
-    </View>
+    </PressableScale>
   );
 };
 

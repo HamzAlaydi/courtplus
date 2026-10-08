@@ -5,7 +5,6 @@ import React, { forwardRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
 import { Images } from "theme";
-import { verticalScale } from "utils";
 import MapView, { Circle, PROVIDER_GOOGLE } from "react-native-maps";
 import { useThemeContext } from "contexts";
 import styles from "./FilterLocationModal.styles";
@@ -32,10 +31,12 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
 
   return (
     <BottomSheetOverlay isWhite ref={ref} title={t("general.location")}>
-      <View style={{ paddingTop: verticalScale(18) }}>
+      <View style={themedStyles.content}>
         <Input
           placeholder={t("general.search")}
-          leftComponent={<Image source={Images.search} />}
+          leftComponent={
+            <Image source={Images.search} style={themedStyles.searchIcon} />
+          }
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={onSearch}
@@ -51,6 +52,8 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
               longitudeDelta: Math.max(0.02, radius / 55),
             }}
             loadingEnabled
+            loadingIndicatorColor={colors.INK}
+            loadingBackgroundColor={colors.GROUND}
             style={themedStyles.map}
             showsMyLocationButton
           >
@@ -60,27 +63,37 @@ const FilterLocationModal = forwardRef<BottomSheetModal, {}>(({}, ref) => {
                 longitude: location?.long ?? 0,
               }}
               radius={radius * 1000}
-              strokeColor="rgba(0, 200, 83, 0.6)"
-              fillColor="rgba(0, 200, 83, 0.2)"
+              strokeWidth={2}
+              strokeColor={`${colors.INK}B3`}
+              fillColor={`${colors.LIME}47`}
             />
           </MapView>
         </View>
         <View style={themedStyles.locationContainer}>
-          <Image source={Images.location} />
-          <CustomText text={`${address} ${t("filters.changeable")}`} />
+          <Image source={Images.location} style={themedStyles.locationIcon} />
+          <CustomText
+            text={`${address} ${t("filters.changeable")}`}
+            font="caption"
+            weight="medium"
+            numberOfLines={2}
+            overrideStyle={themedStyles.locationText}
+          />
         </View>
         <View style={themedStyles.radiusContainer}>
           <CustomText
             text={t("filters.radius")}
-            font="headline3"
-            weight="medium"
+            font="sectionTitle"
+            weight="small"
+            accessibilityRole="header"
           />
-          <CustomText
-            text={`${radius} ${t("general.km")}`}
-            font="headline3"
-            weight="medium"
-            overrideStyle={themedStyles.radiusText}
-          />
+          <View style={themedStyles.radiusBadge}>
+            <CustomText
+              text={`${radius} ${t("general.km")}`}
+              font="headline3"
+              weight="semiBold"
+              overrideStyle={themedStyles.radiusText}
+            />
+          </View>
         </View>
         <Slider onValueChange={onValueChange} value={radius} />
         <ButtonsRow

@@ -1,15 +1,17 @@
-import { CustomText, Input } from "atoms/index";
+import { Input } from "atoms/index";
 import { useThemeContext } from "contexts";
 import { Header, UserFollowRow } from "molecules/index";
 import { List, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, RefreshControl, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import styles from "./Community.styles";
 import { useCommunity } from "./Community.logic";
 import { User } from "models";
 import { ListRenderItemInfo } from "@shopify/flash-list";
+import { enterDrop, useListEntering } from "utils";
 
 const CommunityScreen = () => {
   const { t } = useTranslation();
@@ -17,6 +19,7 @@ const CommunityScreen = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+  const entering = useListEntering();
   const {
     searchInput,
     setSearchInput,
@@ -32,59 +35,56 @@ const CommunityScreen = () => {
     refreshing,
   } = useCommunity();
 
-  const renderItem = ({ item }: ListRenderItemInfo<User>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<User>) => {
     return (
-      <UserFollowRow
-        onFollow={() => onFollow(item.id)}
-        onUnfollow={() => onUnfollow(item.id)}
-        isFollowed={item.isFollowed ?? false}
-        isFollowing={item.isFollowing ?? false}
-        name={item.firstName}
-        username={item.username}
-        image={item.avatarUrl ?? ""}
-        onPress={() => onUserPress(item.id)}
-        gender={item.gender}
-      />
+      <Animated.View entering={entering(index)}>
+        <UserFollowRow
+          onFollow={() => onFollow(item.id)}
+          onUnfollow={() => onUnfollow(item.id)}
+          isFollowed={item.isFollowed ?? false}
+          isFollowing={item.isFollowing ?? false}
+          name={item.firstName}
+          username={item.username}
+          image={item.avatarUrl ?? ""}
+          onPress={() => onUserPress(item.id)}
+          gender={item.gender}
+        />
+      </Animated.View>
     );
   };
 
   return (
-    <MainWrapper
-      overrideContainerStyle={themedStyles.communityContent}
-      whiteBackground
-    >
+    <MainWrapper overrideContainerStyle={themedStyles.communityContent}>
       <Header
-        overrideStyle={themedStyles.headerMainContainer}
         showBackButton={false}
-        leadingComponent={
-          <View style={themedStyles.headerContainer}>
-            <View style={themedStyles.iconContainer}>
-              <Image source={Images.community} />
-            </View>
-            <CustomText
-              text={t("tabs.community")}
-              font="title"
-              weight="semiBold"
-            />
-          </View>
-        }
+        title={t("tabs.community")}
         trailingComponent={
           <View style={themedStyles.iconContainer}>
-            <Image source={Images.bell} />
+            <Image source={Images.bell} style={themedStyles.bellIcon} />
           </View>
         }
       />
       <View style={themedStyles.content}>
-        <Input
-          placeholder={t("community.search")}
-          leftComponent={<Image source={Images.search} />}
-          value={searchInput}
-          onChangeText={setSearchInput}
-        />
+        <Animated.View entering={enterDrop(0)}>
+          <Input
+            placeholder={t("community.search")}
+            leftComponent={
+              <Image source={Images.search} style={themedStyles.searchIcon} />
+            }
+            value={searchInput}
+            onChangeText={setSearchInput}
+            returnKeyType="search"
+          />
+        </Animated.View>
 
         <List
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.INK}
+              colors={[colors.INK]}
+            />
           }
           data={communityData}
           isLoading={isFetching}
@@ -93,6 +93,8 @@ const CommunityScreen = () => {
           fetchNextPage={fetchNextPage}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          overrideContainerStyle={themedStyles.list}
+          overrideLoaderContainerStyle={themedStyles.loader}
           contentContainerStyle={themedStyles.listContainer}
           ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
           emptyConfig={{

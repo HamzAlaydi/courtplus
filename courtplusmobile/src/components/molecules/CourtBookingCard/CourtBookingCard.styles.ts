@@ -1,64 +1,85 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius, Shadows } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     confirmationContainer: {
-      marginTop: verticalScale(16),
+      padding: spacing[14],
+      borderRadius: Radius.card,
+      backgroundColor: colors.CARD,
+      gap: verticalScale(14),
+      ...Shadows.card,
     },
     infoContainer: {
       flexDirection: "row",
-      gap: spacing[10],
+      alignItems: "center",
+      gap: spacing[12],
+    },
+    courtImage: {
+      width: horizontalScale(76),
+      height: horizontalScale(76),
+      borderRadius: Radius.input,
+      backgroundColor: colors.DIVIDER,
+    },
+    courtInfo: {
+      flex: 1,
+      gap: verticalScale(4),
+    },
+    courtName: {
+      color: colors.INK,
     },
     locationContainer: {
       flexDirection: "row",
       gap: spacing[4],
       alignItems: "center",
-      marginTop: verticalScale(10),
-      marginBottom: verticalScale(21),
     },
-    dateContainer: {
+    locationIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+    },
+    branchName: {
+      color: colors.MUTED,
+      flexShrink: 1,
+    },
+    detailsRow: {
       flexDirection: "row",
-      gap: spacing[12],
-      alignItems: "center",
+      gap: spacing[8],
+    },
+    detailTile: {
+      flex: 1,
+      gap: verticalScale(4),
+      paddingVertical: verticalScale(10),
+      paddingHorizontal: spacing[12],
+      borderRadius: Radius.input,
+      backgroundColor: colors.SUBTLE,
     },
     iconContainer: {
       flexDirection: "row",
-      gap: spacing[4],
+      gap: spacing[6],
       alignItems: "center",
     },
     icon: {
-      width: horizontalScale(11),
-      height: horizontalScale(11),
-      tintColor: colors.SLATE_GRAY,
+      width: horizontalScale(14),
+      height: horizontalScale(14),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+    },
+    label: {
+      color: colors.MUTED,
+    },
+    value: {
+      color: colors.INK,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.DIVIDER,
     },
     slotsContainer: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "space-around",
-      marginTop: verticalScale(20),
-    },
-    courtImage: {
-      width: horizontalScale(149),
-      borderRadius: spacing[8],
-      height: verticalScale(124),
-    },
-    courtName: {
-      width: horizontalScale(137),
-    },
-    branchName: {
-      color: colors.SLATE_GRAY,
-    },
-    branchNameText: {
-      maxWidth: horizontalScale(109),
-    },
-    locationIcon: {
-      width: horizontalScale(13),
-      height: horizontalScale(13),
-      tintColor: colors.SLATE_GRAY,
-    },
-    dateText: {
-      width: horizontalScale(103),
     },
   });

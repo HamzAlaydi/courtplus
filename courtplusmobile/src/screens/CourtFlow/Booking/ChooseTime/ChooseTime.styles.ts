@@ -1,47 +1,86 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    infoContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      paddingTop: verticalScale(25),
+    container: {
+      flex: 1,
+      backgroundColor: colors.GROUND,
     },
-    infoWidget: {
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "row",
-      gap: spacing[4],
-      backgroundColor: colors.LIGHT_BLUE,
-      paddingVertical: verticalScale(8),
-      width: horizontalScale(128),
+    scrollViewContent: {
+      paddingBottom: verticalScale(220),
     },
-    infoItem: {
+    content: {
+      marginTop: verticalScale(16),
+      gap: Layout.sectionGap,
+    },
+    courtSummary: {
+      flexDirection: "row",
       alignItems: "center",
-      gap: spacing[2],
+      gap: spacing[12],
+      padding: spacing[12],
+      borderRadius: Radius.tile,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+    },
+    courtImage: {
+      width: horizontalScale(52),
+      height: horizontalScale(52),
+      borderRadius: Radius.medium,
+      backgroundColor: colors.DIVIDER,
+    },
+    courtInfo: {
+      flex: 1,
+      gap: verticalScale(2),
+    },
+    courtName: {
+      color: colors.INK,
+    },
+    mutedText: {
+      color: colors.MUTED,
+    },
+    rateRow: {
+      alignItems: "flex-end",
+    },
+    rateValue: {
+      color: colors.INK,
     },
     timezoneContainer: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: horizontalScale(7),
-      paddingTop: verticalScale(25),
-      width: horizontalScale(293.37),
+      alignItems: "flex-start",
+      gap: spacing[8],
+      marginTop: -verticalScale(8),
     },
-    content: {
-      marginTop: verticalScale(21),
+    timezoneIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+      marginTop: verticalScale(1),
     },
-    scrollViewContent: {
-      paddingBottom: verticalScale(120),
-    },
-    container: {
+    timezoneText: {
       flex: 1,
+      color: colors.MUTED,
     },
-    timeSlotsContainer: {
-      marginTop: verticalScale(9.21),
+    gapNotice: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[8],
+      paddingVertical: verticalScale(10),
+      paddingHorizontal: spacing[12],
+      borderRadius: Radius.input,
+      backgroundColor: colors.DANGER_BG,
     },
-    horizontalDatePicker: {
-      marginTop: verticalScale(29),
+    gapNoticeDot: {
+      width: horizontalScale(6),
+      height: horizontalScale(6),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DANGER,
+    },
+    gapNoticeText: {
+      flex: 1,
+      color: colors.DANGER,
     },
   });

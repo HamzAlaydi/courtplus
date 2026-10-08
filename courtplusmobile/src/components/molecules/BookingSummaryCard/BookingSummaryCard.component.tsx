@@ -1,15 +1,17 @@
 import React, { useMemo } from "react";
 import { Image, View } from "react-native";
 import { BookingSummaryCardProps } from "./BookingSummaryCard.types";
-import { Card, CustomButton, CustomText } from "atoms/index";
-import { MatchStatus, ParticipantStatus } from "models";
+import { Card, Chip, CustomButton, CustomText } from "atoms/index";
+import { MatchStatus } from "models";
 import { Images } from "theme";
 import { useThemeContext } from "contexts";
 import styles from "./BookingSummaryCard.styles";
 import { useTranslation } from "react-i18next";
 import { useBookingSummaryCard } from "./BookingSummaryCard.logic";
 import ReviewCourtModal from "molecules/modals/ReviewCourtModal/ReviewCourtModal.component";
-import { getCourtImage } from "utils";
+import { formatInZone } from "utils";
+
+const MAX_VISIBLE_FRIENDS = 4;
 
 const BookingSummaryCard = ({
   item,
@@ -30,16 +32,24 @@ const BookingSummaryCard = ({
     reviewCourtModalRef,
     onDismissReviewCourtModal,
     onShowReviewCourtModal,
-    currentParticipant,
+    statusPill,
   } = useBookingSummaryCard({ item, profileId });
 
-  const courtImage = getCourtImage(item.court);
+  const zone = item.timeZone;
+  const startTime = formatInZone(item.startDate, "HH:mm", zone);
+  const endTime = formatInZone(item.endDate, "HH:mm", zone);
+  const timeRange = `${startTime} – ${endTime}`;
+  const rating = Number(item.review?.rating ?? court.avgRating ?? 0).toFixed(1);
+  const visibleFriends = participants.slice(0, MAX_VISIBLE_FRIENDS);
+  const hiddenFriends = participants.length - visibleFriends.length;
 
   const renderButton = () => {
     if (isLessThan10Minutes) {
       return (
         <CustomButton
           title={t("activity.enterCourt")}
+          variant="primary"
+          size="medium"
           onPress={onEnterMatch}
           overrideStyle={themedStyles.button}
         />
@@ -53,9 +63,13 @@ const BookingSummaryCard = ({
       return (
         <CustomButton
           title={t("activity.addReview")}
+          variant="outline"
+          size="medium"
           onPress={onShowReviewCourtModal}
           overrideStyle={themedStyles.button}
-          leftIcon={<Image source={Images.review} />}
+          leftIcon={
+            <Image source={Images.review} style={themedStyles.buttonIcon} />
+          }
         />
       );
     }
@@ -65,65 +79,141 @@ const BookingSummaryCard = ({
   return (
     <>
       <Card overrideStyle={themedStyles.container} onPress={onPress}>
-        <View style={themedStyles.header}>
-          <View style={themedStyles.iconContainer}>
-            <Image source={Images[sport.icon]} />
+        <View style={themedStyles.ticket}>
+          <View style={themedStyles.dateBlock}>
             <CustomText
-              font="headline3"
+              font="overline"
               weight="semiBold"
-              text={t("activity.bookedCourt", { sport: sport.name })}
-              overrideStyle={themedStyles.text}
+              text={formatInZone(item.startDate, "EEE", zone)}
+              numberOfLines={1}
+              overrideStyle={themedStyles.dateBlockDay}
+            />
+            <CustomText
+              font="dayNumber"
+              weight="bold"
+              text={formatInZone(item.startDate, "dd", zone)}
+              overrideStyle={themedStyles.dateBlockNumber}
+            />
+            <CustomText
+              font="overline"
+              weight="semiBold"
+              text={formatInZone(item.startDate, "MMM", zone)}
+              numberOfLines={1}
+              overrideStyle={themedStyles.dateBlockMonth}
             />
           </View>
-        </View>
-        <View style={themedStyles.courtContainer}>
-          <View style={themedStyles.courtInfoContainer}>
-            <Image source={courtImage} style={themedStyles.courtImage} />
-            <View style={themedStyles.branchContainer}>
-              <CustomText
-                font="chip"
-                weight="medium"
-                text={court.branch.name}
-                overrideStyle={themedStyles.branchName}
-              />
-              <CustomText
-                font="fields"
-                weight="semiBold"
-                text={court.name}
-                overrideStyle={themedStyles.courtName}
-              />
-            </View>
-          </View>
-          <View style={themedStyles.ratingContainer}>
-            <Image source={Images.star} />
-            <CustomText
-              font="headline3"
-              weight="semiBold"
-              text={`${item.review?.rating ?? court.avgRating}`}
-              overrideStyle={themedStyles.rating}
-            />
-          </View>
-        </View>
-        <View style={themedStyles.friendsContainer}>
-          <CustomText
-            text={t("general.friends")}
-            font="text"
-            weight="semiBold"
-            overrideStyle={themedStyles.friendsText}
-          />
-          <View style={themedStyles.participantsContainer}>
-            {participants.map((participant) => (
-              <View key={participant.id}>
+
+          <View style={themedStyles.info}>
+            <View style={themedStyles.topRow}>
+              <View style={themedStyles.sportRow}>
                 <Image
-                  source={
-                    participant.user.avatarUrl
-                      ? { uri: participant.user.avatarUrl }
-                      : Images.maleProfile
-                  }
-                  style={themedStyles.friendIcon}
+                  source={Images[sport.icon]}
+                  style={themedStyles.sportIcon}
+                />
+                <CustomText
+                  font="caption"
+                  weight="medium"
+                  text={t("activity.bookedCourt", { sport: sport.name })}
+                  numberOfLines={1}
+                  overrideStyle={themedStyles.mutedText}
                 />
               </View>
-            ))}
+              {statusPill && (
+                <Chip
+                  title={statusPill.title}
+                  isSelected={false}
+                  variant={statusPill.variant}
+                  size="small"
+                  overrideStyle={themedStyles.statusPill}
+                />
+              )}
+            </View>
+            <CustomText
+              font="cardTitle"
+              weight="bold"
+              text={court.name}
+              numberOfLines={1}
+              overrideStyle={themedStyles.courtName}
+            />
+            <View style={themedStyles.metaRow}>
+              <Image source={Images.clock} style={themedStyles.timeIcon} />
+              <CustomText
+                font="caption"
+                weight="semiBold"
+                text={timeRange}
+                numberOfLines={1}
+                overrideStyle={themedStyles.timeText}
+              />
+            </View>
+            {!!court.branch?.name && (
+              <View style={themedStyles.metaRow}>
+                <Image source={Images.location} style={themedStyles.metaIcon} />
+                <CustomText
+                  font="caption"
+                  weight="regular"
+                  text={court.branch.name}
+                  numberOfLines={1}
+                  overrideStyle={themedStyles.metaText}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+
+        <View style={themedStyles.footer}>
+          {participants.length > 0 ? (
+            <View style={themedStyles.friends}>
+              <View style={themedStyles.avatars}>
+                {visibleFriends.map((participant, index) => (
+                  <Image
+                    key={participant.id}
+                    source={
+                      participant.user.avatarUrl
+                        ? { uri: participant.user.avatarUrl }
+                        : Images.maleProfile
+                    }
+                    style={[
+                      themedStyles.friendIcon,
+                      index > 0 && themedStyles.friendOverlap,
+                    ]}
+                  />
+                ))}
+                {hiddenFriends > 0 && (
+                  <View
+                    style={[
+                      themedStyles.friendIcon,
+                      themedStyles.friendOverlap,
+                      themedStyles.moreFriends,
+                    ]}
+                  >
+                    <CustomText
+                      text={`+${hiddenFriends}`}
+                      font="caption"
+                      weight="semiBold"
+                      overrideStyle={themedStyles.moreFriendsText}
+                    />
+                  </View>
+                )}
+              </View>
+              <CustomText
+                text={t("general.friends")}
+                font="caption"
+                weight="medium"
+                numberOfLines={1}
+                overrideStyle={themedStyles.mutedText}
+              />
+            </View>
+          ) : (
+            <View />
+          )}
+          <View style={themedStyles.ratingContainer}>
+            <Image source={Images.star} style={themedStyles.starIcon} />
+            <CustomText
+              font="caption"
+              weight="semiBold"
+              text={rating}
+              overrideStyle={themedStyles.rating}
+            />
           </View>
         </View>
         {renderButton()}

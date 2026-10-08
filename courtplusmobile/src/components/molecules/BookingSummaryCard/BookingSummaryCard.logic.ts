@@ -5,7 +5,7 @@ import { differenceInMinutes } from "date-fns";
 import { Booking, Sport } from "models";
 import { useMemo, useRef } from "react";
 import { useAppStore } from "store";
-import { invalidateQuery, mapSportItem } from "utils";
+import { getBookingStatusPill, invalidateQuery, mapSportItem } from "utils";
 
 export const useBookingSummaryCard = ({
   item,
@@ -31,7 +31,7 @@ export const useBookingSummaryCard = ({
     (participant) => participant.userId !== profileId
   );
 
-  const currentParticipant = participants.find(
+  const currentParticipant = item.participants.find(
     (participant) => participant.userId === profileId
   );
   const toggleLoading = useAppStore((store) => store.toggleLoading);
@@ -39,6 +39,12 @@ export const useBookingSummaryCard = ({
 
   const isLessThan10Minutes =
     Math.abs(differenceInMinutes(new Date(item.startDate), new Date())) <= 10;
+
+  // The shared viewer-aware pill, so the list card, the booking details and
+  // the ticket always agree for the same viewer. Display only.
+  const statusPill = getBookingStatusPill(item, {
+    participant: currentParticipant,
+  });
 
   const onEnterMatch = async () => {
     try {
@@ -71,5 +77,6 @@ export const useBookingSummaryCard = ({
     onDismissReviewCourtModal,
     reviewCourtModalRef,
     currentParticipant,
+    statusPill,
   };
 };

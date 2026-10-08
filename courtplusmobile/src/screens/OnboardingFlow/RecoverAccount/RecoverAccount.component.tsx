@@ -3,10 +3,12 @@ import { Header } from "molecules/index";
 import { MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { Image, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import styles from "./RecoverAccount.styles";
 import { CustomButton, CustomText } from "atoms/index";
 import { useTranslation } from "react-i18next";
+import { enterRise } from "utils";
 import { useRecoverAccount } from "./RecoverAccount.logic";
 
 const RecoverAccountScreen = () => {
@@ -18,25 +20,40 @@ const RecoverAccountScreen = () => {
   const { onRestoreAccount, onStartFresh } = useRecoverAccount();
 
   return (
-    <MainWrapper scrollEnabled whiteBackground>
+    <MainWrapper scrollEnabled>
       <Header whiteColor />
-      <Image source={Images.tennisRacket} style={themedStyles.image} />
-      <View style={themedStyles.centeredContainer}>
+      <Animated.View entering={enterRise(0)} style={themedStyles.hero}>
+        <View style={themedStyles.disc} />
+        <Image
+          source={Images.tennisRacket}
+          style={themedStyles.image}
+          accessibilityIgnoresInvertColors
+        />
+      </Animated.View>
+      <Animated.View
+        entering={enterRise(1)}
+        style={themedStyles.centeredContainer}
+      >
         <CustomText
-          font="headline1"
+          font="displayHero"
+          weight="extraBold"
+          accessibilityRole="header"
           text={t("recoverAccount.welcomeBack")}
-          weight="semiBold"
+          overrideStyle={themedStyles.title}
         />
         <CustomText
           font="headline3"
-          weight="medium"
+          weight="regular"
           overrideStyle={themedStyles.description}
           text={t("recoverAccount.description")}
         />
-      </View>
-      <View style={themedStyles.bottomContainer}>
+      </Animated.View>
+      <Animated.View
+        entering={enterRise(2)}
+        style={themedStyles.bottomContainer}
+      >
         <CustomButton
-          variant="dark"
+          variant="primary"
           title={t("recoverAccount.restoreAccount")}
           onPress={onRestoreAccount}
         />
@@ -46,7 +63,7 @@ const RecoverAccountScreen = () => {
           overrideStyle={themedStyles.startFreshButton}
           variant="link"
         />
-      </View>
+      </Animated.View>
     </MainWrapper>
   );
 };

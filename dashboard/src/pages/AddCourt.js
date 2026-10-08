@@ -10,7 +10,9 @@ import {
   Switch,
   Tag,
   Tooltip,
-  Modal, Alert } from "antd";
+  Modal,
+  Alert,
+} from "antd";
 import "dayjs/locale/en";
 import WorkingHours from "../components/WorkingHours"; // Reusable component
 import { UploadOutlined } from "@ant-design/icons";
@@ -385,8 +387,12 @@ export default function CourtForm() {
       <div className="content-header">
         <h4>{id ? t("courtForm.title_edit") : t("courtForm.title_add")}</h4>
         {id && (
-          <Button onClick={() => setIsModalVisible(true)} danger type="primary">
-            <MdDeleteOutline size={22} /> {t("common.delete")}
+          <Button
+            onClick={() => setIsModalVisible(true)}
+            danger
+            icon={<MdDeleteOutline size={18} />}
+          >
+            {t("common.delete")}
           </Button>
         )}
       </div>
@@ -420,7 +426,6 @@ export default function CourtForm() {
         <Alert
           type={["changes_requested", "suspended"].includes(court.status) ? "warning" : "info"}
           showIcon
-          style={{ marginBottom: 16 }}
           message={t(`courtCard.status.${court.status}`, court.status)}
           description={court.rejectionReason ? `${t("courtCard.rejection_reason")}: ${court.rejectionReason}` : undefined}
         />
@@ -429,6 +434,7 @@ export default function CourtForm() {
         size="large"
         form={form}
         layout="vertical"
+        className="court-form"
         onFinish={handleSubmit}
         initialValues={{
           zone: "Asia/Riyadh",
@@ -483,112 +489,121 @@ export default function CourtForm() {
           <div className="form-group">
             <h4 className="form-title">{t("courtForm.details")}</h4>
 
-            <Form.Item
-              rules={[{ required: true }]}
-              name="sport"
-              label={t("courtForm.sport")}
-            >
-              <Select placeholder="Select the court format">
-                <Select.Option value="tennis">
-                  {t("courtForm.tennis")}
-                </Select.Option>
-                <Select.Option value="football">
-                  {t("courtForm.football")}
-                </Select.Option>
-                <Select.Option value="paddle">
-                  {t("courtForm.paddle")}
-                </Select.Option>
-                <Select.Option value="volleyball">
-                  {t("courtForm.volleyball")}
-                </Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              rules={[{ required: true }]}
-              name="size"
-              label={t("courtForm.size")}
-            >
-              <Select placeholder="Select the court format">
-                <Select.Option value="full">
-                  {t("courtForm.size_full")}
-                </Select.Option>
-                <Select.Option value="half">
-                  {t("courtForm.size_half")}
-                </Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              rules={[{ required: true }]}
-              name="length"
-              label={t("courtForm.length")}
-            >
-              <InputNumber
-                min={1}
-                step={0.1}
-                addonAfter={t("courtForm.unit_length")}
-                placeholder={t("courtForm.placeholder_length")}
-              />
-            </Form.Item>
-            <Form.Item
-              rules={[{ required: true }]}
-              name="width"
-              label={t("courtForm.width")}
-            >
-              <InputNumber
-                min={1}
-                step={0.1}
-                addonAfter={t("courtForm.unit_length")}
-                placeholder={t("courtForm.placeholder_width")}
-              />
-            </Form.Item>
-
-            <Form.Item
-              rules={[{ required: true }]}
-              name="hourlyRate"
-              label={t("courtForm.hourlyRate")}
-            >
-              <InputNumber
-                min={1}
-                step={0.1}
-                addonAfter={t("courtForm.unit_rate")}
-              />
-            </Form.Item>
-            <Form.Item
-              rules={[{ required: true }]}
-              name="surface"
-              label={t("courtForm.surface")}
-            >
-              <Select placeholder={t("courtForm.placeholder_surface")}>
-                <Select.Option value="grass">
-                  {t("courtForm.surface_grass")}
-                </Select.Option>
-                <Select.Option value="hard">
-                  {t("courtForm.surface_hard")}
-                </Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="isAirConditioned"
-              label={t("courtForm.air_conditioned")}
-              valuePropName="checked"
-            >
-              <Switch
-                className="toggle-switch"
-                checkedChildren={t("courtForm.air_conditioned_yes")}
-                unCheckedChildren={t("courtForm.air_conditioned_no")}
-              />
-            </Form.Item>
-            <Form.Item
-              name="isWomenOnly"
-              label={t("courtForm.women_only")}
-              valuePropName="checked"
-            >
-              <Switch
-                className="toggle-switch"
-                checkedChildren={t("courtForm.women_only_yes")}
-                unCheckedChildren={t("courtForm.women_only_no")}
-              />
-            </Form.Item>
+            <div className="form-grid">
+              <Form.Item
+                rules={[{ required: true }]}
+                name="sport"
+                label={t("courtForm.sport")}
+              >
+                <Select placeholder="Select the court format">
+                  <Select.Option value="tennis">
+                    {t("courtForm.tennis")}
+                  </Select.Option>
+                  <Select.Option value="football">
+                    {t("courtForm.football")}
+                  </Select.Option>
+                  <Select.Option value="paddle">
+                    {t("courtForm.paddle")}
+                  </Select.Option>
+                  <Select.Option value="volleyball">
+                    {t("courtForm.volleyball")}
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item
+                rules={[{ required: true }]}
+                name="size"
+                label={t("courtForm.size")}
+              >
+                <Select placeholder="Select the court format">
+                  <Select.Option value="full">
+                    {t("courtForm.size_full")}
+                  </Select.Option>
+                  <Select.Option value="half">
+                    {t("courtForm.size_half")}
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+            <div className="form-grid">
+              <Form.Item
+                rules={[{ required: true }]}
+                name="length"
+                label={t("courtForm.length")}
+              >
+                <InputNumber
+                  min={1}
+                  step={0.1}
+                  addonAfter={t("courtForm.unit_length")}
+                  placeholder={t("courtForm.placeholder_length")}
+                />
+              </Form.Item>
+              <Form.Item
+                rules={[{ required: true }]}
+                name="width"
+                label={t("courtForm.width")}
+              >
+                <InputNumber
+                  min={1}
+                  step={0.1}
+                  addonAfter={t("courtForm.unit_length")}
+                  placeholder={t("courtForm.placeholder_width")}
+                />
+              </Form.Item>
+            </div>
+            <div className="form-grid">
+              <Form.Item
+                rules={[{ required: true }]}
+                name="hourlyRate"
+                label={t("courtForm.hourlyRate")}
+              >
+                <InputNumber
+                  min={1}
+                  step={0.1}
+                  addonAfter={t("courtForm.unit_rate")}
+                />
+              </Form.Item>
+              <Form.Item
+                rules={[{ required: true }]}
+                name="surface"
+                label={t("courtForm.surface")}
+              >
+                <Select placeholder={t("courtForm.placeholder_surface")}>
+                  <Select.Option value="grass">
+                    {t("courtForm.surface_grass")}
+                  </Select.Option>
+                  <Select.Option value="hard">
+                    {t("courtForm.surface_hard")}
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+            <div className="form-grid">
+              <Form.Item
+                name="isAirConditioned"
+                label={t("courtForm.air_conditioned")}
+                valuePropName="checked"
+                className="form-switch-item"
+              >
+                <Switch
+                  className="toggle-switch"
+                  checkedChildren={t("courtForm.air_conditioned_yes")}
+                  unCheckedChildren={t("courtForm.air_conditioned_no")}
+                />
+              </Form.Item>
+              <Form.Item
+                name="isWomenOnly"
+                label={t("courtForm.women_only")}
+                valuePropName="checked"
+                className="form-switch-item"
+              >
+                <Switch
+                  className="toggle-switch"
+                  checkedChildren={t("courtForm.women_only_yes")}
+                  unCheckedChildren={t("courtForm.women_only_no")}
+                />
+              </Form.Item>
+            </div>
             <Form.Item label={t("courtForm.place_name")}>
               <GooglePlacesInput
                 initialName={court?.location?.name}
@@ -600,7 +615,10 @@ export default function CourtForm() {
               />
             </Form.Item>
 
-            <Form.Item label={t("courtForm.status")}>
+            <Form.Item
+              label={t("courtForm.status")}
+              className="form-switch-item"
+            >
               {isModerationStatus ? (
                 <div className="form-row">
                   <Tag color={MODERATION_STATUS_COLORS[court?.status]}>
@@ -615,7 +633,10 @@ export default function CourtForm() {
                     onChange={setCourtStatus}
                   />
                   <Tooltip title={t("courtForm.status_tooltip")}>
-                    <IoMdInformationCircleOutline color="#777" size={26} />
+                    <IoMdInformationCircleOutline
+                      className="form-info-icon"
+                      size={22}
+                    />
                   </Tooltip>
                 </div>
               )}
@@ -750,12 +771,14 @@ export default function CourtForm() {
             <div className="media-wrapper video-preview">
               <video src={video} controls className="preview-media" />
 
-              <div
-                className="remove-icon-video "
+              <button
+                type="button"
+                className="remove-icon-video"
+                aria-label={t("common.delete")}
                 onClick={() => handleRemove(null, true)}
               >
-                X
-              </div>
+                <IoIosCloseCircleOutline color="#fff" size={22} />
+              </button>
             </div>
           )}
         </div>
@@ -763,6 +786,7 @@ export default function CourtForm() {
         {/* 🔹 Submit Button */}
         <div className="form-actions">
           <Button
+            size="large"
             onClick={() => {
               navigate(-1);
               form.resetFields();
@@ -770,7 +794,12 @@ export default function CourtForm() {
           >
             {t("common.cancel")}
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            className="cp-btn-display form-submit"
+          >
             {t("common.submit")}
           </Button>
         </div>

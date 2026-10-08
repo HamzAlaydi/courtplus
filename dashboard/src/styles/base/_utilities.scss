@@ -1,0 +1,329 @@
+@use "variables" as *;
+@use "mixins" as *;
+
+// Shared building blocks for dashboard pages (see Dashboard.dc.html).
+
+.cp-display {
+  @include cp-display(null, 800);
+}
+
+.cp-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cp-page-title {
+  @include cp-page-title;
+}
+
+.cp-page-subtitle {
+  margin: 4px 0 0;
+  font-size: $cp-fs-body;
+  line-height: 1.5;
+  color: $cp-muted;
+}
+
+.cp-section-title {
+  @include cp-section-title;
+}
+
+.cp-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.cp-link {
+  font-size: $cp-fs-small;
+  font-weight: 600;
+  color: $cp-ink;
+  text-decoration: none;
+  text-underline-offset: 3px;
+
+  &:hover,
+  &:focus-visible {
+    color: $cp-ink;
+    text-decoration: underline;
+  }
+}
+
+.cp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: $cp-gap-section;
+  min-width: 0;
+}
+
+// Cards
+.cp-card {
+  @include cp-card;
+  min-width: 0;
+}
+
+.cp-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cp-card--hover {
+  @include cp-card-hover;
+}
+
+.cp-card--ink {
+  @include cp-ink-surface;
+
+  .cp-section-title,
+  .cp-kpi__value {
+    color: #ffffff;
+  }
+
+  .cp-muted,
+  .cp-caption,
+  .cp-kpi__label {
+    color: $cp-on-ink-muted;
+  }
+}
+
+// KPI tiles
+.cp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: $cp-gap-grid;
+}
+
+.cp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: $cp-gap-grid;
+  align-items: start;
+}
+
+.cp-kpi {
+  @include cp-card;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+
+  &__label {
+    font-size: $cp-fs-small;
+    line-height: 1.4;
+    color: $cp-muted;
+  }
+
+  &__value {
+    @include cp-display($cp-fs-kpi, 800, 0, false);
+    line-height: 1.1;
+    color: $cp-ink;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  &__unit {
+    margin-inline-start: 4px;
+    font-family: $cp-font-text;
+    font-size: $cp-fs-body;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: $cp-muted;
+  }
+
+  &--ink {
+    @include cp-ink-surface;
+
+    .cp-kpi__label {
+      color: $cp-on-ink-muted;
+    }
+
+    .cp-kpi__value {
+      color: #ffffff;
+    }
+
+    .cp-kpi__unit {
+      color: $cp-lime;
+    }
+  }
+}
+
+// Status pills
+.cp-pill {
+  @include cp-pill;
+}
+
+.cp-pill--success {
+  background: $cp-success-bg;
+  color: $cp-success;
+}
+
+.cp-pill--warning {
+  background: $cp-warning-bg;
+  color: $cp-warning;
+}
+
+.cp-pill--danger {
+  background: $cp-danger-bg;
+  color: $cp-danger-text;
+}
+
+.cp-pill--info {
+  background: $cp-info-bg;
+  color: $cp-info;
+}
+
+.cp-pill--neutral {
+  background: $cp-divider;
+  color: #3f4d50;
+}
+
+.cp-pill--lime {
+  background: $cp-lime-tint;
+  color: $cp-lime-tint-text;
+}
+
+.cp-pill--ink {
+  background: $cp-ink;
+  color: $cp-lime;
+}
+
+.cp-pill--outline {
+  background: $cp-card;
+  color: $cp-ink;
+  box-shadow: inset 0 0 0 1px $cp-line;
+}
+
+// Filter / feature chips
+.cp-chip {
+  @include cp-press;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: $cp-radius-pill;
+  border: 1px solid $cp-line;
+  background: $cp-card;
+  color: $cp-ink;
+  font-size: $cp-fs-small;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $cp-line-strong;
+  }
+
+  &.is-selected,
+  &--selected {
+    background: $cp-ink;
+    border-color: $cp-ink;
+    color: #ffffff;
+  }
+
+  &--feature {
+    background: $cp-lime-tint;
+    border-color: transparent;
+    color: $cp-lime-tint-text;
+    cursor: default;
+  }
+}
+
+// Lists
+.cp-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid $cp-divider;
+  min-width: 0;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.cp-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: $cp-radius-chip;
+  object-fit: cover;
+  background: $cp-ground;
+}
+
+.cp-muted {
+  color: $cp-muted;
+}
+
+.cp-caption {
+  font-size: $cp-fs-caption;
+  line-height: 1.4;
+  color: $cp-muted;
+}
+
+.cp-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-truncate {
+  @include cp-truncate;
+}
+
+// Round white icon button (bell, back)
+.cp-icon-btn {
+  @include cp-press;
+  @include cp-focus-ring;
+  appearance: none;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: $cp-radius-pill;
+  background: $cp-card;
+  color: $cp-ink;
+  box-shadow: $cp-shadow-soft;
+  font-size: 20px;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $cp-shadow-card;
+  }
+}
+
+// Entrance: fade + rise, staggered for lists and grids (first mount only)
+@keyframes cpFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cp-enter,
+.cp-stagger > * {
+  animation: cpFadeUp 280ms $cp-ease both;
+}
+
+@for $i from 2 through 12 {
+  .cp-stagger > :nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 40}ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-enter,
+  .cp-stagger > * {
+    animation: none;
+  }
+}

@@ -1,12 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
-import { useGetCourts } from "apis";
+import { useGetCourts, useGetProfile } from "apis";
 import { AuthenticatedStackNavigationProp } from "navigation/types";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
 import { useUserStore } from "store";
-import { Images } from "theme";
 import { SportFilterItem, sports } from "utils";
+import { HomeQuickAction } from "./Home.types";
 
 export const useHome = () => {
   const location = useUserStore((store) => store.location);
@@ -15,6 +15,7 @@ export const useHome = () => {
   ]);
   const { navigate } = useNavigation<AuthenticatedStackNavigationProp>();
   const { t } = useTranslation();
+  const { data: profile } = useGetProfile();
 
   const sportQuery = useMemo(() => {
     if (
@@ -50,25 +51,67 @@ export const useHome = () => {
     navigate("OpenMatch");
   };
 
-  const actionCards = useMemo(
+  const onCourtsPress = () => {
+    navigate("MainTabs", { screen: "Courts" });
+  };
+
+  // Courts is a tab rather than part of CourtStack, so switch to it first and
+  // open the filter on top: applying (goBack) lands on the filtered list.
+  const onFilterPress = () => {
+    navigate("MainTabs", { screen: "Courts" });
+    navigate("CourtStack", { screen: "CourtFilter" });
+  };
+
+  const onBookingsPress = () => {
+    navigate("MainTabs", { screen: "Activity" });
+  };
+
+  const onProfilePress = () => {
+    navigate("MainTabs", { screen: "Profile" });
+  };
+
+  const onNotificationPress = () => {
+    navigate("Notifications");
+  };
+
+  const onCourtPress = (id: string) => {
+    navigate("CourtStack", { screen: "CourtDetails", params: { id } });
+  };
+
+  const quickActions = useMemo<HomeQuickAction[]>(
     () => [
       {
-        imageBg: Images.openMatch,
-        image: Images.speedBall,
+        key: "courts",
+        title: t(["home.bookCourt", "tabs.courts"]),
+        onPress: onCourtsPress,
+      },
+      {
+        key: "bookings",
+        title: t(["home.myBookings", "activity.currentBookings"]),
+        onPress: onBookingsPress,
+      },
+      {
+        key: "openMatch",
         title: t("court.openMatch"),
-        description: t("court.openMatchDescription"),
         onPress: onOpenMatchPress,
       },
       {
-        imageBg: Images.coach,
-        image: Images.whistle,
+        key: "coaches",
         title: t("court.coaches"),
-        description: t("court.coachesDescription"),
         onPress: onCoachesPress,
       },
     ],
     [t]
   );
+
+  const greeting = profile?.firstName
+    ? t(["home.greeting", "onboarding.title1"], {
+        name: profile.firstName,
+        // Rendered as plain text, so names like O'Brien or A&B stay intact.
+        interpolation: { escapeValue: false },
+      })
+    : t("onboarding.title1");
+  const subtitle = t(["home.subtitle", "openMatch.description"]);
 
   const onSearchFocus = () => {
     Keyboard.dismiss();
@@ -81,9 +124,17 @@ export const useHome = () => {
     isLoading,
     courts,
     location,
+    profile,
+    greeting,
+    subtitle,
     setSelectedSports,
     onSearchFocus,
-    actionCards,
+    quickActions,
+    onCourtsPress,
+    onFilterPress,
+    onCourtPress,
+    onNotificationPress,
+    onProfilePress,
     isRefetching,
     refetch,
   };

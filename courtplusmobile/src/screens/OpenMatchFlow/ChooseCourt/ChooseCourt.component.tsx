@@ -10,6 +10,8 @@ import { Court } from "models";
 import { useThemeContext } from "contexts";
 import styles from "./ChooseCourt.styles";
 import { CustomText } from "atoms/index";
+import Animated from "react-native-reanimated";
+import { enterDrop, useListEntering } from "utils";
 
 const ChooseCourtScreen = () => {
   const { t } = useTranslation();
@@ -27,30 +29,37 @@ const ChooseCourtScreen = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+  const entering = useListEntering();
 
-  const renderCourtItem = ({ item }: ListRenderItemInfo<Court>) => {
-    return <CourtItem item={item} onPress={() => onCourtPress(item)} />;
+  const renderCourtItem = ({ item, index }: ListRenderItemInfo<Court>) => {
+    return (
+      <Animated.View entering={entering(index)}>
+        <CourtItem item={item} onPress={() => onCourtPress(item)} />
+      </Animated.View>
+    );
   };
   return (
-    <MainWrapper whiteBackground overrideContentStyle={themedStyles.content}>
+    <MainWrapper overrideContentStyle={themedStyles.content}>
       <Header
         whiteColor
         title={t("openMatch.chooseCourt")}
         overrideStyle={themedStyles.header}
       />
-      <LocationHeader
-        showNotification={false}
-        currentLocation={location?.address ?? ""}
-        onPress={() => bottomSheetModalRef.current?.present()}
-        onNotificationPress={() => {}}
-        overrideStyle={themedStyles.locationHeader}
-        isLoading={isLoading}
-      />
+      <Animated.View entering={enterDrop(0)}>
+        <LocationHeader
+          showNotification={false}
+          currentLocation={location?.address ?? ""}
+          onPress={() => bottomSheetModalRef.current?.present()}
+          onNotificationPress={() => {}}
+          overrideStyle={themedStyles.locationHeader}
+          isLoading={isLoading}
+        />
+      </Animated.View>
       <View style={themedStyles.resultsContainer}>
         <CustomText
           text={t("general.results", { count: courts.length })}
-          font="headline3"
-          weight="regular"
+          font="caption"
+          weight="medium"
           overrideStyle={themedStyles.resultsText}
         />
       </View>
@@ -59,10 +68,11 @@ const ChooseCourtScreen = () => {
         data={courts}
         renderItem={renderCourtItem}
         contentContainerStyle={themedStyles.contentList}
+        overrideLoaderContainerStyle={themedStyles.loader}
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
-        ItemSeparatorComponent={() => <View style={{ marginTop: 17.36 }} />}
+        ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
       />
     </MainWrapper>
   );

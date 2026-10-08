@@ -1,16 +1,5 @@
 import { useState } from "react";
-import {
-  App,
-  Badge,
-  Button,
-  List,
-  Popover,
-  Space,
-  Spin,
-  Typography,
-  Empty,
-  Tooltip,
-} from "antd";
+import { App, Badge, Button, Empty, List, Popover, Typography, Tooltip } from "antd";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +13,7 @@ import {
 } from "@/api/notifications";
 import type { AppNotification } from "@/api/types";
 import { useNotificationStream } from "@/hooks/useNotificationStream";
-import { LIME } from "@/theme";
+import { COLORS } from "@/theme";
 
 /** Deep-link a notification to the relevant console page by data.kind. */
 function notificationTarget(n: AppNotification): string {
@@ -128,29 +117,38 @@ export default function NotificationsBell() {
   };
 
   const title = (
-    <Space style={{ width: "100%", justifyContent: "space-between" }}>
-      <span>Notifications</span>
+    <div className="ops-notif__head">
+      <span className="ops-section-title">Notifications</span>
       <Button
         type="link"
         size="small"
-        style={{ padding: 0 }}
+        style={{ padding: 0, height: "auto", fontSize: 13 }}
         disabled={unreadItems.length === 0}
         loading={markAllReadMutation.isPending}
         onClick={() => markAllReadMutation.mutate()}
       >
         Mark all as read
       </Button>
-    </Space>
+    </div>
   );
 
   const content = (
-    <div style={{ width: 360, maxHeight: 420, overflowY: "auto" }}>
+    <div className="ops-notif__body">
       {isLoading ? (
-        <div style={{ textAlign: "center", padding: 24 }}>
-          <Spin />
+        <div className="ops-notif__skeleton" aria-busy="true">
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <span className="ops-skeleton" style={{ width: "85%" }} />
+              <span className="ops-skeleton" style={{ width: "40%", height: 10 }} />
+            </div>
+          ))}
         </div>
       ) : !data?.items.length ? (
-        <Empty description="No notifications" style={{ padding: 24 }} />
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No notifications"
+          style={{ padding: "28px 16px" }}
+        />
       ) : (
         <List
           size="small"
@@ -160,11 +158,9 @@ export default function NotificationsBell() {
             return (
               <List.Item
                 onClick={() => handleClick(n)}
-                style={{
-                  cursor: "pointer",
-                  padding: "10px 12px",
-                  background: unread ? "rgba(200,245,66,0.10)" : undefined,
-                }}
+                className={
+                  unread ? "ops-notif__item ops-notif__item--unread" : "ops-notif__item"
+                }
                 actions={
                   unread
                     ? [
@@ -184,18 +180,7 @@ export default function NotificationsBell() {
                 }
               >
                 <List.Item.Meta
-                  avatar={
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: unread ? LIME : "transparent",
-                        marginTop: 6,
-                      }}
-                    />
-                  }
+                  avatar={<span className="ops-notif__dot" />}
                   title={
                     <Typography.Text strong={unread} style={{ fontSize: 13 }}>
                       {notificationText(n)}
@@ -223,9 +208,24 @@ export default function NotificationsBell() {
       open={open}
       onOpenChange={handleOpenChange}
       placement="bottomRight"
+      arrow={false}
+      rootClassName="ops-notif-popover"
     >
-      <Badge count={unseen} size="small" offset={[-4, 4]}>
-        <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
+      <Badge
+        count={unseen}
+        size="small"
+        offset={[-6, 6]}
+        styles={{
+          indicator: {
+            background: COLORS.ink,
+            color: COLORS.lime,
+            boxShadow: `0 0 0 2px ${COLORS.ground}`,
+          },
+        }}
+      >
+        <button type="button" className="ops-icon-btn" aria-label="Notifications">
+          <BellOutlined />
+        </button>
       </Badge>
     </Popover>
   );

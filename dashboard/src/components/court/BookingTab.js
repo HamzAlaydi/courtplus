@@ -7,7 +7,6 @@ import utc from "dayjs/plugin/utc";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import Loading from "../../utils/Loading";
-import { Tag } from "antd";
 
 dayjs.extend(utc);
 
@@ -96,10 +95,7 @@ export default function BookingTab({ courtId }) {
   if (isLoading) return <Loading />;
 
   return (
-    <div
-      className="calendar-availability-container"
-      style={{ display: "flex", gap: "30px" }}
-    >
+    <div className="calendar-availability-container">
       <div className="calendar">
         <Calendar
           value={selectedDate}
@@ -114,26 +110,19 @@ export default function BookingTab({ courtId }) {
 
       <div className="slots-panel">
         <h3>{dayjs(selectedDate).format("DD MMMM YYYY")}</h3>
-        <div
-          className="slots"
-          style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
-        >
+        <div className="slots">
           {timeSlots.map((slot) => {
             const slotStr = `${slot.format("HH:mm")} - ${slot
               .add(30, "minute")
               .format("HH:mm")}`;
             const isBooked = bookedSlots.includes(slot.format("HH:mm"));
             return (
-              <Tag
-                className="time-slot"
+              <span
+                className={`time-slot${isBooked ? " time-slot--booked" : ""}`}
                 key={slotStr}
-                style={{
-                  backgroundColor: isBooked ? "#00c853" : "#f0f0f0",
-                  color: isBooked ? "#fff" : "#000",
-                }}
               >
                 {slotStr}
-              </Tag>
+              </span>
             );
           })}
         </div>

@@ -1,183 +1,313 @@
 @use "../base/index" as *;
 
+// Booking details: title row + cancel, then details/participants beside the
+// court card and the ink payment card.
 .schedule-details {
-  padding: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
-
-  .loading-container {
+  &-head {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 60vh;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 16px;
   }
 
-  .schedule-header {
+  &-heading {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &-title-row {
+    display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 1rem;
+    align-items: center;
+    gap: 8px 12px;
+  }
 
-    .info {
-      font-size: 13px;
-      color: #777;
+  &-title {
+    @include cp-display($cp-fs-screen-title, 800);
+    margin: 0;
+    color: $cp-ink;
+  }
 
-      .created {
-        font-size: 12px;
-        color: #999;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 4px;
-      }
+  &-id {
+    text-transform: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .created {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $cp-fs-small;
+    color: $cp-muted;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+    gap: $cp-gap-grid;
+    align-items: start;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
-  .schedule-card {
-    margin-top: 1.5rem;
-    border: $border;
-    padding: 1.2rem;
-    border-radius: $border-radius;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  &-main,
+  &-aside {
+    display: flex;
+    flex-direction: column;
+    gap: $cp-gap-grid;
+    min-width: 0;
+  }
 
-    &.user-card .user-info {
+  // Details: label / value rows with divider lines
+  .details-grid {
+    display: grid;
+    grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
+    margin: 0;
+
+    > dt,
+    > dd {
+      margin: 0;
+      padding: 12px 0;
+      border-top: 1px solid $cp-divider;
+    }
+
+    > dt:first-of-type,
+    > dt:first-of-type + dd {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .label {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      padding-inline-end: 20px;
+      font-size: $cp-fs-small;
+      font-weight: 400;
+      color: $cp-muted;
     }
 
-    .details-grid {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 14px;
-
-      .label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 500;
-        color: #333;
-      }
-
-      .branch-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #f6f6f6;
-        padding: 8px 12px;
-        border-radius: 6px;
-        max-width: 360px;
-      }
-
-      .coach-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .value {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+      unicode-bidi: plaintext;
     }
-  }
 
-  .court-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.6rem;
-    align-items: flex-start;
+    .branch-box {
+      justify-content: space-between;
+      flex-wrap: nowrap;
+    }
 
-    .court-image-container {
+    .details-open {
+      @include cp-press;
+      @include cp-focus-ring;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
       flex-shrink: 0;
+      border-radius: $cp-radius-pill;
+      background: $cp-ground;
+      color: $cp-ink;
+
+      &:hover {
+        background: $cp-ink;
+        color: $cp-lime;
+      }
     }
 
-    .court-image {
-      width: 180px;
-      height: 130px;
+    @media (max-width: 576px) {
+      grid-template-columns: minmax(0, 1fr);
+
+      > dt {
+        padding-bottom: 4px;
+      }
+
+      > dd {
+        padding-top: 0;
+        border-top: 0;
+      }
+    }
+  }
+
+  // Participants
+  .participants-card {
+    .ant-list-item {
+      padding: 12px 0;
+      border-block-end-color: $cp-divider;
+
+      &:first-child {
+        padding-top: 0;
+      }
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+    }
+
+    .ant-list-item-meta {
+      align-items: center;
+    }
+
+    .ant-list-item-meta-title {
+      margin-bottom: 2px;
+    }
+  }
+
+  .participant-avatar.ant-avatar {
+    background: $cp-lime;
+    color: $cp-ink;
+  }
+
+  .participant-name {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: $cp-ink;
+
+    .ant-tag {
+      margin-inline-end: 0;
+    }
+  }
+
+  .participant-meta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: $cp-fs-small;
+    color: $cp-muted;
+
+    .ant-tag {
+      margin-inline-end: 0;
+    }
+  }
+
+  // Court
+  .booking-court-card {
+    overflow: hidden;
+
+    .ant-card-cover img.court-image {
+      display: block;
+      width: 100%;
+      height: 180px;
       object-fit: cover;
-      border-radius: 10px;
-      border: 1px solid #eee;
-      background: #fafafa center/50% no-repeat;
+      border-radius: $cp-radius-card $cp-radius-card 0 0;
+      background: $cp-ground;
     }
 
-    .court-info {
-      flex: 1;
-      min-width: 220px;
-
-      h3 {
-        margin-bottom: 4px;
-        font-size: 1.1rem;
-      }
-
-      .rating {
-        font-size: 14px;
-        color: #666;
-      }
-
-      .branch-name {
-        font-size: 13px;
-        color: #888;
-        margin-top: 4px;
-      }
+    .ant-card-body {
+      padding: 18px 20px 20px;
     }
+  }
 
-    .payment {
-      min-width: 120px;
-      text-align: right;
+  .court-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 
-      .label {
-        font-size: 14px;
-        color: #888;
-      }
+    h3 {
+      @include cp-display(18px, 800);
+      margin: 0;
 
-      .amount {
-        font-size: 18px;
-        font-weight: 600;
-      }
+      a {
+        color: $cp-ink;
+        text-underline-offset: 3px;
 
-      .status {
-        font-size: 13px;
-
-        &.paid {
-          color: #52c41a;
-        }
-
-        &.pending {
-          color: #faad14;
+        &:hover {
+          text-decoration: underline;
         }
       }
     }
 
-    .players {
-      margin-top: 1rem;
+    .rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: $cp-fs-small;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
 
-      .label {
-        font-size: 14px;
-        color: #888;
-        margin-bottom: 6px;
-      }
+    .rating-star {
+      color: $cp-star;
     }
   }
 
-  /* 🌐 Responsive */
-  @media (max-width: 768px) {
-    padding: 16px;
+  .court-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 10px;
+    column-gap: 12px;
+    margin: 10px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid $cp-divider;
+    font-size: $cp-fs-small;
 
-    .court-layout {
-      flex-direction: column;
-      align-items: flex-start;
-
-      .court-image {
-        width: 100%;
-        height: 200px;
-      }
-
-      .payment {
-        text-align: left;
-        margin-top: 12px;
-      }
+    dt {
+      color: $cp-muted;
     }
 
-    .details-grid {
-      grid-template-columns: 1fr;
+    dd {
+      margin: 0;
+      font-weight: 600;
     }
   }
+
+  // Payment (ink card)
+  .payment {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .label {
+      font-size: $cp-fs-small;
+      color: $cp-on-ink-muted;
+    }
+
+    .amount {
+      @include cp-display($cp-fs-kpi, 800, 0, false);
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .amount-unit {
+      margin-inline-start: 6px;
+      font-family: $cp-font-text;
+      font-size: $cp-fs-body;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: $cp-lime;
+    }
+
+    .status {
+      @include cp-pill($cp-lime, $cp-ink);
+      align-self: flex-start;
+
+      &.pending {
+        background: $cp-warning-bg;
+        color: $cp-warning;
+      }
+    }
+  }
+}
+
+.schedule-cancel-modal .schedule-cancel-warning {
+  margin-bottom: 12px;
+  font-size: $cp-fs-body;
+  color: $cp-muted;
 }

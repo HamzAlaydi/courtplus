@@ -7,16 +7,22 @@ import {
   LogoutModal,
 } from "molecules/index";
 import { MainWrapper } from "organisms/index";
-import React from "react";
-import { View } from "react-native";
+import React, { useMemo } from "react";
+import { Image, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import { useTranslation } from "react-i18next";
-import styles from "./Settings.styles";
+import { useThemeContext } from "contexts";
+import { themedStyles as styles } from "./Settings.styles";
 import useSettings from "./Settings.logic";
-import { generateFullName } from "utils";
+import { ActionListItem, enterRise, generateFullName } from "utils";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const themedStyles = useMemo(() => styles(colors), [colors]);
 
   const {
     sectionData,
@@ -34,28 +40,63 @@ const SettingsScreen = () => {
     onDeleteAccount,
   } = useSettings();
 
+  const chevron = (
+    <Image source={Images.arrowLeft} style={themedStyles.chevron} />
+  );
+
+  const withChevron = (list: ActionListItem[]): ActionListItem[] =>
+    list.map((item) => ({
+      ...item,
+      right: (
+        <View style={themedStyles.rightContainer}>
+          {item.right}
+          {chevron}
+        </View>
+      ),
+    }));
+
   return (
     <MainWrapper
-      scrollEnabled={false}
-      whiteBackground
-      overrideContentStyle={styles.scrollContent}
+      scrollEnabled
+      overrideContentStyle={themedStyles.scrollContent}
     >
       <Header whiteColor title={t("settings.title")} />
-      <View style={styles.content}>
+      <View style={themedStyles.content}>
         {sectionData.map(({ data, title }, index) => (
-          <View key={`list-action-item-${index}`}>
+          <Animated.View
+            key={`list-action-item-${index}`}
+            entering={enterRise(index)}
+            style={themedStyles.section}
+          >
             {title && (
               <CustomText
                 text={title}
-                font="headline3"
-                weight="bold"
-                overrideStyle={styles.title}
+                font="sectionTitle"
+                weight="small"
+                accessibilityRole="header"
+                overrideStyle={themedStyles.title}
               />
             )}
-            <ListActionItem list={data} />
-          </View>
+            <ListActionItem
+              list={withChevron(data)}
+              overrideImageStyle={themedStyles.icon}
+            />
+          </Animated.View>
         ))}
-        <View style={styles.bottomContainer}>
+        <Animated.View
+          entering={enterRise(sectionData.length)}
+          style={themedStyles.bottomContainer}
+        >
+          <ListActionItem
+            list={withChevron([
+              {
+                title: t("settings.logout"),
+                image: Images.logout,
+                onPress: handleLogout,
+              },
+            ])}
+            overrideImageStyle={themedStyles.icon}
+          />
           <ListActionItem
             list={[
               {
@@ -64,17 +105,10 @@ const SettingsScreen = () => {
                 onPress: handleDeleteAccount,
               },
             ]}
+            overrideImageStyle={themedStyles.dangerIcon}
+            overrideTextStyle={themedStyles.dangerText}
           />
-          <ListActionItem
-            list={[
-              {
-                title: t("settings.logout"),
-                image: Images.logout,
-                onPress: handleLogout,
-              },
-            ]}
-          />
-        </View>
+        </Animated.View>
       </View>
       <DeleteAccountModal
         ref={deleteAccountRef}

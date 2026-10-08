@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Layout, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
@@ -8,118 +8,134 @@ export default (colors: ColorsType) =>
       flex: 1,
     },
     content: {
-      paddingTop: verticalScale(40),
+      paddingTop: verticalScale(18),
+      gap: verticalScale(18),
       flex: 1,
     },
-    rowContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+    section: {
+      gap: verticalScale(10),
+    },
+    sports: {
+      gap: spacing[8],
+      paddingHorizontal: Layout.gutter,
+    },
+    sportsScroll: {
+      marginHorizontal: -Layout.gutter,
+      flexGrow: 0,
     },
     gameContainer: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: spacing[22],
-    },
-    gameChip: {
-      width: horizontalScale(86),
-      height: verticalScale(36),
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    list: {
-      backgroundColor: colors.WHITE,
-      paddingStart: 0,
-      marginTop: verticalScale(11.75),
-    },
-    memberContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    memberText: {
-      marginStart: horizontalScale(16.03),
-      marginEnd: horizontalScale(19.05),
-    },
-    switch: {
-      marginEnd: horizontalScale(20.01),
-    },
-    info: {
-      width: horizontalScale(16.03),
-      height: verticalScale(16.03),
-      tintColor: colors.SLATE_GRAY,
-    },
-    bottomContainer: {
-      marginTop: verticalScale(26),
-      flex: 1,
-      justifyContent: "flex-end",
+      flexWrap: "wrap",
+      gap: spacing[8],
     },
     playersContainer: {
-      marginTop: verticalScale(16),
-      backgroundColor: `${colors.LIGHT_BLUE}82`,
-      paddingHorizontal: horizontalScale(18),
-      paddingTop: verticalScale(12),
+      paddingHorizontal: spacing[16],
+      paddingTop: verticalScale(14),
+      paddingBottom: verticalScale(16),
+      borderRadius: Radius.card,
+      gap: verticalScale(10),
     },
-    margin: {
-      marginTop: verticalScale(16),
-    },
-    listImage: {
-      marginEnd: spacing[14],
-    },
-    description: {
-      color: colors.SLATE_GRAY,
-    },
-    sports: {
-      gap: horizontalScale(28),
-    },
-    sportsScroll: {
-      marginStart: horizontalScale(48),
+    addPlayerTitle: {
+      color: colors.MUTED,
     },
     avatarSlots: {
       flexDirection: "row",
       justifyContent: "space-between",
-      marginTop: verticalScale(9.23),
     },
-    addPlayerTitle: {
-      color: colors.SLATE_GRAY,
+    addPlayersButton: {
+      alignSelf: "flex-start",
+      marginTop: verticalScale(2),
+    },
+    addPlayersIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    listImage: {
+      tintColor: colors.INK,
+    },
+    description: {
+      color: colors.MUTED,
+    },
+    memberContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[10],
+      minHeight: verticalScale(64),
+      paddingHorizontal: spacing[14],
+      paddingVertical: verticalScale(10),
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.card,
+      borderWidth: 1,
+      borderColor: colors.LINE,
+    },
+    memberIconTile: {
+      width: horizontalScale(36),
+      height: horizontalScale(36),
+      borderRadius: Radius.medium,
+      backgroundColor: colors.GROUND,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    memberIcon: {
+      width: horizontalScale(16),
+      height: horizontalScale(18),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    memberText: {
+      flex: 1,
+      color: colors.INK,
+    },
+    info: {
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
+    },
+    bottomContainer: {
+      marginTop: verticalScale(8),
+      flex: 1,
+      justifyContent: "flex-end",
     },
     scrollContent: {
       paddingBottom: verticalScale(28),
     },
     courtImage: {
-      width: horizontalScale(103.5),
-      height: verticalScale(78.5),
-      borderRadius: horizontalScale(8),
+      width: horizontalScale(64),
+      height: horizontalScale(52),
+      borderRadius: Radius.medium,
+      backgroundColor: colors.DIVIDER,
     },
     courtContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: horizontalScale(13),
-      marginTop: verticalScale(6.5),
+      gap: spacing[12],
+      marginTop: verticalScale(6),
     },
     courtInfoContainer: {
-      gap: verticalScale(14.2),
+      flex: 1,
+      gap: verticalScale(4),
     },
     timeContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: horizontalScale(8),
+      flexWrap: "wrap",
+      gap: spacing[8],
     },
     courtName: {
-      width: horizontalScale(137),
+      color: colors.INK,
     },
     timeIconContainer: {
       flexDirection: "row",
       alignItems: "center",
-      gap: horizontalScale(4),
+      gap: spacing[4],
     },
     timeIcon: {
-      width: horizontalScale(11),
-      height: horizontalScale(11),
-      tintColor: colors.SLATE_GRAY,
-    },
-    addPlayersText: {
-      marginTop: verticalScale(18),
-      textDecorationLine: "underline",
-      color: colors.MED_GREEN,
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
   });

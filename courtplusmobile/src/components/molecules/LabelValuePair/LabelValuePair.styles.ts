@@ -6,13 +6,13 @@ export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: horizontalScale(2),
+      alignItems: "baseline",
+      gap: horizontalScale(4),
     },
     label: {
-      color: colors.SLATE_GRAY,
+      color: colors.INK,
     },
     value: {
-      color: colors.SLATE_GRAY,
+      color: colors.MUTED,
     },
   });

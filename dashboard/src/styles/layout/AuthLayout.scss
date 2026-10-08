@@ -1,23 +1,239 @@
+@use "../base/index" as *;
+
+// Sign-in / sign-up / verification / reset: a white form card on the ground,
+// next to an ink photo panel carrying the headline.
 .auth-layout {
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  background: $cp-ground;
+}
+
+.auth-form-container {
+  min-width: 0;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px clamp(0px, 3vw, 40px);
+}
+
+.auth-card {
+  @include cp-card(32px clamp(20px, 4vw, 40px));
+  width: min(100%, 460px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: cpFadeUp 280ms $cp-ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.auth-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  .auth-logo {
+    height: 34px;
+    width: auto;
+  }
+
+  .auth-key {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $cp-radius-pill;
+    background: $cp-ground;
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .auth-title {
+    @include cp-display(24px, 800);
+    margin: 0 0 4px;
+    color: $cp-ink;
+  }
+
+  .auth-lead {
+    margin: 0 0 20px;
+    font-size: $cp-fs-body;
+    line-height: 1.55;
+    color: $cp-muted;
+
+    strong {
+      color: $cp-ink;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .ant-form {
+    margin-top: 16px;
+  }
+
+  .auth-lead + .ant-form {
+    margin-top: 0;
+  }
+
+  .ant-form-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .auth-name-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 12px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .auth-forgot {
+    display: flex;
+    justify-content: flex-end;
+    margin: -8px 0 20px;
+    font-size: $cp-fs-small;
+    font-weight: 600;
+
+    a {
+      color: $cp-ink;
+      text-underline-offset: 3px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .auth-otp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0 4px;
+    margin-top: 12px;
+    font-size: $cp-fs-small;
+    text-align: center;
+
+    + .auth-otp-actions {
+      margin-top: 4px;
+    }
+
+    .ant-btn-link {
+      height: auto;
+      padding: 4px;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  .ant-otp {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+
+    .ant-otp-input {
+      flex: 1 1 0;
+      width: auto;
+      min-width: 0;
+      max-width: 56px;
+    }
+  }
+}
+
+.auth-switch {
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid $cp-divider;
+  font-size: $cp-fs-body;
+  font-weight: 400;
+  line-height: 1.5;
+  color: $cp-muted;
+  text-align: center;
+  text-transform: none;
+
+  a {
+    margin-inline: 4px;
+    color: $cp-ink;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 
 .auth-cover {
-  width: 100%;
-  padding: 4rem;
-  color: white;
+  position: sticky;
+  top: 16px;
+  min-width: 0;
+  min-height: calc(100vh - 32px);
+  padding: clamp(28px, 4vw, 48px);
+  border-radius: 28px;
+  overflow: hidden;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 24px;
 
-  // The global `h1, h2, ... { color: #333 }` rule targets these headings
-  // DIRECTLY, and a direct rule always beats the inherited `color: white`
-  // above — so the headline rendered dark grey on a bright photo and was
-  // effectively invisible. Restate the colour on the elements themselves.
+  .auth-cover-mark {
+    align-self: flex-start;
+    font-family: $cp-font-display;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+    color: #ffffff;
+
+    span {
+      color: $cp-lime;
+    }
+  }
+
+  .auth-cover-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    max-width: 520px;
+  }
+
+  .auth-cover-icon {
+    width: 56px;
+    height: 56px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+  }
+
+  .auth-cover-avatars {
+    height: 40px;
+    width: auto;
+  }
+
+  // The global heading rule colours headings directly, so the white is
+  // restated on the elements themselves.
   h1,
   h2,
   h3,
@@ -30,75 +246,47 @@
   }
 
   h1 {
-    // The backdrop is a photograph, so contrast cannot be guaranteed by the
-    // scrim alone — a soft shadow keeps the text legible over the bright
-    // areas (racket, sky) as well as the dark ones.
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+    @include cp-display(clamp(28px, 3.2vw, 44px), 800);
+    line-height: 1.08;
+    text-shadow: 0 2px 16px rgba(10, 21, 23, 0.35);
   }
 
   p {
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.82);
+    text-shadow: 0 1px 8px rgba(10, 21, 23, 0.4);
   }
 }
 
 .cover-signup {
-  // Two layers: the original brand-green radial glow, plus a vertical scrim.
-  // The radial alone only darkened the bottom-LEFT corner, so any text sitting
-  // higher up — the headline — was left over the bare photograph.
   background: linear-gradient(
       to top,
-      rgba(10, 21, 23, 0.88) 0%,
-      rgba(10, 21, 23, 0.6) 35%,
-      rgba(10, 21, 23, 0.15) 65%,
-      rgba(10, 21, 23, 0) 100%
-    ),
-    radial-gradient(
-      100% 58.8% at 0% 100%,
-      rgba(36, 52, 15, 0.925) 44.44%,
-      rgba(36, 52, 15, 0) 100%
+      rgba(10, 21, 23, 0.94) 0%,
+      rgba(10, 21, 23, 0.72) 38%,
+      rgba(10, 21, 23, 0.2) 70%,
+      rgba(10, 21, 23, 0.35) 100%
     ),
     url("../../../public/assets/images/bg/signin.png") no-repeat center center;
-
+  background-color: $cp-ink;
   background-size: cover;
   background-position: center;
 }
 
-.auth-form-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.auth-form-container {
-  width: 60%;
-  padding: 4rem 6rem;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 3rem;
-
-  h2 {
-    margin-bottom: 3rem;
-  }
-}
-
-@media (max-width: "850px") {
+@media (max-width: 900px) {
   .auth-layout {
-    height: auto;
-    flex-direction: column-reverse;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
   }
 
   .auth-form-container {
-    width: 100%;
-    gap: 1.5rem;
-  }
-
-  h2 {
-    margin-bottom: 1rem;
+    padding: 12px 0;
   }
 
   .auth-cover {
-    height: 50rem;
+    position: relative;
+    top: 0;
+    min-height: 360px;
+    border-radius: $cp-radius-card;
   }
 }

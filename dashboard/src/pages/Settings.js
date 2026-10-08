@@ -1,4 +1,12 @@
 import { Collapse, Form, Input, Button, Modal, Typography } from "antd";
+import {
+  DeleteOutlined,
+  DownOutlined,
+  LockOutlined,
+  MailOutlined,
+  ShopOutlined,
+  WalletOutlined,
+} from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "react-phone-number-input/style.css";
@@ -21,6 +29,20 @@ import { useSearchParams } from "react-router-dom";
 import PayoutsSection from "../components/settings/PayoutsSection";
 
 const { Text } = Typography;
+
+// Accordion header: icon chip + section name
+const SectionLabel = ({ icon, danger, children }) => (
+  <span className="settings-panel-label">
+    <span
+      className={`settings-panel-icon${
+        danger ? " settings-panel-icon--danger" : ""
+      }`}
+    >
+      {icon}
+    </span>
+    <span className="cp-truncate">{children}</span>
+  </span>
+);
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -293,28 +315,30 @@ export default function SettingsPage() {
 
   /* ================= UI ================= */
   return (
-    <div
-      className="settings-page"
-      style={{
-        maxWidth: 600,
-        margin: "0 auto",
-        padding: 24,
-        direction: isRTL ? "rtl" : "ltr",
-      }}
-    >
-      <h2>{t("settings.title")}</h2>
-
+    <div className="content settings-page" dir={isRTL ? "rtl" : "ltr"}>
       {/* SETTINGS SECTIONS (accordion) */}
       <Collapse
+        className="settings-collapse cp-stagger"
         accordion
+        bordered={false}
+        expandIconPosition="end"
+        expandIcon={({ isActive }) => (
+          <span className={`settings-expand${isActive ? " is-open" : ""}`}>
+            <DownOutlined />
+          </span>
+        )}
         defaultActiveKey={[initialSection]}
-        style={{ marginBottom: 24 }}
         items={[
           {
             key: "business",
-            label: t("business_profile.title"),
+            label: (
+              <SectionLabel icon={<ShopOutlined />}>
+                {t("business_profile.title")}
+              </SectionLabel>
+            ),
             children: (
               <Form
+                className="settings-form"
                 form={businessForm}
                 layout="vertical"
                 onFinish={handleSaveBusiness}
@@ -361,9 +385,14 @@ export default function SettingsPage() {
           },
           {
             key: "password",
-            label: t("settings.passwordSection"),
+            label: (
+              <SectionLabel icon={<LockOutlined />}>
+                {t("settings.passwordSection")}
+              </SectionLabel>
+            ),
             children: (
               <Form
+                className="settings-form"
                 form={passwordForm}
                 layout="vertical"
                 onFinish={handleChangePassword}
@@ -407,11 +436,16 @@ export default function SettingsPage() {
           },
           {
             key: "email",
-            label: pendingVerification
-              ? `${t("settings.verifyEmailTitle")} (${pendingEmail})`
-              : t("settings.emailSection"),
+            label: (
+              <SectionLabel icon={<MailOutlined />}>
+                {pendingVerification
+                  ? `${t("settings.verifyEmailTitle")} (${pendingEmail})`
+                  : t("settings.emailSection")}
+              </SectionLabel>
+            ),
             children: !pendingVerification ? (
               <Form
+                className="settings-form"
                 form={emailForm}
                 layout="vertical"
                 onFinish={handleChangeEmail}
@@ -436,6 +470,7 @@ export default function SettingsPage() {
               </Form>
             ) : (
               <Form
+                className="settings-form"
                 form={verifyForm}
                 layout="vertical"
                 onFinish={handleVerifyEmail}
@@ -447,21 +482,23 @@ export default function SettingsPage() {
                 >
                   <Input />
                 </Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loadingVerify}
-                >
-                  {t("settings.verifyEmail")}
-                </Button>
-                <Button
-                  danger
-                  onClick={handleCancelEmailChange}
-                  loading={loadingCancel}
-                >
-                  {t("settings.cancelEmailChange")}
-                </Button>
-                <div style={{ textAlign: "center", marginTop: 12 }}>
+                <div className="settings-actions">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loadingVerify}
+                  >
+                    {t("settings.verifyEmail")}
+                  </Button>
+                  <Button
+                    danger
+                    onClick={handleCancelEmailChange}
+                    loading={loadingCancel}
+                  >
+                    {t("settings.cancelEmailChange")}
+                  </Button>
+                </div>
+                <div className="settings-resend">
                   {canResendEmail ? (
                     <Button type="link" onClick={handleResendEmailOtp}>
                       {t("settings.resendCode")}
@@ -477,17 +514,24 @@ export default function SettingsPage() {
           },
           {
             key: "payouts",
-            label: t("settings.payouts.title"),
+            label: (
+              <SectionLabel icon={<WalletOutlined />}>
+                {t("settings.payouts.title")}
+              </SectionLabel>
+            ),
             children: <PayoutsSection />,
           },
           {
             key: "delete",
-            label: t("settings.deleteAccount"),
+            label: (
+              <SectionLabel icon={<DeleteOutlined />} danger>
+                {t("settings.deleteAccount")}
+              </SectionLabel>
+            ),
             children: (
               <Button
                 type="primary"
                 danger
-                block
                 onClick={() => setDeleteModalOpen(true)}
               >
                 {t("settings.deleteAccount")}
@@ -498,6 +542,7 @@ export default function SettingsPage() {
       />
 
       <Modal
+        className="settings-delete-modal"
         open={deleteModalOpen}
         footer={null}
         onCancel={() => {
@@ -514,7 +559,9 @@ export default function SettingsPage() {
             layout="vertical"
             onFinish={handleDeleteRequest}
           >
-            <Text type="danger">{t("settings.deleteWarning")}</Text>
+            <Text type="danger" className="settings-delete-warning">
+              {t("settings.deleteWarning")}
+            </Text>
             <Form.Item
               name="password"
               label={t("settings.currentPassword")}
@@ -542,7 +589,7 @@ export default function SettingsPage() {
             <Button danger block htmlType="submit" loading={loadingDelete}>
               {t("settings.confirmDelete")}
             </Button>
-            <div style={{ textAlign: "center", marginTop: 12 }}>
+            <div className="settings-resend">
               {canResend ? (
                 <Button type="link" onClick={handleResendOtp}>
                   {t("settings.resendCode")}

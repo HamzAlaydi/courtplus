@@ -1,53 +1,53 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      borderColor: colors.LIGHT_GREY,
+      backgroundColor: colors.CARD,
+      borderColor: colors.LINE,
       borderWidth: 1,
-      paddingHorizontal: spacing[12],
-      paddingVertical: spacing[12],
-      marginTop: verticalScale(20),
-      borderRadius: spacing[8],
+      padding: spacing[10],
+      paddingEnd: spacing[12],
+      marginTop: verticalScale(10),
+      borderRadius: Radius.tile,
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
+      gap: spacing[12],
     },
     profileContainer: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
       gap: spacing[12],
     },
-    addButton: {
-      width: spacing[40],
-      height: spacing[40],
-      backgroundColor: `${colors.MED_GREEN}08`,
-      borderRadius: spacing[40],
-      justifyContent: "center",
-      alignItems: "center",
+    textContainer: {
+      flex: 1,
+      gap: verticalScale(2),
     },
-    addButtonIcon: {
-      width: spacing[20],
-      height: spacing[20],
-      borderColor: `${colors.MED_GREEN}29`,
-      borderWidth: 2,
+    addButton: {
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      backgroundColor: colors.LIME,
+      borderRadius: Radius.pill,
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: spacing[6],
-      padding: spacing[10],
     },
     username: {
-      color: colors.GREY,
-      width: horizontalScale(199),
+      color: colors.MUTED,
     },
     icon: {
-      tintColor: colors.MED_GREEN,
+      width: horizontalScale(16),
+      height: horizontalScale(16),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
     image: {
-      width: spacing[40],
-      height: spacing[40],
-      borderRadius: spacing[40],
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DIVIDER,
     },
   });

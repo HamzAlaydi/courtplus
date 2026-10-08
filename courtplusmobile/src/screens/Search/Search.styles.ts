@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { spacing, verticalScale } from "utils";
+import { ColorsType, Layout, Radius, Shadows } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
@@ -8,39 +8,66 @@ export default (colors: ColorsType) =>
       paddingHorizontal: 0,
     },
     header: {
-      paddingHorizontal: spacing[24],
-      justifyContent: "space-between",
+      paddingHorizontal: Layout.gutter,
     },
     input: {
-      marginTop: verticalScale(20),
-      marginHorizontal: spacing[24],
+      marginTop: verticalScale(14),
+      marginHorizontal: Layout.gutter,
+      minHeight: Layout.fieldHeight,
+      ...Shadows.subtle,
+    },
+    searchIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.MUTED,
     },
     tabs: {
-      marginTop: verticalScale(20),
+      marginTop: verticalScale(16),
     },
-    sportChips: {
-      paddingHorizontal: spacing[24],
-      paddingTop: verticalScale(12),
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing[12],
+      marginTop: Layout.sectionGap,
+      paddingHorizontal: Layout.gutter,
+    },
+    sectionTitle: {
+      color: colors.INK,
     },
     results: {
-      paddingHorizontal: spacing[24],
-      marginTop: verticalScale(35),
-      color: colors.GRAYISH_BLUE,
+      flexShrink: 1,
+      color: colors.MUTED,
+    },
+    sportChips: {
+      paddingHorizontal: Layout.gutter,
+      paddingTop: verticalScale(12),
+    },
+    loader: {
+      backgroundColor: "transparent",
     },
     listContainer: {
-      paddingTop: verticalScale(32),
-      paddingHorizontal: spacing[24],
+      paddingTop: verticalScale(18),
+      paddingHorizontal: Layout.gutter,
       paddingBottom: verticalScale(40),
     },
     separator: {
-      marginTop: verticalScale(16),
+      height: verticalScale(14),
     },
     notifications: {
-      height: spacing[40],
-      width: spacing[40],
-      backgroundColor: colors.GHOST_WHITE,
-      borderRadius: spacing[40],
+      height: Layout.touch,
+      width: Layout.touch,
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.pill,
       justifyContent: "center",
       alignItems: "center",
+      ...Shadows.subtle,
+    },
+    bellIcon: {
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
   });

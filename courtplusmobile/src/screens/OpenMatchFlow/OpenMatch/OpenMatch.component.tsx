@@ -1,11 +1,14 @@
-import { ActionIcon, BackButton, Chip, CustomText } from "atoms/index";
+import { CustomButton, CustomText } from "atoms/index";
 import { useThemeContext } from "contexts";
 import { Header, OpenMatchItem } from "molecules/index";
 import { List, MainWrapper } from "organisms/index";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, RefreshControl, View } from "react-native";
+import Animated from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Images } from "theme";
+import { enterDrop, enterRise, useListEntering, verticalScale } from "utils";
 import styles from "./OpenMatch.styles";
 import { useOpenMatch } from "./OpenMatch.logic";
 import { ListRenderItemInfo } from "@shopify/flash-list";
@@ -17,6 +20,8 @@ const OpenMatchScreen = () => {
     currentTheme: { colors },
   } = useThemeContext();
   const themedStyles = useMemo(() => styles(colors), [colors]);
+  const { bottom } = useSafeAreaInsets();
+  const entering = useListEntering();
 
   const {
     bookingsData,
@@ -31,62 +36,48 @@ const OpenMatchScreen = () => {
     handleBookNow,
   } = useOpenMatch();
 
-  const renderItem = ({ item }: ListRenderItemInfo<Booking>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<Booking>) => {
     const isMyBooking = item.participants.find(
       (participant) => participant.userId === profileId && participant.isCreator
     );
     return (
-      <OpenMatchItem
-        showBookNowButton={!isMyBooking}
-        booking={item}
-        onBookNowPress={() => handleBookNow(item)}
-      />
+      <Animated.View entering={entering(index)}>
+        <OpenMatchItem
+          showBookNowButton={!isMyBooking}
+          booking={item}
+          onBookNowPress={() => handleBookNow(item)}
+        />
+      </Animated.View>
     );
   };
 
   return (
     <View style={themedStyles.container}>
       <MainWrapper
-        whiteBackground
         scrollEnabled={false}
         overrideContainerStyle={themedStyles.mainContainer}
       >
-        <Header
-          showBackButton={false}
-          whiteColor
-          leadingComponent={
-            <View style={themedStyles.leadingContainer}>
-              <BackButton whiteColor />
-              <CustomText
-                text={t("court.openMatch")}
-                font="title"
-                weight="semiBold"
-              />
-            </View>
-          }
-          trailingComponent={
-            // Filters for open matches do not exist yet; the two icons did
-            // nothing when tapped.
-            <View style={themedStyles.actionContainer} />
-          }
-          overrideStyle={{
-            justifyContent: "space-between",
-          }}
-        />
+        <Header whiteColor title={t("court.openMatch")} />
 
-        <View style={themedStyles.content}>
-          <CustomText
-            text={t("openMatch.description")}
-            font="headline2"
-            weight="bold"
-          />
-          <CustomText
-            text={t("openMatch.subtitle")}
-            font="chip"
-            weight="medium"
-            overrideStyle={themedStyles.description}
-          />
-        </View>
+        <Animated.View entering={enterDrop(0)} style={themedStyles.intro}>
+          <View style={themedStyles.introIconContainer}>
+            <Image source={Images.community} style={themedStyles.introIcon} />
+          </View>
+          <View style={themedStyles.introText}>
+            <CustomText
+              text={t("openMatch.description")}
+              font="sectionTitle"
+              weight="bold"
+              overrideStyle={themedStyles.introTitle}
+            />
+            <CustomText
+              text={t("openMatch.subtitle")}
+              font="caption"
+              weight="regular"
+              overrideStyle={themedStyles.description}
+            />
+          </View>
+        </Animated.View>
 
         <List
           data={bookingsData}
@@ -103,29 +94,39 @@ const OpenMatchScreen = () => {
             onButtonPress: onStartMatchPress,
           }}
           isLoading={isFetching}
+          overrideLoaderContainerStyle={themedStyles.loader}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
               onRefresh={refetch}
-              tintColor={colors.GREEN}
-              colors={[colors.GREEN]}
+              tintColor={colors.INK}
+              colors={[colors.INK]}
             />
           }
           contentContainerStyle={themedStyles.listContainer}
           ItemSeparatorComponent={() => <View style={themedStyles.separator} />}
         />
       </MainWrapper>
-      <Chip
-        onPress={onStartMatchPress}
-        title={t("openMatch.startMatch")}
-        isSelected
-        overrideStyle={themedStyles.startMatchContainer}
-        leftComponent={
-          <View style={themedStyles.plusContainer}>
-            <Image source={Images.plus} style={themedStyles.plusIcon} />
-          </View>
-        }
-      />
+      <Animated.View
+        entering={enterRise(2)}
+        pointerEvents="box-none"
+        style={[
+          themedStyles.startMatchContainer,
+          { bottom: bottom + verticalScale(20) },
+        ]}
+      >
+        <CustomButton
+          onPress={onStartMatchPress}
+          title={t("openMatch.startMatch")}
+          variant="primary"
+          overrideStyle={themedStyles.startMatchButton}
+          leftIcon={
+            <View style={themedStyles.plusContainer}>
+              <Image source={Images.plus} style={themedStyles.plusIcon} />
+            </View>
+          }
+        />
+      </Animated.View>
     </View>
   );
 };

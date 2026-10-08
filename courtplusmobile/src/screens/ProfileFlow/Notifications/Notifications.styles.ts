@@ -1,25 +1,28 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { horizontalScale, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    container: {
-      backgroundColor: colors.WHITE,
-    },
     listActionItem: {
-      marginTop: verticalScale(46),
+      marginTop: verticalScale(18),
+    },
+    icon: {
+      tintColor: colors.INK,
     },
     switch: {
-      marginEnd: spacing[24],
+      marginEnd: 0,
     },
     bottomContainer: {
       flex: 1,
       justifyContent: "flex-end",
+      paddingTop: verticalScale(24),
+      paddingBottom: verticalScale(12),
     },
     emptyImage: {
-      width: horizontalScale(84),
-      height: verticalScale(99.24),
-      tintColor: colors.SLATE_GRAY,
+      width: horizontalScale(72),
+      height: horizontalScale(72),
+      resizeMode: "contain",
+      tintColor: colors.FAINT,
     },
   });

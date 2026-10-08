@@ -1,35 +1,43 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.BACKGROUND,
+      backgroundColor: colors.INK,
     },
     title: {
       color: colors.WHITE,
-      marginTop: verticalScale(53),
+      marginTop: verticalScale(36),
     },
     button: {
-      marginTop: verticalScale(26),
+      marginTop: verticalScale(24),
+    },
+    buttonDisabled: {
+      backgroundColor: colors.ON_INK_SURFACE,
+      borderColor: colors.ON_INK_LINE,
+    },
+    buttonDisabledText: {
+      color: colors.ON_INK_MUTED,
     },
     footer: {
-      paddingTop: verticalScale(19),
+      paddingTop: verticalScale(16),
     },
     formContainer: {
-      gap: horizontalScale(13),
-      paddingTop: verticalScale(16),
+      gap: spacing[12],
+      paddingTop: verticalScale(20),
     },
     dateOfBirthContainer: {
       flexDirection: "row",
-      gap: horizontalScale(13),
+      gap: spacing[12],
     },
     input: {
       flex: 1,
     },
     logo: {
-      width: horizontalScale(180),
-      height: verticalScale(52),
+      width: horizontalScale(132),
+      height: horizontalScale(38),
+      resizeMode: "contain",
     },
   });

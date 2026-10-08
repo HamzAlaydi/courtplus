@@ -1,46 +1,108 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius, Shadows } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
+
+const NOTCH_SIZE = horizontalScale(28);
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
-    imageBackground: {
-      flex: 1,
-      paddingTop: verticalScale(32),
-      marginTop: verticalScale(24),
+    scrollContent: {
+      paddingBottom: verticalScale(40),
     },
-    contentContainer: {
-      alignItems: "center",
-      gap: verticalScale(4),
+    pass: {
+      marginTop: verticalScale(20),
+      backgroundColor: colors.CARD,
+      borderRadius: Radius.cardLarge,
+      ...Shadows.raised,
     },
-    dottedLine: {
-      height: 1,
-      borderColor: "#D6DAE2",
-      marginVertical: verticalScale(24),
-      borderStyle: "dotted",
-      borderWidth: 1,
+    passTop: {
+      backgroundColor: colors.INK,
+      borderTopLeftRadius: Radius.cardLarge,
+      borderTopRightRadius: Radius.cardLarge,
+      paddingHorizontal: spacing[20],
+      paddingTop: verticalScale(20),
+      paddingBottom: verticalScale(22),
+      gap: verticalScale(10),
     },
-    listContainer: {
-      paddingHorizontal: spacing[32],
-    },
-    listItem: {
-      color: colors.GREY,
-    },
-    listItemContainer: {
+    passTopRow: {
       flexDirection: "row",
+      alignItems: "center",
       justifyContent: "space-between",
     },
-    secondDottedLine: {
-      width: "90%",
-      marginStart: horizontalScale(18),
+    sportTile: {
+      width: horizontalScale(44),
+      height: horizontalScale(44),
+      borderRadius: horizontalScale(22),
+      backgroundColor: colors.LIME,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    sportIcon: {
+      width: horizontalScale(22),
+      height: horizontalScale(22),
+      resizeMode: "contain",
+      tintColor: colors.INK,
+    },
+    sportName: {
+      color: colors.WHITE,
+      marginTop: verticalScale(4),
+    },
+    bookingIdContainer: {
+      gap: verticalScale(2),
+    },
+    bookingIdLabel: {
+      color: colors.ON_INK_MUTED,
     },
     bookingId: {
-      textAlign: "center",
-      width: horizontalScale(145),
-      color: colors.GRAYISH_BLUE,
+      color: colors.WHITE,
+    },
+    perforation: {
+      height: NOTCH_SIZE,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    notch: {
+      width: NOTCH_SIZE,
+      height: NOTCH_SIZE,
+      borderRadius: NOTCH_SIZE / 2,
+      backgroundColor: colors.GROUND,
+    },
+    notchStart: {
+      marginStart: -NOTCH_SIZE / 2,
+    },
+    notchEnd: {
+      marginEnd: -NOTCH_SIZE / 2,
+    },
+    dashedLine: {
+      flex: 1,
+      height: 1,
+      marginHorizontal: spacing[6],
+      borderWidth: 1,
+      borderRadius: 1,
+      borderColor: colors.HANDLE,
+      borderStyle: "dashed",
+    },
+    listContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      paddingHorizontal: spacing[20],
+      paddingTop: verticalScale(6),
+      paddingBottom: verticalScale(22),
+      rowGap: verticalScale(18),
+    },
+    listItemContainer: {
+      width: "50%",
+      paddingEnd: spacing[10],
+      gap: verticalScale(4),
+    },
+    listItemFullWidth: {
+      width: "100%",
+      paddingEnd: 0,
+    },
+    listItem: {
+      color: colors.MUTED,
     },
     listValue: {
-      width: horizontalScale(143),
-      textAlign: "right",
+      color: colors.INK,
     },
   });

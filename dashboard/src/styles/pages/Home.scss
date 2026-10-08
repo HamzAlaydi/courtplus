@@ -1,195 +1,253 @@
 @use "../base/index" as *;
 
-@keyframes homeFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(1.6rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .home {
-  padding: 2rem;
-  color: $color-text;
+  color: $cp-ink;
 
-  &.rtl {
-    direction: rtl;
-    text-align: right;
-  }
-
-  .home-section {
-    opacity: 0;
-    animation: homeFadeUp 0.5s ease-out forwards;
-    margin-bottom: 2.4rem;
-  }
-
-  // ── Welcome header ──────────────────────────────
+  // Welcome header
   .home-welcome {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.6rem;
-    flex-wrap: wrap;
+    align-items: flex-end;
 
-    h2 {
-      margin: 0 0 0.6rem;
-      font-size: 2.4rem;
-      font-weight: $font-weight-bold;
+    &-text {
+      min-width: 0;
     }
 
-    p {
-      margin: 0;
-      color: $color-text-light;
-      font-size: 1.4rem;
+    &-date {
+      color: $cp-ink;
+      font-weight: 500;
+    }
+
+    &-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
     &-status {
-      font-size: 1.3rem;
-      padding: 0.4rem 1.2rem;
-      border-radius: 2rem;
-    }
-  }
-
-  // ── KPI stat cards ──────────────────────────────
-  .home-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.6rem;
-  }
-
-  .home-stat-card {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.8rem;
-    background: $color-white;
-    border: $border;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-    transition: transform $transition-duration ease,
-      box-shadow $transition-duration ease;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .home-stat-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 4.8rem;
-      height: 4.8rem;
-      flex-shrink: 0;
-      border-radius: 12px;
-      background: rgba($primary-color, 0.25);
-      color: $color-green-dark;
-      font-size: 2.2rem;
-    }
-
-    .home-stat-label {
-      display: block;
-      font-size: 1.3rem;
-      color: $color-text-light;
-      margin-bottom: 0.4rem;
-    }
-
-    .home-stat-value {
       margin: 0;
-      font-size: 2.2rem;
-      font-weight: $font-weight-bold;
+      height: 30px;
+      padding: 0 14px;
+      font-size: $cp-fs-small;
+    }
+  }
 
-      small {
-        font-size: 1.3rem;
-        font-weight: $font-weight-meduim;
-        color: $color-text-light;
+  .home-banner {
+    margin: 0;
+  }
+
+  // Recent bookings next to the courts panel (Dashboard.dc.html)
+  .home-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: $cp-gap-grid;
+    align-items: start;
+
+    @media (max-width: 1180px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .home-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .cp-section-head {
+      margin-bottom: 12px;
+    }
+  }
+
+  // Recent bookings table
+  .home-reservations {
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding-inline: 10px;
+    }
+
+    .ant-table-thead > tr > th {
+      padding-top: 6px;
+      padding-bottom: 10px;
+    }
+
+    .ant-table-thead > tr > th:first-child,
+    .ant-table-tbody > tr > td:first-child {
+      padding-inline-start: 0;
+    }
+
+    .ant-table-thead > tr > th:last-child,
+    .ant-table-tbody > tr > td:last-child {
+      padding-inline-end: 0;
+    }
+  }
+
+  .home-res-customer {
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.is-empty {
+      color: $cp-muted;
+    }
+  }
+
+  .home-res-court {
+    @include cp-truncate;
+    display: block;
+    max-width: 150px;
+  }
+
+  .home-res-stack {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  .home-res-amount {
+    align-items: flex-end;
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  // Courts and branches panels (list rows as in "Your courts")
+  .home-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      border-bottom: 1px solid $cp-divider;
+
+      &:last-child {
+        border-bottom: 0;
       }
     }
+
+    // On narrow cards the status drops under the text instead of squeezing it
+    .cp-list-row {
+      @include cp-focus-ring;
+      flex-wrap: wrap;
+      row-gap: 6px;
+      margin-inline: -8px;
+      padding: 10px 8px;
+      border-bottom: 0;
+      border-radius: $cp-radius-chip;
+      color: $cp-ink;
+      transition: background-color $cp-transition;
+
+      &:hover {
+        background: $cp-row-hover;
+      }
+    }
+
+    .ant-tag {
+      flex-shrink: 0;
+      margin: 0;
+      margin-inline-start: auto;
+    }
   }
 
-  // ── Charts ──────────────────────────────────────
-  .home-charts {
+  .home-list-info {
+    flex: 1 1 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    strong {
+      font-size: $cp-fs-body;
+      font-weight: 600;
+      color: $cp-ink;
+    }
+  }
+
+  .home-list-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    min-width: 0;
+  }
+
+  .home-feature-chip {
+    @include cp-pill($cp-lime-tint, $cp-lime-tint-text);
+    height: 20px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .home-list-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: 6px;
+
+    .ant-skeleton-avatar-square {
+      border-radius: $cp-radius-chip;
+    }
+
+    .ant-skeleton-content .ant-skeleton-title {
+      margin-top: 6px;
+    }
+
+    .ant-skeleton-content .ant-skeleton-title + .ant-skeleton-paragraph {
+      margin-top: 12px;
+    }
+  }
+
+  // Profile completion, branches and quick actions
+  .home-bottom {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: $cp-gap-grid;
+    align-items: start;
   }
 
-  .home-chart-card {
-    padding: 1.8rem;
-    background: $color-white;
-    border: $border;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  // Charts
+  .home-chart-body {
+    margin-inline: -6px;
   }
 
   .home-chart-empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 280px;
+    min-height: 260px;
   }
 
-  // ── Shared card look ────────────────────────────
-  .home-card {
-    padding: 1.8rem;
-    background: $color-white;
-    border: $border;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  }
-
-  .home-card-title {
-    margin: 0 0 1.4rem;
-    font-size: 1.6rem;
-    font-weight: 600;
-  }
-
-  .home-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .home-card-link {
-    color: $color-green-dark;
-    font-weight: $font-weight-meduim;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  // ── Bottom row ──────────────────────────────────
-  .home-bottom {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.6rem;
-    align-items: start;
-  }
-
-  // ── Profile completion ──────────────────────────
+  // Profile completion
   .home-completion {
+    &-percent {
+      @include cp-display(18px, 800, 0, false);
+      color: $cp-ink;
+    }
+
     &-progress {
-      margin-bottom: 1.2rem;
+      margin: 0 0 16px;
     }
 
     &-done {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 10px;
       margin: 0;
-      color: $color-green;
-      font-weight: $font-weight-meduim;
+      font-size: $cp-fs-body;
+      font-weight: 600;
+      color: $cp-success;
+
+      .home-completion-check {
+        background: $cp-success-bg;
+        border-color: transparent;
+        color: $cp-success;
+      }
     }
 
     &-list {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
       margin: 0;
       padding: 0;
       list-style: none;
@@ -198,100 +256,78 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
-        font-size: 1.4rem;
+        gap: 12px;
+        min-height: 44px;
+        padding: 6px 0;
+        border-bottom: 1px solid $cp-divider;
+        font-size: $cp-fs-body;
+
+        &:last-child {
+          border-bottom: 0;
+        }
+
+        &.done .home-completion-label {
+          color: $cp-muted;
+        }
+
+        &.done .home-completion-check {
+          background: $cp-ink;
+          border-color: $cp-ink;
+          color: $cp-lime;
+        }
       }
     }
 
     &-label {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
-
-      .anticon {
-        color: #ccc;
-      }
+      gap: 10px;
+      min-width: 0;
+      color: $cp-ink;
     }
 
-    li.done &-label .anticon {
-      color: $color-green;
+    &-check {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: $cp-radius-pill;
+      border: 1.5px solid $cp-line-strong;
+      background: $cp-card;
+      font-size: 11px;
     }
 
     &-link {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      color: $color-green-dark;
-      font-weight: $font-weight-meduim;
+      gap: 4px;
       white-space: nowrap;
+    }
 
-      &:hover {
-        text-decoration: underline;
+    &-arrow {
+      font-size: 10px;
+
+      @include cp-rtl {
+        transform: scaleX(-1);
       }
     }
   }
 
-  // ── Branches summary ────────────────────────────
-  .home-branches-list {
+  // Quick actions
+  .home-quick-actions-list {
     display: flex;
     flex-direction: column;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    li a {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1.2rem 0.4rem;
-      border-bottom: 1px solid #f5f5f5;
-      transition: background $transition-duration ease;
-
-      &:hover {
-        background: #fafafa;
-      }
-    }
-
-    li:last-child a {
-      border-bottom: none;
-    }
-
-    .home-branch-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      min-width: 0;
-
-      strong {
-        color: $color-text;
-      }
-
-      span {
-        font-size: 1.2rem;
-        color: $color-text-light;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-  }
-
-  // ── Quick actions ───────────────────────────────
-  .home-quick-actions {
-    display: flex;
-    flex-direction: column;
+    gap: 10px;
 
     a {
-      margin-bottom: 1rem;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
+      display: block;
     }
-  }
 
-  @media (max-width: 768px) {
-    padding: 1.2rem;
+    .ant-btn {
+      justify-content: flex-start;
+      padding-inline: 20px;
+    }
   }
 }

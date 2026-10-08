@@ -1,4 +1,4 @@
-import { CustomText } from "atoms/index";
+import { CustomText, PressableScale } from "atoms/index";
 import { useThemeContext } from "contexts";
 import {
   ChooseGameModal,
@@ -8,13 +8,21 @@ import {
   WidgetWrapper,
 } from "molecules/index";
 import React, { useMemo } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
+import Animated, {
+  LinearTransition,
+  ReduceMotion,
+} from "react-native-reanimated";
 import { Images } from "theme";
 import styles from "./SportsLevelManager.styles";
 import { SportsLevelManagerProps } from "./SportsLevelManager.types";
-import { mapUserSports } from "utils";
+import { enterRise, exitFade, mapUserSports, MOTION } from "utils";
 import { useTranslation } from "react-i18next";
 import { useSportsLevelManager } from "./SportsLevelManager.logic";
+
+const rowLayout = LinearTransition.duration(MOTION.sheet).reduceMotion(
+  ReduceMotion.System
+);
 
 const SportsLevelManager = ({
   sports,
@@ -48,45 +56,69 @@ const SportsLevelManager = ({
     <View>
       <CustomText
         text={t("profile.sportsLevel")}
-        font="chip"
-        weight="regular"
+        font="sectionTitle"
+        weight="bold"
+        accessibilityRole="header"
         overrideStyle={themedStyles.sportsLevelTitle}
       />
-      {sportsList.map((item) => (
-        <View key={item.id} style={themedStyles.sportsLevelContainer}>
-          <View style={themedStyles.sportsLevelWidget}>
-            <WidgetWrapper overrideStyle={themedStyles.gameWidget}>
-              <Image source={Images[item.icon]} />
-              <CustomText text={item.name} font="headline3" weight="medium" />
+      <View style={themedStyles.list}>
+        {sportsList.map((item, index) => (
+          <Animated.View
+            key={item.id}
+            entering={enterRise(index)}
+            exiting={exitFade()}
+            layout={rowLayout}
+          >
+            <WidgetWrapper overrideStyle={themedStyles.sportsLevelContainer}>
+              <View style={themedStyles.iconContainer}>
+                <Image source={Images[item.icon]} style={themedStyles.icon} />
+              </View>
+              <View style={themedStyles.textContainer}>
+                <CustomText
+                  text={item.name}
+                  font="cardTitle"
+                  weight="semiBold"
+                  numberOfLines={1}
+                />
+                <CustomText
+                  text={item.level}
+                  font="caption"
+                  weight="regular"
+                  numberOfLines={1}
+                  overrideStyle={themedStyles.level}
+                />
+              </View>
+              <PressableScale
+                onPress={() => onShowDeleteGameModal(item)}
+                hitSlop={4}
+                accessibilityRole="button"
+                accessibilityLabel={t("profile.deleteGame", {
+                  gameName: item.name,
+                })}
+                style={themedStyles.deleteButton}
+              >
+                <Image source={Images.trash} style={themedStyles.deleteIcon} />
+              </PressableScale>
             </WidgetWrapper>
-            <WidgetWrapper overrideStyle={themedStyles.levelContainer}>
-              <CustomText
-                text={item.level}
-                font="body"
-                weight="medium"
-                numberOfLines={1}
-                overrideStyle={themedStyles.level}
-              />
-            </WidgetWrapper>
-          </View>
-
-          <TouchableOpacity onPress={() => onShowDeleteGameModal(item)}>
-            <Image source={Images.trash} />
-          </TouchableOpacity>
-        </View>
-      ))}
-      <WidgetWrapper
-        onPress={onAddSport}
-        overrideStyle={themedStyles.addSportContainer}
-      >
-        <Image source={Images.plus} />
-        <CustomText
-          text={t("profile.addSport")}
-          font="headline3"
-          weight="medium"
-          overrideStyle={themedStyles.addGameText}
-        />
-      </WidgetWrapper>
+          </Animated.View>
+        ))}
+        <Animated.View layout={rowLayout}>
+          <WidgetWrapper
+            onPress={onAddSport}
+            overrideStyle={themedStyles.addSportContainer}
+          >
+            <View style={themedStyles.addIconContainer}>
+              <Image source={Images.plus} style={themedStyles.addIcon} />
+            </View>
+            <CustomText
+              text={t("profile.addSport")}
+              font="cardTitle"
+              weight="semiBold"
+              overrideStyle={themedStyles.addGameText}
+            />
+          </WidgetWrapper>
+        </Animated.View>
+      </View>
       <DeleteGameModal
         ref={deleteGameModalRef}
         onDeleteGame={onDeleteGame}

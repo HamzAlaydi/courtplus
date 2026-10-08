@@ -1,26 +1,41 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, spacing, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     dayContainer: {
-      borderWidth: 1,
-      borderColor: colors.LIGHT_BLUE,
+      flex: 1,
+      height: verticalScale(64),
       alignItems: "center",
-      paddingVertical: verticalScale(11),
-      paddingHorizontal: horizontalScale(19),
-      borderRadius: spacing[12],
-      gap: verticalScale(8),
+      justifyContent: "center",
+      gap: verticalScale(2),
+      borderRadius: Radius.input,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.LINE,
     },
     selectedDay: {
-      backgroundColor: colors.GREEN_YELLOWISH,
-      borderWidth: 0,
+      backgroundColor: colors.INK,
+      borderColor: colors.INK,
     },
-    disabledDay: {
-      color: colors.GREY,
+    disabledContainer: {
+      backgroundColor: colors.GROUND,
+      borderColor: colors.GROUND,
     },
-    dayText: {
-      color: colors.BLACK,
+    dayName: {
+      color: colors.MUTED,
+    },
+    selectedDayName: {
+      color: colors.LIME,
+    },
+    dayNumber: {
+      color: colors.INK,
+    },
+    selectedDayNumber: {
+      color: colors.WHITE,
+    },
+    disabledText: {
+      color: colors.FAINT,
     },
   });

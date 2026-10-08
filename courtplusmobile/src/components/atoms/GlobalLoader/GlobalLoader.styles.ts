@@ -12,7 +12,7 @@ export default (colors: ColorsType) =>
       bottom: 0,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: `${colors.BACKGROUND}E5`,
+      backgroundColor: `${colors.INK}E5`,
     },
     progress: {
       borderRadius: spacing[6],

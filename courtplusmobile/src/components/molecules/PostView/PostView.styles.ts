@@ -1,71 +1,71 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
-import { horizontalScale, isRTL, spacing, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingHorizontal: spacing[4],
-      paddingBottom: verticalScale(4),
-      paddingTop: verticalScale(16),
+      paddingHorizontal: spacing[12],
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(10),
+      marginBottom: verticalScale(14),
     },
     headerContainer: {
-      paddingHorizontal: spacing[12],
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: verticalScale(12),
+      gap: spacing[10],
+      paddingHorizontal: spacing[2],
     },
-    imageBackground: {
-      width: "100%",
-      height: verticalScale(319),
-      borderRadius: spacing[12],
-      //   overflow: "hidden",
-      justifyContent: "flex-end",
+    avatar: {
+      width: horizontalScale(40),
+      height: horizontalScale(40),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.DIVIDER,
+    },
+    headerText: {
+      flex: 1,
+    },
+    name: {
+      color: colors.INK,
+    },
+    days: {
+      color: colors.MUTED,
+    },
+    body: {
+      color: colors.INK,
+      marginTop: verticalScale(10),
+      paddingHorizontal: spacing[2],
     },
     image: {
-      borderRadius: spacing[8],
+      width: "100%",
+      height: verticalScale(300),
+      borderRadius: Radius.tile,
+      marginTop: verticalScale(12),
     },
-    imageOverlay: {
-      paddingHorizontal: spacing[12],
-      paddingBottom: verticalScale(10),
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    likesCount: {
+    actionRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing[4],
-      paddingHorizontal: spacing[6],
-      borderRadius: spacing[18],
-      backgroundColor: `${colors.BACKGROUND}80`,
-      paddingVertical: verticalScale(3),
-    },
-    likeIcon: {
-      width: spacing[10],
-      height: verticalScale(9),
+      gap: spacing[8],
+      marginTop: verticalScale(10),
     },
     likeButton: {
-      backgroundColor: `${colors.BACKGROUND}B2`,
-      width: spacing[36],
-      height: spacing[36],
-      borderRadius: spacing[40],
+      width: horizontalScale(36),
+      height: horizontalScale(36),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.GROUND,
       justifyContent: "center",
       alignItems: "center",
     },
-    rightIcon: {
-      tintColor: colors.WHITE,
+    likeButtonActive: {
+      backgroundColor: colors.LIME,
     },
-    body: {
-      color: colors.BLACK,
-      width: horizontalScale(200),
-    },
-    days: {
-      color: colors.MED_GREY,
+    likeIcon: {
+      width: horizontalScale(18),
+      height: horizontalScale(18),
+      resizeMode: "contain",
+      tintColor: colors.INK,
     },
     counts: {
-      color: colors.WHITE,
-      marginTop: isRTL ? verticalScale(4) : 0,
+      color: colors.INK,
     },
   });

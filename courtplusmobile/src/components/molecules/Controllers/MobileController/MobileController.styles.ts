@@ -1,8 +1,12 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { isAndroid, isRTL, spacing, verticalScale } from "utils";
+import { horizontalScale, spacing, verticalScale } from "utils";
 
-export default (colors: ColorsType) =>
+/**
+ * `greyBackground` puts the field on a light screen (white field, ink text);
+ * otherwise it sits on a dark screen (deep field, white text).
+ */
+export default (colors: ColorsType, greyBackground: boolean) =>
   StyleSheet.create({
     countryItemContainer: {
       flexDirection: "row",
@@ -10,16 +14,21 @@ export default (colors: ColorsType) =>
       alignItems: "center",
     },
     countryItemFlag: {
-      width: spacing[18],
-      height: spacing[18],
+      width: horizontalScale(20),
+      height: horizontalScale(20),
+    },
+    arrowIcon: {
+      width: horizontalScale(12),
+      height: horizontalScale(12),
+      resizeMode: "contain",
+      tintColor: greyBackground ? colors.MUTED : colors.ON_INK_MUTED,
     },
     countryItemSeparator: {
       width: 1,
-      height: verticalScale(21),
-      backgroundColor: colors.CYAN,
+      height: verticalScale(20),
+      backgroundColor: greyBackground ? colors.LINE : colors.ON_INK_LINE,
     },
     countryCode: {
-      color: colors.CYAN,
-      lineHeight: isAndroid ? verticalScale(20) : isRTL ? verticalScale(25) : 0,
+      color: greyBackground ? colors.MUTED : colors.ON_INK_MUTED,
     },
   });

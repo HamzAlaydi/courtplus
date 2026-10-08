@@ -19,28 +19,35 @@ const DeleteGameModal = forwardRef<BottomSheetModal, DeleteGameModalProps>(
     const themedStyles = useMemo(() => styles(colors), [colors]);
 
     return (
-      <BottomSheetOverlay isWhite ref={ref}>
+      <BottomSheetOverlay
+        isWhite
+        ref={ref}
+        overrideContentStyle={themedStyles.sheet}
+      >
         <View style={themedStyles.container}>
-          <Image source={Images.trash} style={themedStyles.image} />
+          <View style={themedStyles.iconBadge}>
+            <Image source={Images.trash} style={themedStyles.image} />
+          </View>
           <CustomText
-            font="headline3"
+            font="bottomSheetTitle"
             weight="bold"
+            accessibilityRole="header"
             text={t("profile.deleteGame", { gameName })}
             overrideStyle={themedStyles.title}
           />
         </View>
-        <CustomButton
-          title={t("general.delete")}
-          overrideStyle={themedStyles.deleteButton}
-          overrideTextStyle={themedStyles.deleteButtonText}
-          onPress={onDeleteGame}
-        />
-        <CustomButton
-          title={t("general.cancel")}
-          onPress={onCancel}
-          overrideStyle={themedStyles.cancelButton}
-          overrideTextStyle={themedStyles.cancelButtonText}
-        />
+        <View style={themedStyles.actions}>
+          <CustomButton
+            variant="danger"
+            title={t("general.delete")}
+            onPress={onDeleteGame}
+          />
+          <CustomButton
+            variant="outline"
+            title={t("general.cancel")}
+            onPress={onCancel}
+          />
+        </View>
       </BottomSheetOverlay>
     );
   }

@@ -6,8 +6,11 @@ import { ListRenderItemInfo } from "@shopify/flash-list";
 import { FriendShip } from "models";
 import styles from "./Followers.styles";
 import { RefreshControl, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import { useTranslation } from "react-i18next";
+import { useThemeContext } from "contexts";
+import { useListEntering } from "utils";
 
 const FollowersScreen = () => {
   const {
@@ -25,29 +28,40 @@ const FollowersScreen = () => {
     profileId,
   } = useFollowers();
   const { t } = useTranslation();
+  const {
+    currentTheme: { colors },
+  } = useThemeContext();
+  const entering = useListEntering();
 
-  const renderItem = ({ item }: ListRenderItemInfo<FriendShip>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<FriendShip>) => {
     return (
-      <UserFollowRow
-        name={item.user.firstName}
-        username={item.user.username}
-        image={item.user.avatarUrl ?? ""}
-        gender={item.user.gender}
-        isFollowing={item.user.isFollowing ?? false}
-        isFollowed={item.user.isFollowed ?? false}
-        onFollow={() => onFollow(item.user.id)}
-        onUnfollow={() => onUnfollow(item.user.id)}
-        onPress={() => onUserPress(item.user.id)}
-        showButton={profileId !== item.user.id}
-      />
+      <Animated.View entering={entering(index)}>
+        <UserFollowRow
+          name={item.user.firstName}
+          username={item.user.username}
+          image={item.user.avatarUrl ?? ""}
+          gender={item.user.gender}
+          isFollowing={item.user.isFollowing ?? false}
+          isFollowed={item.user.isFollowed ?? false}
+          onFollow={() => onFollow(item.user.id)}
+          onUnfollow={() => onUnfollow(item.user.id)}
+          onPress={() => onUserPress(item.user.id)}
+          showButton={profileId !== item.user.id}
+        />
+      </Animated.View>
     );
   };
   return (
-    <MainWrapper scrollEnabled={false} whiteBackground>
+    <MainWrapper scrollEnabled={false}>
       <Header whiteColor title={headerTitle} />
       <List
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.INK}
+            colors={[colors.INK]}
+          />
         }
         isLoading={isLoading}
         data={friendshipsData}
@@ -56,6 +70,7 @@ const FollowersScreen = () => {
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        overrideContainerStyle={styles.list}
         contentContainerStyle={styles.listContainer}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         emptyConfig={{

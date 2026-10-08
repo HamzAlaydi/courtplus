@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { ColorsType } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
@@ -8,19 +8,26 @@ export default (colors: ColorsType) =>
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      gap: verticalScale(20),
+      paddingHorizontal: spacing[24],
+      paddingVertical: verticalScale(32),
+    },
+    image: {
+      marginBottom: verticalScale(20),
     },
     text: {
-      width: horizontalScale(229),
+      maxWidth: horizontalScale(260),
       textAlign: "center",
-      color: colors.DARK_BLUE,
+      color: colors.INK,
     },
     subtitle: {
-      width: horizontalScale(260),
+      maxWidth: horizontalScale(280),
+      marginTop: verticalScale(6),
       textAlign: "center",
-      color: colors.SLATE_GRAY,
+      color: colors.MUTED,
+      fontSize: moderateScale(13),
+      lineHeight: moderateScale(19),
     },
     button: {
-      marginTop: verticalScale(8),
+      marginTop: verticalScale(20),
     },
   });

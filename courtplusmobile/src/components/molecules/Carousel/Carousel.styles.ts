@@ -1,8 +1,9 @@
-import { Dimensions, StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { StyleSheet } from "react-native";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale, spacing, verticalScale } from "utils";
 
-const { width } = Dimensions.get("window");
+export const DOT_SIZE = horizontalScale(6);
+export const ACTIVE_DOT_WIDTH = horizontalScale(18);
 
 const styles = (colors: ColorsType) =>
   StyleSheet.create({
@@ -11,34 +12,40 @@ const styles = (colors: ColorsType) =>
       height: verticalScale(185),
     },
     imageContainer: {
-      width,
       height: verticalScale(185),
       justifyContent: "center",
       alignItems: "center",
     },
     image: {
-      width: horizontalScale(327),
+      width: "100%",
       height: "100%",
-      borderRadius: spacing[12],
+      borderRadius: Radius.card,
+      overflow: "hidden",
     },
     paginationContainer: {
       position: "absolute",
-      bottom: verticalScale(16),
-      left: 0,
-      right: 0,
-      flexDirection: "row",
-      justifyContent: "center",
+      bottom: verticalScale(12),
+      start: 0,
+      end: 0,
       alignItems: "center",
-      gap: horizontalScale(8),
+    },
+    pagination: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing[6],
+      paddingHorizontal: spacing[8],
+      paddingVertical: spacing[6],
+      borderRadius: Radius.pill,
+      backgroundColor: colors.GLASS_DARK,
     },
     dot: {
-      width: spacing[6],
-      height: spacing[6],
-      borderRadius: spacing[40],
-      backgroundColor: `${colors.BACKGROUND}1F`,
+      width: DOT_SIZE,
+      height: DOT_SIZE,
+      borderRadius: Radius.pill,
+      backgroundColor: colors.WHITE,
     },
     activeDot: {
-      backgroundColor: colors.GREEN_YELLOWISH,
+      backgroundColor: colors.LIME,
     },
   });
 

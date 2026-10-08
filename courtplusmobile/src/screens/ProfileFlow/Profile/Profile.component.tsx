@@ -1,26 +1,19 @@
-import { BackButton, CustomText, SkeletonLoader } from "atoms/index";
+import { CustomText, PressableScale, SkeletonLoader } from "atoms/index";
 import { useThemeContext } from "contexts";
 import {
   ContextActionMenu,
   Header,
   ReportModal,
   ReportSubmittedModal,
-  SessionOverview,
   SportBadge,
-  Tabs,
 } from "molecules/index";
 import { MainWrapper, Posts, ProfileImageHeader } from "organisms/index";
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Image,
-  RefreshControl,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useMemo } from "react";
+import { Image, RefreshControl, ScrollView, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Images } from "theme";
 import styles from "./Profile.styles";
-import { generateFullName, Item } from "utils";
+import { enterDrop, enterRise, generateFullName } from "utils";
 import { AuthenticatedStackNavigationProp } from "navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -54,44 +47,25 @@ const ProfileScreen = () => {
     onReportClose,
     reportSubmittedModalRef,
   } = useProfile();
-  const tabs = useMemo(
-    () => [
-      {
-        key: "moments",
-        title: !isVisitingProfile
-          ? `${profile?.firstName ?? 0} ${t("court.moments")}`
-          : t("profile.moments"),
-      },
-    ],
+
+  const fullName = generateFullName(profile ?? { firstName: "", lastName: "" });
+
+  const momentsTitle = useMemo(
+    () =>
+      !isVisitingProfile
+        ? `${profile?.firstName ?? 0} ${t("court.moments")}`
+        : t("profile.moments"),
     [profile, isVisitingProfile]
   );
-  const [selectedTab, setSelectedTab] = useState<Item>(tabs[0]);
 
-  const renderLeadingComponent = useCallback(() => {
-    if (!id)
-      return (
-        <View style={themedStyles.leadingComponent}>
-          <View>
-            <Image source={Images.profile} />
-          </View>
-          <CustomText
-            text={t("profile.myProfile")}
-            font="title"
-            weight="semiBold"
-          />
-        </View>
-      );
-    return (
-      <View style={themedStyles.leadingComponent}>
-        <BackButton whiteColor />
-        <CustomText
-          text={generateFullName(profile ?? { firstName: "", lastName: "" })}
-          font="title"
-          weight="semiBold"
-        />
-      </View>
-    );
-  }, [profile, isVisitingProfile]);
+  const sessionStats = useMemo(
+    () =>
+      sessions.map((session) => ({
+        value: session.title,
+        label: session.subtitle,
+      })),
+    [sessions]
+  );
 
   const onDotPress = () => {
     if (!isVisitingProfile) {
@@ -104,76 +78,105 @@ const ProfileScreen = () => {
   return (
     <MainWrapper
       scrollEnabled={false}
-      whiteBackground
-      overrideContentStyle={themedStyles.scrollContent}
+      overrideContentStyle={themedStyles.wrapperContent}
     >
       <Header
-        showBackButton={false}
-        leadingComponent={renderLeadingComponent()}
+        showBackButton={!!id}
+        whiteColor
+        title={!id ? t("profile.myProfile") : fullName}
         trailingComponent={
-          <TouchableOpacity onPress={onDotPress}>
-            <Image source={Images.dot} />
-          </TouchableOpacity>
+          <PressableScale
+            onPress={onDotPress}
+            hitSlop={4}
+            accessibilityRole="button"
+            style={themedStyles.moreButton}
+          >
+            <Image
+              source={isVisitingProfile ? Images.settings : Images.dot}
+              style={
+                isVisitingProfile
+                  ? themedStyles.settingsIcon
+                  : themedStyles.moreIcon
+              }
+            />
+          </PressableScale>
         }
         overrideStyle={themedStyles.header}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={themedStyles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.INK}
+            colors={[colors.INK]}
+          />
         }
       >
         {isLoading ? (
           <SkeletonLoader />
         ) : (
           <>
-            <ProfileImageHeader
-              user={profile || null}
-              isVisitingOtherProfile={!isVisitingProfile}
-              overrideStyle={themedStyles.profileImageHeader}
-            />
-            <View style={themedStyles.content}>
-              <CustomText
-                font="headline1"
-                weight="semiBold"
-                text={generateFullName(
-                  profile ?? { firstName: "", lastName: "" }
-                )}
-                overrideStyle={themedStyles.name}
-              />
-              {profile?.username && (
-                <CustomText
-                  font="headline3"
-                  weight="semiBold"
-                  text={`@${profile?.username}`}
-                  overrideStyle={themedStyles.username}
-                />
-              )}
-              {profile?.bio && (
-                <CustomText
-                  font="chip"
-                  weight="medium"
-                  overrideStyle={themedStyles.description}
-                  text={profile.bio}
-                />
-              )}
-              <View style={themedStyles.sports}>
-                {profile?.sports?.map((sport) => (
+            <Animated.View entering={enterDrop(0)}>
+              <ProfileImageHeader
+                user={profile || null}
+                isVisitingOtherProfile={!isVisitingProfile}
+                overrideStyle={themedStyles.profileImageHeader}
+                stats={sessionStats}
+              >
+                <View style={themedStyles.identity}>
+                  <CustomText
+                    font="displayHero"
+                    weight="bold"
+                    text={fullName}
+                    numberOfLines={2}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                    accessibilityRole="header"
+                  />
+                  {profile?.username && (
+                    <CustomText
+                      font="headline3"
+                      weight="medium"
+                      text={`@${profile?.username}`}
+                      overrideStyle={themedStyles.username}
+                    />
+                  )}
+                  {profile?.bio && (
+                    <CustomText
+                      font="headline3"
+                      weight="regular"
+                      overrideStyle={themedStyles.description}
+                      text={profile.bio}
+                    />
+                  )}
+                </View>
+              </ProfileImageHeader>
+            </Animated.View>
+            {!!profile?.sports?.length && (
+              <Animated.View
+                entering={enterRise(1)}
+                style={themedStyles.sports}
+              >
+                {profile.sports.map((sport) => (
                   <SportBadge key={sport.id} sport={sport} />
                 ))}
-              </View>
-              <SessionOverview
-                overrideContainerStyle={themedStyles.sessions}
-                sessions={sessions}
+              </Animated.View>
+            )}
+            <Animated.View
+              entering={enterRise(2)}
+              style={themedStyles.momentsHeader}
+            >
+              <CustomText
+                text={momentsTitle}
+                font="sectionTitle"
+                weight="bold"
+                accessibilityRole="header"
               />
-            </View>
-            <Tabs
-              tabs={tabs}
-              selectedTab={selectedTab}
-              setSelectedTab={setSelectedTab}
-              overrideStyle={themedStyles.tabs}
-            />
-            <View style={themedStyles.tabsContainer}>
+            </Animated.View>
+            <View style={themedStyles.postsContainer}>
               <Posts
                 postsData={flattenPostsData}
                 isLoading={isPostsLoading}

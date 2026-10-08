@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Empty, Input, Pagination, Select, Spin } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import CourtCard from "../components/CourtCard";
 import { getCourts } from "../actions/court_actions";
@@ -100,14 +100,7 @@ export default function Courts() {
 
   return (
     <Spin spinning={isLoading}>
-      <div className="content">
-        <div className="content-header">
-          <h4>{t("courts.title")}</h4>
-          <Link to="add">
-            <Button type="primary">+ {t("courts.add_new")}</Button>
-          </Link>
-        </div>
-
+      <div className="content courts-page">
         {/* 🔹 Pending payment banner */}
         {bannerVisible && pendingCharges?.count > 0 && (
           <Alert
@@ -121,70 +114,87 @@ export default function Courts() {
                 {t("courts.pending_payment_action")}
               </Button>
             }
-            style={{ marginBottom: 24 }}
           />
         )}
 
-        {/* 🔹 Filters */}
-        <div className="courts-filters">
-          <Input
-            allowClear
-            prefix={<SearchOutlined />}
-            placeholder={t("courts.search_placeholder")}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="courts-filter-search"
-          />
-          <Select
-            allowClear
-            placeholder={t("courts.all_branches")}
-            value={branchId}
-            onChange={handleFilterChange(setBranchId)}
-            options={branchData?.items?.map((branch) => ({
-              value: branch.id,
-              label: branch.name,
-            }))}
-          />
-          <Select
-            allowClear
-            placeholder={t("courts.all_sports")}
-            value={sport}
-            onChange={handleFilterChange(setSport)}
-            options={["tennis", "football", "paddle", "volleyball"].map(
-              (value) => ({ value, label: t(`courtForm.${value}`) })
-            )}
-          />
-          <Select
-            allowClear
-            placeholder={t("courts.all_statuses")}
-            value={status}
-            onChange={handleFilterChange(setStatus)}
-            options={["available", "unavailable"].map((value) => ({
-              value,
-              label: t(`courtCard.status.${value}`),
-            }))}
-          />
+        {/* 🔹 Filters + add court */}
+        <div className="content-header courts-toolbar">
+          <div className="courts-filters">
+            <Input
+              allowClear
+              prefix={<SearchOutlined className="courts-filter-search-icon" />}
+              placeholder={t("courts.search_placeholder")}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="courts-filter-search"
+            />
+            <Select
+              allowClear
+              placeholder={t("courts.all_branches")}
+              value={branchId}
+              onChange={handleFilterChange(setBranchId)}
+              options={branchData?.items?.map((branch) => ({
+                value: branch.id,
+                label: branch.name,
+              }))}
+            />
+            <Select
+              allowClear
+              placeholder={t("courts.all_sports")}
+              value={sport}
+              onChange={handleFilterChange(setSport)}
+              options={["tennis", "football", "paddle", "volleyball"].map(
+                (value) => ({ value, label: t(`courtForm.${value}`) })
+              )}
+            />
+            <Select
+              allowClear
+              placeholder={t("courts.all_statuses")}
+              value={status}
+              onChange={handleFilterChange(setStatus)}
+              options={["available", "unavailable"].map((value) => ({
+                value,
+                label: t(`courtCard.status.${value}`),
+              }))}
+            />
+          </div>
+          <Link to="add" tabIndex={-1} className="courts-toolbar-cta">
+            <Button type="primary" icon={<PlusOutlined />}>
+              {t("courts.add_new")}
+            </Button>
+          </Link>
         </div>
 
         {/* 🔹 Courts grouped by branch */}
         {courts.length ? (
           branchGroups.map((group) => (
             <section key={group.name} className="courts-branch-group">
-              <h5 className="courts-branch-title">{group.name}</h5>
-              {group.courts.map((court) => (
-                <CourtCard
-                  key={court.id}
-                  id={court.id}
-                  name={court.name}
-                  status={court.status}
-                  image={getImage(court.assets)}
-                  court={court}
-                />
-              ))}
+              <div className="cp-section-head courts-branch-head">
+                <h5 className="cp-section-title courts-branch-title">
+                  {group.name}
+                </h5>
+                <span className="cp-pill cp-pill--neutral cp-num">
+                  {group.courts.length}
+                </span>
+              </div>
+              <div className="courts-grid">
+                {group.courts.map((court) => (
+                  <CourtCard
+                    key={court.id}
+                    id={court.id}
+                    name={court.name}
+                    status={court.status}
+                    image={getImage(court.assets)}
+                    court={court}
+                  />
+                ))}
+              </div>
             </section>
           ))
         ) : (
-          <Empty description={t("courts.no_courts")} />
+          <div className="cp-card courts-empty">
+            <Empty description={t("courts.no_courts")} />
+          </div>
         )}
 
         {/* 🔹 Pagination */}

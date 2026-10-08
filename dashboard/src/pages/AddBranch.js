@@ -236,16 +236,16 @@ export default function AddBranch() {
 
   return (
     <Spin spinning={isLoading}>
-      <div className="content">
+      <div className="content addbranch-page">
         <div className="content-header">
           <h4>{id ? t("branchForm.edit") : t("branchForm.add")}</h4>
           {id && (
             <Button
               onClick={() => setIsModalVisible(true)}
               danger
-              type="primary"
+              icon={<MdDeleteOutline size={18} />}
             >
-              <MdDeleteOutline size={22} /> {t("branchForm.btn_delete")}
+              {t("branchForm.btn_delete")}
             </Button>
           )}
         </div>
@@ -259,16 +259,20 @@ export default function AddBranch() {
                 onChange={handleUploadCover}
               >
                 <div
-                  className="cover"
-                  style={{
-                    background: coverImageUrl
-                      ? `url("${coverImageUrl}") center/cover no-repeat`
-                      : "linear-gradient(to right, #b3e5fc, #d4fc79)",
-                  }}
+                  className={`cover${coverImageUrl ? "" : " cover--empty"}`}
+                  style={
+                    coverImageUrl
+                      ? {
+                          background: `url("${coverImageUrl}") center/cover no-repeat`,
+                        }
+                      : undefined
+                  }
                 >
                   {!coverImageUrl && (
-                    <div>
-                      <IoImageOutline size={28} />
+                    <div className="cover-placeholder">
+                      <span className="cover-placeholder-icon">
+                        <IoImageOutline size={24} />
+                      </span>
                       <h5>{t("branchForm.upload_cover")}</h5>
                     </div>
                   )}
@@ -290,11 +294,9 @@ export default function AddBranch() {
               {logoImageUrl ? (
                 <img src={logoImageUrl} alt="Logo" className="img-circle" />
               ) : (
-                <div style={{ textAlign: "center" }}>
-                  <IoImageOutline size={28} />
-                  <p style={{ fontSize: "12px", margin: 0 }}>
-                    {t("branchForm.upload_logo")}
-                  </p>
+                <div className="logo-placeholder">
+                  <IoImageOutline size={22} />
+                  <p>{t("branchForm.upload_logo")}</p>
                 </div>
               )}
             </ImageUploader>
@@ -305,6 +307,7 @@ export default function AddBranch() {
             onFinish={handleSubmit}
             size="large"
             layout="vertical"
+            className="addbranch-form-root"
             initialValues={{ zone: "Asia/Riyadh" }}
           >
             <div className="addbranch-form">
@@ -375,6 +378,7 @@ export default function AddBranch() {
                 <Form.Item
                   label={t("branchForm.show_to_users")}
                   layout="horizontal"
+                  className="form-switch-item"
                 >
                   <div className="form-row">
                     <Switch
@@ -385,12 +389,15 @@ export default function AddBranch() {
                       }}
                     />
                     <Tooltip title={t("branchForm.visibility_tooltip")}>
-                      <IoMdInformationCircleOutline color="#777" size={26} />
+                      <IoMdInformationCircleOutline
+                        className="form-info-icon"
+                        size={22}
+                      />
                     </Tooltip>
                   </div>
                 </Form.Item>
               </div>
-              <div>
+              <div className="addbranch-form-right">
                 <WorkingHours
                   title={t("branchForm.working_hours")}
                   initialSchedule={branch?.schedule}
@@ -401,8 +408,7 @@ export default function AddBranch() {
             <div className="submit-btns">
               <Button
                 htmlType="submit"
-                className="btn-submit"
-                style={{ marginRight: "2rem" }}
+                className="btn-submit cp-btn-display"
                 type="primary"
               >
                 {t("branchForm.submit")}

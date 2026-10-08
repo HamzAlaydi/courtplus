@@ -3,11 +3,9 @@ import {
   Alert,
   Button,
   Card,
-  Col,
   Form,
   Input,
   InputNumber,
-  Row,
   Statistic,
   Table,
   Tag,
@@ -145,7 +143,11 @@ export default function PayoutsSection() {
         title: t("settings.payouts.amount"),
         dataIndex: "amount",
         key: "amount",
-        render: (value, row) => formatMoney(value, row.currency || currency),
+        render: (value, row) => (
+          <span className="payouts-amount">
+            {formatMoney(value, row.currency || currency)}
+          </span>
+        ),
       },
       {
         title: t("settings.payouts.status"),
@@ -157,7 +159,7 @@ export default function PayoutsSection() {
               {t(`settings.payouts.statuses.${status}`, { defaultValue: status })}
             </Tag>
             {row.failureReason ? (
-              <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
+              <Text type="secondary" className="payouts-failure">
                 {row.failureReason}
               </Text>
             ) : null}
@@ -199,7 +201,7 @@ export default function PayoutsSection() {
           // so the later refund looked like money that never arrived.
           if (row.metadata?.held) {
             return (
-              <Text type="secondary">
+              <Text type="secondary" className="payouts-amount">
                 {formatMoney(
                   Math.abs(Number(row.metadata.heldAmount || 0)),
                   row.currency || currency
@@ -209,7 +211,10 @@ export default function PayoutsSection() {
           }
           const credit = CREDIT_TYPES.has(row.type);
           return (
-            <Text type={credit ? "success" : "danger"}>
+            <Text
+              type={credit ? "success" : "danger"}
+              className="payouts-amount"
+            >
               {credit ? "+" : "−"}
               {formatMoney(Math.abs(Number(value || 0)), row.currency || currency)}
             </Text>
@@ -249,15 +254,12 @@ export default function PayoutsSection() {
   });
 
   const renderBankDetails = () => (
-    <Card
-      size="small"
-      title={t("settings.payouts.bankTitle")}
-      style={{ marginBottom: 16 }}
-    >
-      <Text type="secondary" style={{ display: "block", marginBottom: 12 }}>
+    <Card size="small" title={t("settings.payouts.bankTitle")}>
+      <Text type="secondary" className="payouts-lead">
         {t("settings.payouts.bankHint")}
       </Text>
       <Form
+        className="settings-form"
         form={bankForm}
         layout="vertical"
         onFinish={(values) => bankMutation.mutate(values)}
@@ -298,7 +300,6 @@ export default function PayoutsSection() {
           type="success"
           showIcon
           message={t("settings.payouts.accountReady")}
-          style={{ marginBottom: 16 }}
         />
       );
     }
@@ -325,7 +326,6 @@ export default function PayoutsSection() {
               : t("settings.payouts.setUp")}
           </Button>
         }
-        style={{ marginBottom: 16 }}
       />
     );
   };
@@ -334,51 +334,45 @@ export default function PayoutsSection() {
     isReady && !hasPending && available >= MIN_PAYOUT_AMOUNT && !loadingBalance;
 
   return (
-    <div>
-      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={8}>
-          <Card size="small" loading={loadingBalance}>
-            <Statistic
-              title={t("settings.payouts.available")}
-              value={available}
-              precision={2}
-              suffix={currency}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small" loading={loadingBalance}>
-            <Statistic
-              title={t("settings.payouts.pending")}
-              value={Number(balance?.pendingBalance || 0)}
-              precision={2}
-              suffix={currency}
-            />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {t("settings.payouts.pendingHint")}
-            </Text>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small" loading={loadingBalance}>
-            <Statistic
-              title={t("settings.payouts.totalEarnings")}
-              value={Number(balance?.totalEarnings || 0)}
-              precision={2}
-              suffix={currency}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <div className="payouts-section">
+      <div className="payouts-kpis">
+        <Card
+          size="small"
+          loading={loadingBalance}
+          className="payouts-kpi payouts-kpi--ink"
+        >
+          <Statistic
+            title={t("settings.payouts.available")}
+            value={available}
+            precision={2}
+            suffix={currency}
+          />
+        </Card>
+        <Card size="small" loading={loadingBalance} className="payouts-kpi">
+          <Statistic
+            title={t("settings.payouts.pending")}
+            value={Number(balance?.pendingBalance || 0)}
+            precision={2}
+            suffix={currency}
+          />
+          <Text type="secondary" className="payouts-hint">
+            {t("settings.payouts.pendingHint")}
+          </Text>
+        </Card>
+        <Card size="small" loading={loadingBalance} className="payouts-kpi">
+          <Statistic
+            title={t("settings.payouts.totalEarnings")}
+            value={Number(balance?.totalEarnings || 0)}
+            precision={2}
+            suffix={currency}
+          />
+        </Card>
+      </div>
 
       {renderAccountBanner()}
       {renderBankDetails()}
 
-      <Card
-        size="small"
-        title={t("settings.payouts.requestTitle")}
-        style={{ marginBottom: 16 }}
-      >
+      <Card size="small" title={t("settings.payouts.requestTitle")}>
         {hasPending ? (
           <Alert
             type="info"
@@ -388,6 +382,7 @@ export default function PayoutsSection() {
           />
         ) : null}
         <Form
+          className="payouts-request"
           form={form}
           layout="inline"
           onFinish={({ amount: value }) => requestMutation.mutate(Number(value))}
@@ -433,7 +428,7 @@ export default function PayoutsSection() {
             </Button>
           </Form.Item>
         </Form>
-        <Text type="secondary" style={{ display: "block", marginTop: 8, fontSize: 12 }}>
+        <Text type="secondary" className="payouts-hint">
           {t("settings.payouts.requestHint", {
             amount: MIN_PAYOUT_AMOUNT,
             currency,
@@ -441,7 +436,7 @@ export default function PayoutsSection() {
         </Text>
       </Card>
 
-      <Card size="small" title={t("settings.payouts.history")} style={{ marginBottom: 16 }}>
+      <Card size="small" title={t("settings.payouts.history")}>
         <Table
           size="small"
           rowKey="id"

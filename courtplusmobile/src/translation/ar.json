@@ -63,7 +63,9 @@
     "apply": "تطبيق",
     "camera": "كاميرا",
     "gallery": "معرض الصور",
-    "keep": "إبقاء"
+    "keep": "إبقاء",
+    "perHour": "/ ساعة",
+    "back": "رجوع"
   },
   "language": {
     "title": "أختر لغتك المفضلة",
@@ -175,7 +177,11 @@
     "notAirConditioned": "غير مكيف",
     "womenOnly": "مخصص للنساء",
     "womenOnlyYes": "نعم — مغلق بالكامل",
-    "womenOnlyNo": "متاح للجميع"
+    "womenOnlyNo": "متاح للجميع",
+    "surfaces": {
+      "grass": "عشب",
+      "hard": "ملعب صلب"
+    }
   },
   "completeProfile": {
     "title": " أكمل إعداد ملفك الشخصي",
@@ -445,6 +451,12 @@
       "payment_completed": "تم دفع الحجز بالكامل",
       "somePlayer": "أحد اللاعبين",
       "unknown": "نشاط في الحجز"
+    },
+    "status": {
+      "upcoming": "قادم",
+      "inProgress": "جارٍ الآن",
+      "completed": "مكتمل",
+      "cancelled": "ملغي"
     }
   },
   "community": {
@@ -474,7 +486,10 @@
     "radius": "نطاق البحث",
     "noPlaceFound": "لم يُعثر على مكان بهذا الاسم.",
     "airConditioned": "الملاعب المكيفة فقط",
-    "womenOnly": "الملاعب المخصصة للنساء فقط"
+    "womenOnly": "الملاعب المخصصة للنساء فقط",
+    "airConditionedHint": "ملاعب داخلية مكيّفة",
+    "womenOnlyHint": "مغلق بالكامل وخاص",
+    "availabilityHint": "اختر يومًا ووقتًا محددين"
   },
   "booking": {
     "title": "اختيار وقت الحجز",
@@ -503,7 +518,8 @@
     "noSlots": "لا توجد أوقات متاحة لعرضها في الوقت الحالي.",
     "noEvents": "لا توجد أحداث حتى الآن",
     "cancellationPolicy": "الإلغاء مجاني حتى 12 ساعة قبل البداية؛ بعد ذلك الحجز غير قابل للاسترداد.",
-    "selectionMustBeContiguous": "يرجى اختيار أوقات متتالية بدون فجوات."
+    "selectionMustBeContiguous": "يرجى اختيار أوقات متتالية بدون فجوات.",
+    "bookingSuccessSubtitle": "تم حجز ملعبك. نراك في الملعب!"
   },
   "branchDetails": {
     "sessions": "جلسة",
@@ -595,5 +611,18 @@
   "reportSubmitted": {
     "title": "نحن آسفون!",
     "description": "تم إرسال تقريرك، نحن نعمل عليه وسنواصل التواصل معك"
+  },
+  "home": {
+    "greeting": "أهلاً، {{name}}",
+    "subtitle": "احجز ملعبك وابدأ اللعب اليوم.",
+    "bookCourt": "احجز ملعب",
+    "myBookings": "حجوزاتي"
+  },
+  "tabBar": {
+    "home": "الرئيسية",
+    "courts": "الملاعب",
+    "community": "المجتمع",
+    "activity": "النشاط",
+    "profile": "حسابي"
   }
 }

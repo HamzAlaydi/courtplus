@@ -25,6 +25,8 @@ const CourtMoments = ({ courtId }: CourtMomentsProps) => {
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
+      contentContainerStyle={styles.listContent}
+      overrideLoaderContainerStyle={styles.loader}
       emptyConfig={{
         overrideStyle: styles.emptyContainer,
         image: Images.cloud,

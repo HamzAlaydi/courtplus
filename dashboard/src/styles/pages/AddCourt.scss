@@ -1,28 +1,204 @@
 @use "../base/index" as *;
 
+// Shared by the court and branch forms: white section cards, a section title
+// with a divider, switch rows and a floating action bar.
+@mixin form-card {
+  @include cp-card;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@mixin form-card-title {
+  @include cp-section-title;
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid $cp-divider;
+}
+
+// Include on `.<form> .form-switch-item.ant-form-item`: the doubled classes
+// below outrank AntD's vertical-layout and small-screen label rules.
+@mixin form-switch-row {
+  margin-bottom: 14px;
+
+  .ant-row.ant-form-item-row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding-block: 8px;
+    padding-inline: 16px 8px;
+    border: 1px solid $cp-line;
+    border-radius: $cp-radius-input;
+    background: $cp-card;
+    transition: border-color $cp-transition;
+
+    &:hover {
+      border-color: $cp-line-strong;
+    }
+  }
+
+  .ant-col.ant-form-item-label {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    padding: 0 !important;
+    overflow: visible;
+    white-space: normal;
+
+    > label {
+      height: auto;
+      font-weight: 500;
+      text-align: start;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  .ant-col.ant-form-item-control {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .ant-form-item-control-input {
+    min-height: 40px;
+  }
+
+  .form-row {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 10px;
+    width: auto;
+  }
+}
+
+// AntD 5.23 sizes the AutoComplete text box to the line height when it has a
+// value, which drops the typed text below the middle of a large field.
+@mixin form-autocomplete {
+  .ant-select-auto-complete {
+    .ant-select-selection-wrap {
+      align-self: stretch;
+    }
+
+    .ant-select-selection-search-input {
+      font: inherit;
+      color: $cp-ink;
+    }
+  }
+}
+
+@mixin form-actions-bar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 10;
+  align-self: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px;
+  border-radius: $cp-radius-pill;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: $cp-shadow-popup;
+
+  .ant-btn {
+    min-width: 120px;
+  }
+
+  .form-submit {
+    min-width: 168px;
+  }
+
+  @media (max-width: 576px) {
+    align-self: stretch;
+    border-radius: $cp-radius-card;
+
+    .ant-btn {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}
+
 .court-form-container {
+  .ant-alert {
+    margin: 0;
+  }
+
+  .court-form {
+    display: flex;
+    flex-direction: column;
+    gap: $cp-gap-section;
+  }
+
   .form-title {
-    font-size: 1.6rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    color: #333;
+    @include form-card-title;
   }
 
   .form-section {
-    display: flex;
-    justify-content: space-between;
-    gap: 4rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $cp-gap-grid;
+    align-items: start;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
 
     .form-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      @include form-card;
     }
   }
+
+  // Two fields per row inside a card
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+
+    @media (max-width: 576px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .court-form .form-switch-item.ant-form-item {
+    @include form-switch-row;
+  }
+
+  .court-form {
+    @include form-autocomplete;
+  }
+
+  .form-info-icon {
+    color: $cp-muted;
+    cursor: help;
+    flex-shrink: 0;
+  }
+
+  .ant-input-number-group-wrapper {
+    width: 100%;
+  }
+
+  // Working hours sit under the basic fields as a sub-section
+  .form-group .working-hours {
+    margin-top: 4px;
+    padding-top: 20px;
+    border-top: 1px solid $cp-divider;
+  }
+
+  // Visuals
   .court-visuals {
-    margin-top: 4rem;
+    @include form-card;
   }
 
   // Upload target. Replaces a bare button so the drop area reads as a place
@@ -43,34 +219,49 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
-    padding: 2.8rem 2rem;
-    max-width: 44rem;
-    border: 2px dashed #d9dede;
-    border-radius: 1.2rem;
-    background: #fafbfb;
+    gap: 6px;
+    min-height: 168px;
+    padding: 28px 20px;
+    max-width: 520px;
+    border: 1.5px dashed $cp-line-strong;
+    border-radius: $cp-radius-panel;
+    background: $cp-ground;
     cursor: pointer;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition: border-color $cp-transition, background-color $cp-transition;
 
     &:hover {
-      border-color: #c0ff42;
-      background: #f6fbec;
+      border-color: $cp-ink;
+      background: $cp-lime-wash;
+
+      .court-dropzone__icon {
+        background: $cp-lime;
+      }
     }
 
     &__icon {
-      font-size: 2.2rem;
-      color: $color-text-light;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 6px;
+      border-radius: $cp-radius-pill;
+      background: $cp-card;
+      box-shadow: $cp-shadow-soft;
+      font-size: 20px;
+      color: $cp-ink;
+      transition: background-color $cp-transition;
     }
 
     &__title {
-      font-size: 1.5rem;
+      font-size: $cp-fs-body;
       font-weight: 600;
-      color: $color-text;
+      color: $cp-ink;
     }
 
     &__hint {
-      font-size: 1.2rem;
-      color: $color-text-light;
+      font-size: $cp-fs-caption;
+      color: $cp-muted;
       text-align: center;
     }
 
@@ -79,8 +270,12 @@
       cursor: not-allowed;
 
       &:hover {
-        border-color: #d9dede;
-        background: #fafbfb;
+        border-color: $cp-line-strong;
+        background: $cp-ground;
+
+        .court-dropzone__icon {
+          background: $cp-card;
+        }
       }
     }
 
@@ -89,12 +284,12 @@
     &--busy {
       cursor: progress;
       border-style: solid;
-      border-color: #c0ff42;
-      background: #f6fbec;
+      border-color: $cp-ink;
+      background: $cp-lime-wash;
 
       &:hover {
-        border-color: #c0ff42;
-        background: #f6fbec;
+        border-color: $cp-ink;
+        background: $cp-lime-wash;
       }
     }
   }
@@ -103,30 +298,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.8rem;
+    gap: 8px;
     width: 100%;
 
     &__spinner {
-      font-size: 2rem;
-      color: $color-text;
+      font-size: 20px;
+      color: $cp-ink;
     }
 
     &__label {
-      font-size: 1.4rem;
+      font-size: $cp-fs-body;
       font-weight: 600;
-      color: $color-text;
+      color: $cp-ink;
     }
 
     &__bar {
       width: 100%;
-      max-width: 26rem;
+      max-width: 260px;
       margin: 0;
     }
 
     &__percent {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: $color-text-light;
+      @include cp-display(13px, 700, 0, false);
+      color: $cp-muted;
       font-variant-numeric: tabular-nums;
     }
   }
@@ -135,10 +329,10 @@
     display: grid;
     // Fixed tiles rather than flex: every court photo is cropped to the same
     // ratio, so the gallery should look like a uniform set.
-    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-    gap: 1.5rem;
-    max-width: 68rem;
-    margin: 1.6rem 0 3rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+    gap: 12px;
+    max-width: 720px;
+    margin: -4px 0 24px;
   }
 
   .image-gallery .img-container {
@@ -146,12 +340,13 @@
     // 16:9 to match the crop the uploader enforces.
     aspect-ratio: 16 / 9;
     width: 100%;
-    border-radius: 1rem;
+    border-radius: $cp-radius-input;
     overflow: hidden; // The previous rules set no size on the <img> at all, so
     // it rendered at its natural dimensions and spilled out of this box and
     // over the controls beneath it.
-    background: #eef1f0;
-    border: 1px solid #e3e8e6;
+    background: $cp-ground;
+    box-shadow: $cp-shadow-soft;
+    animation: cpFadeUp 280ms $cp-ease backwards;
 
     .preview-image {
       width: 100%;
@@ -161,84 +356,98 @@
     }
 
     .remove-icon {
+      @include cp-press;
+      @include cp-focus-ring;
       position: absolute;
-      top: 0.8rem;
-      inset-inline-end: 0.8rem;
+      top: 8px;
+      inset-inline-end: 8px;
       z-index: 2;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 3rem;
-      height: 3rem;
+      width: 32px;
+      height: 32px;
       padding: 0;
       border: none;
-      border-radius: 50%;
-      background-color: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(2px);
+      border-radius: $cp-radius-pill;
+      background-color: rgba(10, 21, 23, 0.6);
+      backdrop-filter: blur(6px);
       cursor: pointer;
-      transition: background-color 0.2s ease;
 
       &:hover {
-        background-color: rgba(220, 38, 38, 0.9);
+        background-color: $cp-danger;
       }
     }
 
     // The first image is what players see in listings, so say so.
     .cover-badge {
       position: absolute;
-      bottom: 0.8rem;
-      inset-inline-start: 0.8rem;
+      bottom: 8px;
+      inset-inline-start: 8px;
       z-index: 2;
-      padding: 0.3rem 1rem;
-      border-radius: 999px;
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      font-size: 1.1rem;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: $cp-radius-pill;
+      background-color: $cp-lime;
+      color: $cp-ink;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
     }
   }
+
   .media-wrapper {
-    max-width: 60rem;
-    border-radius: 8px;
-    border: 2px solid #ddd;
-    background: #f8f8f8;
+    max-width: 600px;
+    border-radius: $cp-radius-panel;
+    overflow: hidden;
+    background: $cp-ink;
+    box-shadow: $cp-shadow-soft;
     display: flex;
     align-items: center;
     justify-content: center;
 
     .preview-media {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 8px;
     }
   }
+
   .video-preview {
     position: relative;
   }
 
   .remove-icon-video {
+    @include cp-press;
+    @include cp-focus-ring;
+    position: absolute;
+    top: 10px;
+    inset-inline-end: 10px;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 2%;
-    right: 2%;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 8px;
-    border: 2px solid #ddd;
-    color: #fff;
-    background-color: rgba(255, 0, 0, 0.521);
-    font-weight: 700;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: $cp-radius-pill;
+    background-color: rgba(10, 21, 23, 0.6);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+
     &:hover {
-      cursor: pointer;
+      background-color: $cp-danger;
     }
   }
 
   .form-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
+    @include form-actions-bar;
   }
 }

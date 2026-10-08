@@ -110,5 +110,7 @@ export default function LocationMap({
     }
   }, [markerPosition]);
 
-  return <div ref={containerRef} style={containerStyle} />;
+  return (
+    <div ref={containerRef} className="location-map" style={containerStyle} />
+  );
 }

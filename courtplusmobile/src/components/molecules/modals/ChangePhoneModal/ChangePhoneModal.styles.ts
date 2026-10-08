@@ -1,47 +1,44 @@
 import { StyleSheet } from "react-native";
-import { ColorsType, Typography } from "theme";
-import { horizontalScale, verticalScale } from "utils";
+import { ColorsType, Radius } from "theme";
+import { horizontalScale, moderateScale, spacing, verticalScale } from "utils";
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
-      paddingHorizontal: 0,
-    },
-    changePhoneButton: {
-      marginTop: verticalScale(23.2),
-      backgroundColor: "transparent",
-      borderTopWidth: 1,
-      borderTopColor: colors.MED_GREY_2,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.MED_GREY_2,
-    },
-    changePhoneButtonText: {
-      color: colors.SLATE_GRAY,
-      ...Typography.fields.semiBold,
-    },
-    cancelButton: {
-      backgroundColor: "transparent",
-    },
-    cancelButtonText: {
-      color: colors.SLATE_GRAY,
+      paddingTop: verticalScale(16),
     },
     centeredContainer: {
       justifyContent: "center",
       alignItems: "center",
+      paddingHorizontal: spacing[8],
+    },
+    iconBadge: {
+      width: horizontalScale(64),
+      height: horizontalScale(64),
+      borderRadius: Radius.pill,
+      backgroundColor: colors.LIME_TINT,
+      justifyContent: "center",
+      alignItems: "center",
     },
     image: {
-      width: horizontalScale(41),
-      height: verticalScale(43),
+      width: horizontalScale(28),
+      height: horizontalScale(28),
+      resizeMode: "contain",
+      tintColor: colors.LIME_TINT_TEXT,
     },
     title: {
-      width: horizontalScale(140),
       textAlign: "center",
-      marginTop: verticalScale(23.2),
+      marginTop: verticalScale(16),
+      color: colors.INK,
     },
     description: {
-      width: horizontalScale(208),
-      marginTop: verticalScale(17),
-      color: colors.GREY,
+      marginTop: verticalScale(8),
+      color: colors.MUTED,
       textAlign: "center",
+      lineHeight: moderateScale(21),
+    },
+    actions: {
+      gap: verticalScale(10),
+      marginTop: verticalScale(24),
     },
   });

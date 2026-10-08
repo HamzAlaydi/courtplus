@@ -32,19 +32,22 @@ const ReviewCourtModal = forwardRef<BottomSheetModal, ReviewCourtModalProps>(
         <View style={themedStyles.content}>
           <CustomText
             text={title ?? t("reviews.title")}
-            font="headline1"
-            weight="bold"
+            font="screenTitle"
+            weight="extraBold"
+            accessibilityRole="header"
+            overrideStyle={themedStyles.title}
           />
           <CustomText
-            font="fields"
-            weight="regular"
+            font="headline3"
+            weight="medium"
             text={courtName}
+            numberOfLines={1}
             overrideStyle={themedStyles.court}
           />
         </View>
         <CustomText
           text={t("reviews.description")}
-          font="chip"
+          font="headline3"
           weight="regular"
           overrideStyle={themedStyles.hint}
         />
@@ -58,24 +61,36 @@ const ReviewCourtModal = forwardRef<BottomSheetModal, ReviewCourtModalProps>(
 
         <BottomSheetTextInput
           placeholder={t("reviews.addComment")}
+          placeholderTextColor={colors.MUTED}
+          selectionColor={colors.INK}
           value={comment}
           onChangeText={setComment}
           multiline
+          textAlignVertical="top"
           style={themedStyles.inputContainer}
         />
         <CustomButton
           title={t("reviews.addReview")}
-          leftIcon={<Image source={Images.review} />}
+          leftIcon={
+            <Image
+              source={Images.review}
+              style={[
+                themedStyles.buttonIcon,
+                isButtonDisabled && themedStyles.buttonIconDisabled,
+              ]}
+            />
+          }
           onPress={onAddReviewPress}
           overrideStyle={themedStyles.button}
           disabled={isButtonDisabled}
-          variant={isButtonDisabled ? "disabledDark" : "active"}
+          variant={isButtonDisabled ? "disabledDark" : "primary"}
         />
         {onLater && (
           <CustomButton
             variant="link"
             title={t("reviews.later")}
             onPress={onLater}
+            overrideStyle={themedStyles.laterButton}
           />
         )}
       </BottomSheetOverlay>

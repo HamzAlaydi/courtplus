@@ -1,49 +1,61 @@
 import { StyleSheet } from "react-native";
-import { ColorsType } from "theme";
+import { ColorsType, Radius } from "theme";
 import { horizontalScale } from "utils";
+
+const STEP_SIZE = horizontalScale(36);
 
 export default (colors: ColorsType) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
-      gap: horizontalScale(5),
+      gap: horizontalScale(6),
       justifyContent: "center",
       alignItems: "center",
     },
     divider: {
-      width: horizontalScale(12),
-      height: 1,
-      backgroundColor: colors.LIGHT_BLUE,
+      width: horizontalScale(18),
+      height: 2,
+      borderRadius: Radius.pill,
+      backgroundColor: colors.LINE,
+    },
+    completedDivider: {
+      backgroundColor: colors.INK,
     },
     activeStep: {
-      width: horizontalScale(36),
-      height: horizontalScale(36),
-      backgroundColor: colors.LIGHT_BLUE,
-      borderRadius: horizontalScale(36),
+      width: STEP_SIZE,
+      height: STEP_SIZE,
+      backgroundColor: colors.INK,
+      borderRadius: STEP_SIZE / 2,
       alignItems: "center",
       justifyContent: "center",
     },
+    activeStepText: {
+      color: colors.WHITE,
+      textAlign: "center",
+    },
     completedStep: {
-      width: horizontalScale(36),
-      height: horizontalScale(36),
-      backgroundColor: colors.BLACK,
-      borderRadius: horizontalScale(36),
+      width: STEP_SIZE,
+      height: STEP_SIZE,
+      backgroundColor: colors.LIME,
+      borderRadius: STEP_SIZE / 2,
       alignItems: "center",
       justifyContent: "center",
     },
     inactiveStep: {
-      width: horizontalScale(36),
-      height: horizontalScale(36),
-      borderColor: colors.LIGHT_BLUE,
+      width: STEP_SIZE,
+      height: STEP_SIZE,
+      backgroundColor: colors.CARD,
+      borderColor: colors.LINE,
       borderWidth: 1,
-      borderRadius: horizontalScale(36),
+      borderRadius: STEP_SIZE / 2,
       alignItems: "center",
       justifyContent: "center",
     },
     inactiveStepText: {
-      color: colors.GREY,
+      color: colors.MUTED,
+      textAlign: "center",
     },
     image: {
-      tintColor: colors.WHITE,
+      tintColor: colors.INK,
     },
   });
